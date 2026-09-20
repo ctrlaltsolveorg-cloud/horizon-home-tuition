@@ -283,15 +283,15 @@ export default function TutorDashboard() {
                 letterSpacing: '0.04em',
                 textTransform: 'uppercase'
               }}>
-                <BookOpen size={14} /> Official Educator Workspace
+                <BookOpen size={14} /> Official Tutor Workspace
               </div>
               <h1 style={{ fontSize: 'clamp(1.6rem, 3.2vw, 2.3rem)', fontWeight: 800, margin: 0 }}>
-                {tutorProfile.full_name || 'Educator Portal'}
+                {tutorProfile.full_name || 'Tutor Portal'}
               </h1>
               <p style={{ margin: '6px 0 0', opacity: 0.9, fontSize: '0.95rem' }}>
                 {tutorProfile.college ? `${tutorProfile.college} • ` : ''}
                 {tutorProfile.degree_status ? `${tutorProfile.degree_status} • ` : ''}
-                Verified Home Tuition Partner
+                Verified Home Tutor
               </p>
             </div>
 
@@ -521,13 +521,13 @@ export default function TutorDashboard() {
               <div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Verification Status</div>
                 <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#059669' }}>
-                  Verified Partner
+                  Verified Tutor
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Educator Dossier Card (Clean, Professional Full-Width Presentation) */}
+          {/* Tutor Dossier Card (Clean, Professional Full-Width Presentation) */}
           <div style={{
             background: 'var(--card-bg)',
             border: '1px solid var(--border-color)',
@@ -578,7 +578,7 @@ export default function TutorDashboard() {
                       padding: '3px 10px',
                       borderRadius: '999px'
                     }}>
-                      <ShieldCheck size={14} /> Verified Educator • Background Checked
+                      <ShieldCheck size={14} /> Verified Tutor • Background Checked
                     </span>
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                       Code: HZN-1024
