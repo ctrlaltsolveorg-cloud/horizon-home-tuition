@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
-import { Menu, X, Sun, Moon, Home, PhoneCall, Headphones, Phone } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { Menu, X, Sun, Moon, Home, PhoneCall, Headphones, Phone, LogOut, LayoutDashboard } from 'lucide-react';
 
 export default function Navbar() {
   const { lang, setLang, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -197,26 +199,71 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Portal Login / Dashboard Button */}
-          <Link
-            href="/login"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '0.45rem 0.9rem',
-              borderRadius: '20px',
-              background: 'rgba(37, 99, 235, 0.08)',
-              border: '1px solid rgba(37, 99, 235, 0.25)',
-              color: 'var(--primary)',
-              fontSize: '0.82rem',
-              fontWeight: 700,
-              textDecoration: 'none',
-              whiteSpace: 'nowrap'
-            }}
-          >
-            Portal Login
-          </Link>
+          {/* Portal Login / Authenticated User Dashboard Badge */}
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Link
+                href={user.role === 'teacher' ? '/tutor-dashboard' : user.role === 'admin' ? '/admin' : '/student-dashboard'}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '0.42rem 0.85rem',
+                  borderRadius: '20px',
+                  background: 'rgba(37, 99, 235, 0.1)',
+                  border: '1px solid rgba(37, 99, 235, 0.3)',
+                  color: 'var(--primary)',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                  whiteSpace: 'nowrap'
+                }}
+                title={`Logged in as ${user.name}`}
+              >
+                <LayoutDashboard size={14} />
+                <span>{user.name.split(' ')[0]}</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => logout()}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer'
+                }}
+                title="Logout"
+              >
+                <LogOut size={14} />
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '0.45rem 0.9rem',
+                borderRadius: '20px',
+                background: 'rgba(37, 99, 235, 0.08)',
+                border: '1px solid rgba(37, 99, 235, 0.25)',
+                color: 'var(--primary)',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                textDecoration: 'none',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              Portal Login
+            </Link>
+          )}
 
           {/* Primary CTA */}
           <Link
@@ -282,6 +329,53 @@ export default function Navbar() {
           <Link href="/admin" onClick={() => setMobileMenuOpen(false)} style={{ color: '#F59E0B', fontSize: '1rem', textDecoration: 'none' }}>
             🔒 {t.navAdmin}
           </Link>
+
+          {/* Mobile Auth Status */}
+          {user ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)' }}>
+              <Link
+                href={user.role === 'teacher' ? '/tutor-dashboard' : user.role === 'admin' ? '/admin' : '/student-dashboard'}
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  color: 'var(--primary)',
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  textDecoration: 'none'
+                }}
+              >
+                <LayoutDashboard size={18} /> My Dashboard ({user.name.split(' ')[0]})
+              </Link>
+              <button
+                type="button"
+                onClick={() => { logout(); setMobileMenuOpen(false); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'none',
+                  border: 'none',
+                  color: '#ef4444',
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  cursor: 'pointer',
+                  padding: 0
+                }}
+              >
+                <LogOut size={16} /> Logout
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '1rem', textDecoration: 'none' }}
+            >
+              Portal Login / Sign In →
+            </Link>
+          )}
 
           <Link
             href="/book-assessment"

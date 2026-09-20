@@ -6,18 +6,21 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publish
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
-    autoRefreshToken: true
+    autoRefreshToken: true,
+    detectSessionInUrl: true
   }
 });
 
-// Database Types for reference
+// Database Types reflecting live Supabase schema
 export interface Profile {
   id: string;
   role: 'student_parent' | 'teacher' | 'admin';
   full_name: string;
   email: string;
   phone?: string;
+  avatar_url?: string;
   created_at?: string;
+  updated_at?: string;
 }
 
 export interface TutorProfile {
@@ -30,14 +33,13 @@ export interface TutorProfile {
   medium_preference: string;
   languages?: string;
   bio_and_custom_notes?: string;
-  subjects?: string[];
+  subjects?: string[] | string;
   classes_handled?: string;
-  hourly_rate?: number;
   rating?: number;
   phone?: string;
   email?: string;
-  avatar_url?: string;
   created_at?: string;
+  updated_at?: string;
 }
 
 export interface StudentEnquiry {
@@ -47,31 +49,28 @@ export interface StudentEnquiry {
   student_name: string;
   phone: string;
   email?: string;
-  class_subject: string;
+  class_level: string;
+  board: string;
+  school_medium: string;
+  address?: string;
   enquiry_date: string;
   test_schedule_date?: string;
-  fee_status: 'PAID' | 'pending' | 'OVERDUE';
-  fee_paid_date?: string;
-  fee_amount?: number;
+  test_scheduled_date?: string;
+  test_status: string;
+  test_score?: string;
+  test_remarks?: string;
   assigned_teacher_id?: string;
-  assigned_teacher?: TutorProfile;
-  status: string;
+  fee_status: 'PAID' | 'pending' | 'OVERDUE' | string;
+  fee_amount?: number;
+  fee_paid_date?: string;
   created_at?: string;
 }
 
 export interface MonthlyReport {
   id: string;
   student_id: string;
-  tutor_id?: string;
   report_month: string;
-  report_year: number;
-  attendance_count: number;
-  total_classes: number;
-  subject_progress?: Record<string, number>;
-  test_scores?: Record<string, string | number>;
-  teacher_feedback?: string;
-  parent_feedback?: string;
-  overall_rating?: string;
-  report_date?: string;
+  areas_of_improvement?: string;
   created_at?: string;
+  [key: string]: any;
 }
