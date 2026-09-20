@@ -1,22 +1,21 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { supabase, TutorProfile } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import {
-  BookOpen,
   User,
   GraduationCap,
+  BookOpen,
+  Calendar,
+  CheckCircle2,
+  Clock,
   Award,
   Star,
-  CheckCircle2,
   Edit3,
-  Save,
-  Clock,
   MapPin,
   Phone,
   Mail,
@@ -25,7 +24,10 @@ import {
   FileSpreadsheet,
   LogOut,
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  X,
+  Languages,
+  BookMarked
 } from 'lucide-react';
 
 export default function TutorDashboard() {
@@ -36,21 +38,35 @@ export default function TutorDashboard() {
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [showEditModal, setShowEditModal] = useState(false);
 
-  // Tutor Profile State (Matches exact user requested fields)
+  // Tutor Profile State
   const [tutorProfile, setTutorProfile] = useState<any>({
-    full_name: 'Harshit Patel',
-    college: 'PCE PURNIA',
-    degree_status: 'B.Tech/BS: 3rd sem with 7.2 CGPA',
-    experience_years: '3+ years teaching experience',
-    medium_preference: 'Hindi medium only',
-    languages: 'Hindi, Maithili, English',
-    subjects: ['Mathematics', 'Science', 'Foundation Physics'],
+    full_name: '',
+    college: '',
+    degree_status: '',
+    experience_years: '',
+    medium_preference: '',
+    languages: 'Hindi, English',
+    subjects: '',
     classes_handled: 'Class 8 to 10',
-    bio_and_custom_notes: 'Dedicated home tutor from PCE Purnia. Specialized in CBSE and Bihar State Board Hindi-medium students with rigorous weekly mock tests and personalized doubt resolution.',
-    hourly_rate: 350,
-    phone: '+91 98765 43210',
-    email: 'harshit.patel@horizon.edu'
+    bio_and_custom_notes: '',
+    phone: '',
+    email: '',
+    rating: 4.9
+  });
+
+  // Edit Form Fields (Used inside Edit Modal)
+  const [editForm, setEditForm] = useState<any>({
+    full_name: '',
+    college: '',
+    degree_status: '',
+    experience_years: '',
+    medium_preference: 'Hindi medium only',
+    subjects: '',
+    phone: '',
+    email: '',
+    bio_and_custom_notes: ''
   });
 
   const [assignedStudents, setAssignedStudents] = useState<any[]>([]);
@@ -64,8 +80,8 @@ export default function TutorDashboard() {
     attendance_pct: 98,
     classes_conducted: 12,
     rating: 9.5,
-    syllabus: 'Quadratic Equations, Work & Energy, Structure of Atom',
-    remarks: 'Consistent weekly improvement. Aaryan is showing great confidence in physics numericals.'
+    syllabus: 'Quadratic Equations, Work & Energy, Gravitation',
+    remarks: 'Consistent weekly improvement. Demonstrating high grasping power and conceptual clarity.'
   });
 
   // Redirect if not logged in
@@ -75,23 +91,62 @@ export default function TutorDashboard() {
     }
   }, [user, authLoading, router]);
 
-  // Load Tutor Profile & Assigned Students from Supabase
+  // Load Tutor Profile & Assigned Students
   useEffect(() => {
     async function loadTutorData() {
+      if (!user) return;
       setLoading(true);
       try {
-        // Fetch tutor profile from Supabase
+        let loadedProfile: any = null;
+
+        // 1. Try to find the tutor's record matching their user id or email
         const { data: tData } = await supabase
           .from('tutor_profiles')
           .select('*')
-          .limit(1)
+          .or(`user_id.eq.${user.id},id.eq.${user.id},email.eq.${user.email}`)
           .maybeSingle();
 
         if (tData) {
-          setTutorProfile(tData);
+          loadedProfile = tData;
+        } else if (user.isDemo) {
+          // Demo fallback
+          loadedProfile = {
+            full_name: 'Harshit Patel',
+            college: 'PCE PURNIA',
+            degree_status: 'B.Tech/BS: 3rd sem with 7.2 CGPA',
+            experience_years: '3+ years teaching experience',
+            medium_preference: 'Hindi medium only',
+            languages: 'Hindi, English, Maithili',
+            subjects: 'Mathematics, Science, Foundation Physics',
+            classes_handled: 'Class 8 to 10',
+            bio_and_custom_notes: 'Dedicated home tutor from PCE Purnia. Specialized in CBSE and Bihar State Board Hindi-medium students with rigorous weekly mock tests and personalized doubt resolution.',
+            phone: '+91 98765 43210',
+            email: 'harshit.patel@horizon.edu',
+            rating: 4.9
+          };
+        } else {
+          // Newly registered real user
+          const meta = user.profileData || {};
+          loadedProfile = {
+            full_name: user.name || '',
+            college: meta.college || '',
+            degree_status: meta.degree_status || '',
+            experience_years: meta.experience_years || '',
+            medium_preference: meta.medium_preference || 'Hindi medium only',
+            languages: 'Hindi, English',
+            subjects: meta.subjects || '',
+            classes_handled: 'Class 8 to 10',
+            bio_and_custom_notes: meta.bio || '',
+            phone: user.phone || meta.phone || '',
+            email: user.email || '',
+            rating: 5.0
+          };
         }
 
-        // Fetch assigned students from student_enquiries
+        setTutorProfile(loadedProfile);
+        setEditForm(loadedProfile);
+
+        // Fetch assigned students
         const { data: sData } = await supabase
           .from('student_enquiries')
           .select('*')
@@ -121,9 +176,9 @@ export default function TutorDashboard() {
     }
 
     loadTutorData();
-  }, []);
+  }, [user]);
 
-  // Save / Update profile in Supabase permanently
+  // Save / Update profile
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -131,29 +186,34 @@ export default function TutorDashboard() {
     setErrorMsg('');
 
     try {
-      // Upsert into Supabase tutor_profiles
-      const { error } = await supabase
-        .from('tutor_profiles')
-        .upsert({
-          id: tutorProfile.id || 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
-          full_name: tutorProfile.full_name,
-          college: tutorProfile.college,
-          degree_status: tutorProfile.degree_status,
-          experience_years: tutorProfile.experience_years,
-          medium_preference: tutorProfile.medium_preference,
-          languages: tutorProfile.languages,
-          bio_and_custom_notes: tutorProfile.bio_and_custom_notes,
-          phone: tutorProfile.phone,
-          email: tutorProfile.email,
-          updated_at: new Date().toISOString()
-        });
+      const updatedProfile = {
+        ...tutorProfile,
+        ...editForm,
+        updated_at: new Date().toISOString()
+      };
 
-      if (error) {
-        console.warn('Supabase update note:', error.message);
-        // Even if table RLS throws, local session persists
+      if (user?.id) {
+        await supabase
+          .from('tutor_profiles')
+          .upsert({
+            id: user.id,
+            user_id: user.id,
+            full_name: editForm.full_name,
+            college: editForm.college,
+            degree_status: editForm.degree_status,
+            experience_years: editForm.experience_years,
+            medium_preference: editForm.medium_preference,
+            subjects: editForm.subjects,
+            bio_and_custom_notes: editForm.bio_and_custom_notes,
+            phone: editForm.phone,
+            email: editForm.email,
+            updated_at: new Date().toISOString()
+          });
       }
 
-      setSuccessMsg('Profile updated and saved to Supabase forever! 🎉');
+      setTutorProfile(updatedProfile);
+      setShowEditModal(false);
+      setSuccessMsg('Profile details updated successfully!');
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err: any) {
       setErrorMsg('Failed to save changes. ' + err.message);
@@ -179,7 +239,8 @@ export default function TutorDashboard() {
       }]);
 
       setShowReportModal(false);
-      alert('Monthly report submitted successfully and linked to student profile!');
+      setSuccessMsg('Monthly progress report submitted successfully!');
+      setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
       console.error(err);
       setShowReportModal(false);
@@ -191,14 +252,14 @@ export default function TutorDashboard() {
   return (
     <>
       <Navbar />
-      <main style={{ minHeight: '90vh', background: 'var(--bg-primary)', padding: '2rem 1rem 5rem' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <main style={{ minHeight: '90vh', background: 'var(--bg-primary)', padding: '2.5rem 1rem 5rem' }}>
+        <div style={{ maxWidth: '1180px', margin: '0 auto' }}>
           
-          {/* Top Banner */}
+          {/* Top Executive Header */}
           <div style={{
             background: 'linear-gradient(135deg, #065f46, #059669)',
             borderRadius: '20px',
-            padding: '2rem 2.2rem',
+            padding: '2.2rem 2.4rem',
             color: '#ffffff',
             marginBottom: '2rem',
             display: 'flex',
@@ -206,7 +267,7 @@ export default function TutorDashboard() {
             alignItems: 'center',
             flexWrap: 'wrap',
             gap: '1.5rem',
-            boxShadow: '0 10px 25px rgba(5, 150, 105, 0.2)'
+            boxShadow: '0 10px 30px rgba(5, 150, 105, 0.2)'
           }}>
             <div>
               <div style={{
@@ -217,21 +278,49 @@ export default function TutorDashboard() {
                 borderRadius: '999px',
                 background: 'rgba(255,255,255,0.18)',
                 fontSize: '0.8rem',
-                fontWeight: 600,
-                marginBottom: '0.6rem'
+                fontWeight: 700,
+                marginBottom: '0.6rem',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase'
               }}>
-                <BookOpen size={14} /> Official Tutor Workspace
+                <BookOpen size={14} /> Official Educator Workspace
               </div>
-              <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', fontWeight: 800, margin: 0 }}>
-                {tutorProfile.full_name}’s Dashboard
+              <h1 style={{ fontSize: 'clamp(1.6rem, 3.2vw, 2.3rem)', fontWeight: 800, margin: 0 }}>
+                {tutorProfile.full_name || 'Educator Portal'}
               </h1>
               <p style={{ margin: '6px 0 0', opacity: 0.9, fontSize: '0.95rem' }}>
-                {tutorProfile.college} • {tutorProfile.degree_status} • Verified Educator
+                {tutorProfile.college ? `${tutorProfile.college} • ` : ''}
+                {tutorProfile.degree_status ? `${tutorProfile.degree_status} • ` : ''}
+                Verified Home Tuition Partner
               </p>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <button
+                type="button"
+                onClick={() => {
+                  setEditForm(tutorProfile);
+                  setShowEditModal(true);
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '10px 16px',
+                  borderRadius: '10px',
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  border: '1px solid rgba(255, 255, 255, 0.35)',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer'
+                }}
+              >
+                <Edit3 size={15} /> Edit Details
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setShowReportModal(true)}
                 style={{
                   display: 'flex',
@@ -245,33 +334,35 @@ export default function TutorDashboard() {
                   fontSize: '0.85rem',
                   border: 'none',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                  boxShadow: '0 4px 14px rgba(0,0,0,0.1)'
                 }}
               >
                 <FileSpreadsheet size={16} /> Submit Monthly Report
               </button>
+
               <button
+                type="button"
                 onClick={logout}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  padding: '10px 16px',
+                  padding: '10px 14px',
                   borderRadius: '10px',
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  background: 'rgba(0, 0, 0, 0.2)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
                   color: '#ffffff',
                   fontWeight: 600,
                   fontSize: '0.85rem',
                   cursor: 'pointer'
                 }}
               >
-                <LogOut size={16} /> Logout
+                <LogOut size={15} /> Logout
               </button>
             </div>
           </div>
 
-          {/* Success / Error Alerts */}
+          {/* Feedback Alerts */}
           {successMsg && (
             <div style={{
               display: 'flex',
@@ -283,7 +374,7 @@ export default function TutorDashboard() {
               border: '1px solid rgba(16, 185, 129, 0.3)',
               color: '#059669',
               fontWeight: 600,
-              fontSize: '0.95rem',
+              fontSize: '0.92rem',
               marginBottom: '1.5rem'
             }}>
               <CheckCircle2 size={18} /> {successMsg}
@@ -301,383 +392,318 @@ export default function TutorDashboard() {
               border: '1px solid rgba(239, 68, 68, 0.3)',
               color: '#dc2626',
               fontWeight: 600,
-              fontSize: '0.95rem',
+              fontSize: '0.92rem',
               marginBottom: '1.5rem'
             }}>
               <AlertCircle size={18} /> {errorMsg}
             </div>
           )}
 
-          {/* Grid Layout: Live Profile Card (Left) + Profile Editor Form (Right) */}
+          {/* KPI Metrics Row */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
-            gap: '2rem',
-            marginBottom: '2.5rem'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '1.25rem',
+            marginBottom: '2rem'
           }}>
-            
-            {/* Column 1: Live Profile Card (Exact User-Requested Format) */}
-            <div>
+            <div style={{
+              background: 'var(--card-bg)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '16px',
+              padding: '1.3rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+            }}>
               <div style={{
+                width: '46px',
+                height: '46px',
+                borderRadius: '12px',
+                background: 'rgba(5, 150, 105, 0.1)',
+                color: '#059669',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '1rem'
+                justifyContent: 'center'
               }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <User size={20} style={{ color: '#059669' }} /> Live Profile Preview
-                </h2>
-                <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                  Visible to matched students
-                </span>
+                <Users size={22} />
               </div>
+              <div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Assigned Students</div>
+                <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  {assignedStudents.length} Active
+                </div>
+              </div>
+            </div>
 
-              {/* Exact Card Preview */}
+            <div style={{
+              background: 'var(--card-bg)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '16px',
+              padding: '1.3rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+            }}>
               <div style={{
-                background: 'var(--card-bg)',
-                border: '2px solid rgba(5, 150, 105, 0.25)',
-                borderRadius: '18px',
-                padding: '1.8rem',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.04)',
-                position: 'relative'
+                width: '46px',
+                height: '46px',
+                borderRadius: '12px',
+                background: 'rgba(245, 158, 11, 0.1)',
+                color: '#f59e0b',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}>
+                <Star size={22} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Academic Rating</div>
+                <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  {tutorProfile.rating || '4.9'} <span style={{ fontSize: '0.85rem', color: '#f59e0b' }}>★</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              background: 'var(--card-bg)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '16px',
+              padding: '1.3rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+            }}>
+              <div style={{
+                width: '46px',
+                height: '46px',
+                borderRadius: '12px',
+                background: 'rgba(37, 99, 235, 0.1)',
+                color: '#2563eb',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Languages size={22} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Medium Preference</div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  {tutorProfile.medium_preference || 'Hindi Medium'}
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              background: 'var(--card-bg)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '16px',
+              padding: '1.3rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+            }}>
+              <div style={{
+                width: '46px',
+                height: '46px',
+                borderRadius: '12px',
+                background: 'rgba(16, 185, 129, 0.1)',
+                color: '#10b981',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <ShieldCheck size={22} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Verification Status</div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#059669' }}>
+                  Verified Partner
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Educator Dossier Card (Clean, Professional Full-Width Presentation) */}
+          <div style={{
+            background: 'var(--card-bg)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '18px',
+            padding: '2rem',
+            marginBottom: '2.5rem',
+            boxShadow: '0 4px 18px rgba(0,0,0,0.03)',
+            position: 'relative'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              marginBottom: '1.5rem',
+              paddingBottom: '1.2rem',
+              borderBottom: '1px solid var(--border-color)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <div style={{
-                  position: 'absolute',
-                  top: '18px',
-                  right: '18px',
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '16px',
+                  background: 'linear-gradient(135deg, #059669, #10b981)',
+                  color: '#ffffff',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  color: '#059669',
-                  background: 'rgba(5, 150, 105, 0.1)',
-                  padding: '4px 10px',
-                  borderRadius: '999px'
+                  justifyContent: 'center',
+                  fontSize: '1.6rem',
+                  fontWeight: 800
                 }}>
-                  <ShieldCheck size={14} /> Verified in Supabase
+                  {tutorProfile.full_name?.charAt(0) || 'T'}
                 </div>
-
-                {/* Avatar + Name */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.4rem' }}>
-                  <div style={{
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '14px',
-                    background: 'linear-gradient(135deg, #059669, #10b981)',
-                    color: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1.5rem',
-                    fontWeight: 800
-                  }}>
-                    {tutorProfile.full_name?.charAt(0) || 'H'}
-                  </div>
-                  <div>
-                    <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 2px' }}>
-                      {tutorProfile.full_name}
-                    </h3>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                      comfortable with : {tutorProfile.languages}
+                <div>
+                  <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px' }}>
+                    {tutorProfile.full_name}
+                  </h2>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      color: '#059669',
+                      background: 'rgba(5, 150, 105, 0.1)',
+                      padding: '3px 10px',
+                      borderRadius: '999px'
+                    }}>
+                      <ShieldCheck size={14} /> Verified Educator • Background Checked
+                    </span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                      Code: HZN-1024
                     </span>
                   </div>
                 </div>
-
-                {/* Exact Format Requested by User */}
-                <div style={{
-                  background: 'var(--bg-primary)',
-                  padding: '1.2rem',
-                  borderRadius: '14px',
-                  border: '1px solid var(--border-color)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px',
-                  fontFamily: 'inherit',
-                  lineHeight: '1.5'
-                }}>
-                  <div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                      Degree & Current Performance
-                    </div>
-                    <div style={{ fontSize: '1rem', fontWeight: 800, color: '#2563eb' }}>
-                      {tutorProfile.degree_status}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                      College / Institution
-                    </div>
-                    <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                      {tutorProfile.college}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                      Teaching Experience
-                    </div>
-                    <div style={{ fontSize: '1rem', fontWeight: 800, color: '#059669' }}>
-                      + {tutorProfile.experience_years}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
-                      Medium Preference
-                    </div>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#d97706' }}>
-                      comfortable with : {tutorProfile.medium_preference}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Additional Mentions */}
-                {tutorProfile.bio_and_custom_notes && (
-                  <div style={{ marginTop: '1.2rem' }}>
-                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                      Additional Mentions & Bio
-                    </div>
-                    <p style={{ fontSize: '0.88rem', color: 'var(--text-primary)', margin: 0, lineHeight: '1.6' }}>
-                      "{tutorProfile.bio_and_custom_notes}"
-                    </p>
-                  </div>
-                )}
-
-                <div style={{ marginTop: '1.4rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                  <span>Contact: {tutorProfile.phone}</span>
-                  <span>Email: {tutorProfile.email}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Column 2: Interactive Profile Editor Form (Editable Anytime) */}
-            <div>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '1rem'
-              }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Edit3 size={20} style={{ color: 'var(--primary)' }} /> Edit Profile (Supabase Persistent)
-                </h2>
-                <span style={{ fontSize: '0.78rem', color: '#10b981', fontWeight: 600 }}>
-                  ● Saves forever
-                </span>
               </div>
 
-              <form
-                onSubmit={handleSaveProfile}
+              <button
+                type="button"
+                onClick={() => {
+                  setEditForm(tutorProfile);
+                  setShowEditModal(true);
+                }}
                 style={{
-                  background: 'var(--card-bg)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '18px',
-                  padding: '1.8rem',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.04)',
                   display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1.1rem'
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  background: 'var(--bg-primary)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-primary)',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer'
                 }}
               >
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '5px' }}>
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={tutorProfile.full_name}
-                    onChange={(e) => setTutorProfile({ ...tutorProfile, full_name: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '10px 14px',
-                      borderRadius: '10px',
-                      border: '1px solid var(--border-color)',
-                      background: 'var(--bg-primary)',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.95rem'
-                    }}
-                  />
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '5px' }}>
-                      College / Institution
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. PCE PURNIA"
-                      value={tutorProfile.college}
-                      onChange={(e) => setTutorProfile({ ...tutorProfile, college: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        borderRadius: '10px',
-                        border: '1px solid var(--border-color)',
-                        background: 'var(--bg-primary)',
-                        color: 'var(--text-primary)',
-                        fontSize: '0.95rem'
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '5px' }}>
-                      Degree, Sem & CGPA
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. B.Tech/BS : 3rd sem with 7.2 cgpa"
-                      value={tutorProfile.degree_status}
-                      onChange={(e) => setTutorProfile({ ...tutorProfile, degree_status: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        borderRadius: '10px',
-                        border: '1px solid var(--border-color)',
-                        background: 'var(--bg-primary)',
-                        color: 'var(--text-primary)',
-                        fontSize: '0.95rem'
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '5px' }}>
-                      Teaching Experience
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. 3 year teaching experience"
-                      value={tutorProfile.experience_years}
-                      onChange={(e) => setTutorProfile({ ...tutorProfile, experience_years: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        borderRadius: '10px',
-                        border: '1px solid var(--border-color)',
-                        background: 'var(--bg-primary)',
-                        color: 'var(--text-primary)',
-                        fontSize: '0.95rem'
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '5px' }}>
-                      Medium Comfort
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Hindi medium only"
-                      value={tutorProfile.medium_preference}
-                      onChange={(e) => setTutorProfile({ ...tutorProfile, medium_preference: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        borderRadius: '10px',
-                        border: '1px solid var(--border-color)',
-                        background: 'var(--bg-primary)',
-                        color: 'var(--text-primary)',
-                        fontSize: '0.95rem'
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '5px' }}>
-                    Comfortable With Languages
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Hindi, Maithili, English"
-                    value={tutorProfile.languages}
-                    onChange={(e) => setTutorProfile({ ...tutorProfile, languages: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '10px 14px',
-                      borderRadius: '10px',
-                      border: '1px solid var(--border-color)',
-                      background: 'var(--bg-primary)',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.95rem'
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '5px' }}>
-                    Additional Mentions / Bio
-                  </label>
-                  <textarea
-                    rows={3}
-                    placeholder="Mention any competitive exam preparation, subjects, special techniques or awards..."
-                    value={tutorProfile.bio_and_custom_notes}
-                    onChange={(e) => setTutorProfile({ ...tutorProfile, bio_and_custom_notes: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '10px 14px',
-                      borderRadius: '10px',
-                      border: '1px solid var(--border-color)',
-                      background: 'var(--bg-primary)',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.95rem',
-                      fontFamily: 'inherit',
-                      resize: 'vertical'
-                    }}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={saving}
-                  style={{
-                    padding: '13px 20px',
-                    borderRadius: '10px',
-                    background: 'linear-gradient(135deg, #059669, #10b981)',
-                    color: '#ffffff',
-                    border: 'none',
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 14px rgba(5, 150, 105, 0.25)',
-                    marginTop: '0.5rem'
-                  }}
-                >
-                  <Save size={18} />
-                  <span>{saving ? 'Saving to Supabase...' : 'Save Profile Changes (Permanently)'}</span>
-                </button>
-              </form>
+                <Edit3 size={15} /> Edit Profile Info
+              </button>
             </div>
 
-          </div>
-
-          {/* Assigned Students Section */}
-          <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Users size={20} style={{ color: 'var(--primary)' }} /> Your Assigned Students
-            </h2>
-
+            {/* Grid of details */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '1.2rem'
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              gap: '1.5rem',
+              marginBottom: '1.5rem'
             }}>
+              <div>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                  Institution / College
+                </div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                  {tutorProfile.college || '—'}
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                  Degree & Performance
+                </div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#2563eb' }}>
+                  {tutorProfile.degree_status || '—'}
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                  Teaching Experience
+                </div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#059669' }}>
+                  {tutorProfile.experience_years || '—'}
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                  Teaching Medium Comfort
+                </div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#d97706' }}>
+                  {tutorProfile.medium_preference || '—'}
+                </div>
+              </div>
+            </div>
+
+            {tutorProfile.subjects && (
+              <div style={{ marginBottom: '1.25rem' }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                  Primary Subjects & Handled Classes
+                </div>
+                <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)', fontWeight: 600 }}>
+                  {Array.isArray(tutorProfile.subjects) ? tutorProfile.subjects.join(', ') : tutorProfile.subjects}
+                </div>
+              </div>
+            )}
+
+            {tutorProfile.bio_and_custom_notes && (
+              <div style={{
+                background: 'var(--bg-primary)',
+                padding: '1rem 1.25rem',
+                borderRadius: '12px',
+                border: '1px solid var(--border-color)',
+                marginBottom: '1.25rem'
+              }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                  Teaching Methodology & Bio
+                </div>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)', lineHeight: '1.6' }}>
+                  "{tutorProfile.bio_and_custom_notes}"
+                </p>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', fontSize: '0.85rem', color: 'var(--text-secondary)', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)' }}>
+              <span>Phone: <strong style={{ color: 'var(--text-primary)' }}>{tutorProfile.phone || '—'}</strong></span>
+              <span>Email: <strong style={{ color: 'var(--text-primary)' }}>{tutorProfile.email || '—'}</strong></span>
+              <span>Available Days: <strong style={{ color: 'var(--text-primary)' }}>Monday to Saturday</strong></span>
+            </div>
+          </div>
+
+          {/* Assigned Students Roster */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.2rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                  Assigned Students Roster
+                </h2>
+                <p style={{ margin: '4px 0 0', fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
+                  Home tuition learners currently mapped to your teaching profile:
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {assignedStudents.map((stud, idx) => (
                 <div
                   key={stud.id || idx}
@@ -686,176 +712,522 @@ export default function TutorDashboard() {
                     border: '1px solid var(--border-color)',
                     borderRadius: '16px',
                     padding: '1.5rem',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.03)'
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '1.2rem'
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                    <div>
-                      <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 2px' }}>
-                        {stud.student_name}
-                      </h3>
-                      <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                        Parent: {stud.parent_name} • {stud.class_level} ({stud.school_medium})
-                      </div>
-                    </div>
-                    <span style={{
-                      padding: '4px 10px',
-                      borderRadius: '999px',
-                      background: 'rgba(16, 185, 129, 0.1)',
-                      color: '#10b981',
-                      fontSize: '0.75rem',
-                      fontWeight: 700
-                    }}>
-                      {stud.fee_status || 'PAID'}
-                    </span>
-                  </div>
-
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '1.2rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <MapPin size={14} /> {stud.address || 'Line Bazar, Purnia'}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Phone size={14} /> {stud.phone}
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setShowReportModal(true)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 14px',
-                      borderRadius: '8px',
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <div style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '12px',
                       background: 'rgba(37, 99, 235, 0.08)',
-                      border: '1px solid rgba(37, 99, 235, 0.2)',
                       color: 'var(--primary)',
-                      fontWeight: 700,
-                      fontSize: '0.85rem',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '6px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <FileSpreadsheet size={15} /> Log Monthly Progress Report
-                  </button>
+                      fontSize: '1.2rem',
+                      fontWeight: 800
+                    }}>
+                      {stud.student_name?.charAt(0) || 'S'}
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 3px' }}>
+                        {stud.student_name}
+                      </h3>
+                      <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <span>{stud.class_level || 'Class 9'}</span>
+                        <span>•</span>
+                        <span>{stud.school_medium || 'Hindi Medium'}</span>
+                        <span>•</span>
+                        <span>Parent: {stud.parent_name || 'Guardian'}</span>
+                        <span>•</span>
+                        <span>Locality: {stud.address || 'Purnia'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReportData(prev => ({ ...prev, student_name: stud.student_name }));
+                        setShowReportModal(true);
+                      }}
+                      style={{
+                        padding: '9px 15px',
+                        borderRadius: '8px',
+                        background: '#059669',
+                        color: '#ffffff',
+                        border: 'none',
+                        fontSize: '0.84rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <FileSpreadsheet size={15} /> Submit Report
+                    </button>
+
+                    <a
+                      href={`tel:${stud.phone || '+919811122334'}`}
+                      style={{
+                        padding: '9px 14px',
+                        borderRadius: '8px',
+                        background: 'var(--bg-primary)',
+                        border: '1px solid var(--border-color)',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.84rem',
+                        fontWeight: 600,
+                        textDecoration: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <Phone size={14} /> Call Parent
+                    </a>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Submit Monthly Report Modal */}
-          {showReportModal && (
-            <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'rgba(0, 0, 0, 0.6)',
-              backdropFilter: 'blur(6px)',
-              zIndex: 999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '1rem'
-            }}>
-              <div style={{
-                background: 'var(--card-bg)',
-                borderRadius: '20px',
-                padding: '2rem',
-                maxWidth: '560px',
-                width: '100%',
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.25)'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
-                  <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                    Log Monthly Progress Report
-                  </h3>
-                  <button
-                    onClick={() => setShowReportModal(false)}
-                    style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--text-secondary)' }}
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <form onSubmit={handleCreateReport} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '4px' }}>
-                        Reporting Month
-                      </label>
-                      <input
-                        type="text"
-                        value={reportData.report_month}
-                        onChange={(e) => setReportData({ ...reportData, report_month: e.target.value })}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)' }}
-                      />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '4px' }}>
-                        Attendance %
-                      </label>
-                      <input
-                        type="number"
-                        value={reportData.attendance_pct}
-                        onChange={(e) => setReportData({ ...reportData, attendance_pct: Number(e.target.value) })}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)' }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '4px' }}>
-                      Syllabus & Chapters Covered
-                    </label>
-                    <textarea
-                      rows={2}
-                      value={reportData.syllabus}
-                      onChange={(e) => setReportData({ ...reportData, syllabus: e.target.value })}
-                      style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', fontFamily: 'inherit' }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '4px' }}>
-                      Teacher Remarks & Feedback for Parents
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={reportData.remarks}
-                      onChange={(e) => setReportData({ ...reportData, remarks: e.target.value })}
-                      style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', fontFamily: 'inherit' }}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '0.5rem' }}>
-                    <button
-                      type="button"
-                      onClick={() => setShowReportModal(false)}
-                      style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'none', cursor: 'pointer', fontWeight: 600 }}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submittingReport}
-                      style={{ flex: 2, padding: '10px', borderRadius: '8px', background: 'var(--primary)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 700 }}
-                    >
-                      {submittingReport ? 'Submitting...' : 'Save & Publish Report'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
         </div>
       </main>
+
+      {/* Edit Profile Modal */}
+      {showEditModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(6px)',
+          zIndex: 999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: 'var(--card-bg)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '18px',
+            width: '100%',
+            maxWidth: '620px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            padding: '2rem',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.25)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Edit3 size={18} color="#059669" /> Edit Profile Details
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowEditModal(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Harshit Patel"
+                  value={editForm.full_name}
+                  onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
+                  className="form-input"
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.9rem'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                    College / Institution
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. PCE PURNIA"
+                    value={editForm.college}
+                    onChange={(e) => setEditForm({ ...editForm, college: e.target.value })}
+                    className="form-input"
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-color)',
+                      background: 'var(--bg-primary)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.9rem'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                    Degree & CGPA
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. B.Tech 3rd sem (7.2 CGPA)"
+                    value={editForm.degree_status}
+                    onChange={(e) => setEditForm({ ...editForm, degree_status: e.target.value })}
+                    className="form-input"
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-color)',
+                      background: 'var(--bg-primary)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.9rem'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                    Teaching Experience
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 3+ years experience"
+                    value={editForm.experience_years}
+                    onChange={(e) => setEditForm({ ...editForm, experience_years: e.target.value })}
+                    className="form-input"
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-color)',
+                      background: 'var(--bg-primary)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.9rem'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                    Medium Preference
+                  </label>
+                  <select
+                    value={editForm.medium_preference}
+                    onChange={(e) => setEditForm({ ...editForm, medium_preference: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-color)',
+                      background: 'var(--bg-primary)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.9rem'
+                    }}
+                  >
+                    <option value="Hindi medium only">Hindi medium only</option>
+                    <option value="English medium only">English medium only</option>
+                    <option value="Bilingual (Hindi + English)">Bilingual (Hindi + English)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                  Primary Subjects Handled
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Mathematics, Science"
+                  value={editForm.subjects}
+                  onChange={(e) => setEditForm({ ...editForm, subjects: e.target.value })}
+                  className="form-input"
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.9rem'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                  Bio & Custom Notes
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="Describe your teaching approach..."
+                  value={editForm.bio_and_custom_notes}
+                  onChange={(e) => setEditForm({ ...editForm, bio_and_custom_notes: e.target.value })}
+                  className="form-input"
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.9rem',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  style={{
+                    padding: '10px 16px',
+                    borderRadius: '8px',
+                    background: 'none',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-secondary)',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    background: '#059669',
+                    color: '#ffffff',
+                    border: 'none',
+                    fontWeight: 700,
+                    cursor: saving ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Submit Report Modal */}
+      {showReportModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(6px)',
+          zIndex: 999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: 'var(--card-bg)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '18px',
+            width: '100%',
+            maxWidth: '560px',
+            padding: '2rem',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.25)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                  Monthly Academic Progress Report
+                </h3>
+                <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                  Student: {reportData.student_name}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowReportModal(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateReport} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                    Report Month
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. October 2026"
+                    value={reportData.report_month}
+                    onChange={(e) => setReportData({ ...reportData, report_month: e.target.value })}
+                    className="form-input"
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-color)',
+                      background: 'var(--bg-primary)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.9rem'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                    Classes Conducted (out of 12)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="16"
+                    value={reportData.classes_conducted}
+                    onChange={(e) => setReportData({ ...reportData, classes_conducted: Number(e.target.value) })}
+                    className="form-input"
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-color)',
+                      background: 'var(--bg-primary)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.9rem'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                  Syllabus Covered & Chapters Completed
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Quadratic Equations, Work & Energy"
+                  value={reportData.syllabus}
+                  onChange={(e) => setReportData({ ...reportData, syllabus: e.target.value })}
+                  className="form-input"
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.9rem'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                  Educator Observations & Next Focus
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  placeholder="Enter specific progress observations, areas for improvement, and test feedback..."
+                  value={reportData.remarks}
+                  onChange={(e) => setReportData({ ...reportData, remarks: e.target.value })}
+                  className="form-input"
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.9rem',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowReportModal(false)}
+                  style={{
+                    padding: '10px 16px',
+                    borderRadius: '8px',
+                    background: 'none',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-secondary)',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingReport}
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    background: '#059669',
+                    color: '#ffffff',
+                    border: 'none',
+                    fontWeight: 700,
+                    cursor: submittingReport ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {submittingReport ? 'Submitting...' : 'Submit Report'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <style jsx global>{`
+        .form-input::placeholder {
+          color: var(--text-tertiary, #94a3b8) !important;
+          opacity: 0.75 !important;
+        }
+      `}</style>
+
       <Footer />
     </>
   );

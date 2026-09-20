@@ -8,7 +8,6 @@ import {
   BookOpen, 
   ShieldCheck, 
   ArrowRight, 
-  Sparkles, 
   User, 
   Mail, 
   Lock, 
@@ -18,12 +17,15 @@ import {
   Eye,
   EyeOff,
   Send,
-  KeyRound,
   UserPlus,
   LogIn,
   Zap,
-  HelpCircle,
-  Database
+  Building2,
+  Award,
+  Clock,
+  Languages,
+  BookMarked,
+  MapPin
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -41,32 +43,44 @@ export default function LoginPage() {
     user 
   } = useAuth();
 
-  // Active Tab: Sign In, Sign Up, Magic Link
+  // Active Tab
   const [activeTab, setActiveTab] = useState<AuthTab>('signin');
-  
-  // Role selector for sign up / role context
-  const [selectedRole, setSelectedRole] = useState<UserRole>('student_parent');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('teacher');
 
-  // Form Fields
+  // Common Fields (Initialized to empty strings, NO pre-filled values!)
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // States
+  // Teacher Registration Fields (Fresh, clean empty strings)
+  const [college, setCollege] = useState('');
+  const [degreeStatus, setDegreeStatus] = useState('');
+  const [experienceYears, setExperienceYears] = useState('');
+  const [mediumPreference, setMediumPreference] = useState('Hindi medium only');
+  const [subjects, setSubjects] = useState('');
+  const [bio, setBio] = useState('');
+
+  // Student / Parent Registration Fields
+  const [parentName, setParentName] = useState('');
+  const [classLevel, setClassLevel] = useState('Class 9');
+  const [board, setBoard] = useState('CBSE');
+  const [schoolMedium, setSchoolMedium] = useState('Hindi Medium');
+  const [address, setAddress] = useState('');
+
+  // Status & Feedback States
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [emailConfirmationRequired, setEmailConfirmationRequired] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [resetEmailSent, setResetEmailSent] = useState(false);
 
   // Handle Sign In (Email + Password)
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      setErrorMsg('Please enter both your email address and password.');
+    if (!email.trim() || !password) {
+      setErrorMsg('Please enter your email and password.');
       return;
     }
 
@@ -82,23 +96,23 @@ export default function LoginPage() {
     } else {
       if (res.requiresEmailConfirmation) {
         setEmailConfirmationRequired(true);
-        setErrorMsg(res.error || 'Email not confirmed yet.');
+        setErrorMsg(res.error || 'Email verification is pending.');
       } else {
-        setErrorMsg(res.error || 'Failed to sign in. Please check your credentials.');
+        setErrorMsg(res.error || 'Failed to sign in. Please verify your email and password.');
       }
     }
     setIsSubmitting(false);
   };
 
-  // Handle Sign Up (Register New Account)
+  // Handle Comprehensive Registration
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || !fullName) {
-      setErrorMsg('Please enter your full name, email, and a secure password.');
+    if (!fullName.trim() || !email.trim() || !password) {
+      setErrorMsg('Please enter your full name, email, and password.');
       return;
     }
     if (password.length < 6) {
-      setErrorMsg('Password must be at least 6 characters long.');
+      setErrorMsg('Password must be at least 6 characters.');
       return;
     }
 
@@ -110,18 +124,29 @@ export default function LoginPage() {
     const res = await signUp(email, password, {
       fullName: fullName.trim(),
       phone: phoneNumber.trim(),
-      role: selectedRole
+      role: selectedRole,
+      college: college.trim(),
+      degreeStatus: degreeStatus.trim(),
+      experienceYears: experienceYears.trim(),
+      mediumPreference,
+      subjects: subjects.trim(),
+      bio: bio.trim(),
+      parentName: parentName.trim(),
+      classLevel,
+      board,
+      schoolMedium,
+      address: address.trim()
     });
 
     if (res.success) {
       if (res.confirmationSent) {
         setEmailConfirmationRequired(true);
-        setSuccessMsg(`Account created in Supabase! A verification email has been sent to ${email}. Please confirm your email to activate.`);
+        setSuccessMsg(`Registration successful! A verification link has been sent to ${email}. You can also use the Instant Demo below to test.`);
       } else {
-        setSuccessMsg('Account created & profile registered in Supabase! Redirecting...');
+        setSuccessMsg('Account and complete profile registered successfully! Redirecting...');
       }
     } else {
-      setErrorMsg(res.error || 'Registration failed. Please try again.');
+      setErrorMsg(res.error || 'Registration failed. Please check your inputs and try again.');
     }
     setIsSubmitting(false);
   };
@@ -129,7 +154,7 @@ export default function LoginPage() {
   // Handle Magic Link (OTP)
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) {
+    if (!email.trim()) {
       setErrorMsg('Please enter your email address.');
       return;
     }
@@ -140,9 +165,9 @@ export default function LoginPage() {
 
     const res = await signInWithOtp(email);
     if (res.success) {
-      setSuccessMsg(`Magic login link dispatched! Check your email (${email}) to log in instantly.`);
+      setSuccessMsg(`Login link sent to ${email}! Check your inbox to sign in instantly.`);
     } else {
-      setErrorMsg(res.error || 'Failed to send login link. Please try demo login or password login.');
+      setErrorMsg(res.error || 'Failed to send login link.');
     }
     setIsSubmitting(false);
   };
@@ -150,8 +175,8 @@ export default function LoginPage() {
   // Handle Forgot Password
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) {
-      setErrorMsg('Please enter your email address above to receive password reset instructions.');
+    if (!email.trim()) {
+      setErrorMsg('Please enter your email address above to receive reset instructions.');
       return;
     }
 
@@ -159,7 +184,6 @@ export default function LoginPage() {
     setErrorMsg('');
     const res = await resetPassword(email);
     if (res.success) {
-      setResetEmailSent(true);
       setSuccessMsg(`Password reset instructions sent to ${email}.`);
     } else {
       setErrorMsg(res.error || 'Failed to send password reset email.');
@@ -167,44 +191,33 @@ export default function LoginPage() {
     setIsSubmitting(false);
   };
 
-  // 1-Click Instant Demo Login
-  const handleDemoLogin = (role: UserRole) => {
-    loginAs(role);
-  };
-
-  const roleDetails = {
+  const roleInfo = {
+    teacher: {
+      title: 'Teacher & Tutor Portal',
+      subtitle: 'शिक्षक एवं ट्यूटर रजिस्ट्रेशन',
+      icon: BookOpen,
+      badge: 'Accredited Tutor',
+      color: '#059669',
+      demoUser: DEMO_USERS.teacher,
+      demoName: 'Harshit Patel'
+    },
     student_parent: {
       title: 'Student & Parent Portal',
       subtitle: 'छात्र एवं अभिभावक लॉगिन',
       icon: GraduationCap,
       badge: 'Learner / Guardian',
-      accentColor: '#2563eb',
-      lightBg: 'rgba(37, 99, 235, 0.08)',
-      borderColor: 'rgba(37, 99, 235, 0.25)',
-      description: 'Access diagnostic assessment marks (88%), scheduled tutor visits, fee payment receipts, and monthly performance report cards.',
-      demoUser: DEMO_USERS.student_parent
-    },
-    teacher: {
-      title: 'Teacher & Tutor Workspace',
-      subtitle: 'शिक्षक एवं ट्यूटर पोर्टल',
-      icon: BookOpen,
-      badge: 'Accredited Tutor',
-      accentColor: '#10b981',
-      lightBg: 'rgba(16, 185, 129, 0.08)',
-      borderColor: 'rgba(16, 185, 129, 0.25)',
-      description: 'Live profile management (PCE Purnia, 7.2 CGPA, Hindi medium preference), assigned student roster, and monthly academic report filing.',
-      demoUser: DEMO_USERS.teacher
+      color: '#2563eb',
+      demoUser: DEMO_USERS.student_parent,
+      demoName: 'Aaryan Sharma'
     },
     admin: {
-      title: 'Horizon Master Admin',
-      subtitle: 'प्रशासक एवं डेवलपर कंट्रोल',
+      title: 'Horizon Administration',
+      subtitle: 'प्रशासक एवं कोऑर्डिनेटर कंट्रोल',
       icon: ShieldCheck,
       badge: 'Super Admin',
-      accentColor: '#7c3aed',
-      lightBg: 'rgba(124, 58, 237, 0.08)',
-      borderColor: 'rgba(124, 58, 237, 0.25)',
-      description: 'Full supervisory controls: teacher-student matching engine, diagnostic test scheduling, fee ledger tracking, and database synchronization.',
-      demoUser: DEMO_USERS.admin
+      color: '#7c3aed',
+      demoUser: DEMO_USERS.admin,
+      demoName: 'Horizon Admin'
     }
   };
 
@@ -213,10 +226,10 @@ export default function LoginPage() {
       <Navbar />
       <main style={{
         minHeight: '90vh',
-        background: 'radial-gradient(ellipse at top, rgba(37, 99, 235, 0.06), transparent 70%), var(--bg-primary)',
+        background: 'radial-gradient(ellipse at top, rgba(37, 99, 235, 0.05), transparent 70%), var(--bg-primary)',
         padding: '3rem 1rem 5rem'
       }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
           
           {/* Header Banner */}
           <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
@@ -229,89 +242,90 @@ export default function LoginPage() {
               background: 'rgba(37, 99, 235, 0.08)',
               border: '1px solid rgba(37, 99, 235, 0.2)',
               color: 'var(--primary)',
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              marginBottom: '1rem'
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              marginBottom: '0.9rem',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase'
             }}>
-              <Database size={15} /> Supabase PostgreSQL Cloud Authentication
+              <ShieldCheck size={15} /> Official Academic Portal
             </div>
             <h1 style={{
-              fontSize: 'clamp(1.85rem, 4vw, 2.7rem)',
+              fontSize: 'clamp(1.85rem, 4vw, 2.75rem)',
               fontWeight: 800,
               color: 'var(--text-primary)',
               marginBottom: '0.5rem',
               letterSpacing: '-0.02em'
             }}>
-              Welcome to HORIZON Portal
+              HORIZON Home Tuition Portal
             </h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', maxWidth: '640px', margin: '0 auto' }}>
-              Sign in or create your account to access student diagnostic progress, tutor verification, and personalized home tuition workspaces.
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.02rem', maxWidth: '620px', margin: '0 auto', lineHeight: '1.6' }}>
+              Sign in to manage your student diagnostic records, tutor accreditation, weekly sessions, and academic progress reports.
             </p>
           </div>
 
-          {/* Already Logged In Quick Notice */}
+          {/* Active Session Notice */}
           {user && (
             <div style={{
-              background: 'rgba(16, 185, 129, 0.1)',
+              background: 'var(--card-bg)',
               border: '1px solid rgba(16, 185, 129, 0.3)',
               borderRadius: '14px',
-              padding: '1rem 1.5rem',
+              padding: '1rem 1.4rem',
               marginBottom: '2rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               flexWrap: 'wrap',
-              gap: '1rem'
+              gap: '1rem',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.03)'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <CheckCircle2 size={20} color="#10b981" />
                 <div>
                   <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>
-                    Currently logged in as: <span style={{ color: '#10b981' }}>{user.name}</span> ({user.role})
+                    Active Session: <span style={{ color: '#059669' }}>{user.name}</span> ({user.role === 'teacher' ? 'Tutor' : user.role === 'admin' ? 'Admin' : 'Student/Parent'})
                   </div>
                   <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                    {user.email} {user.isDemo && '• [Demo Session]'}
+                    {user.email} {user.isDemo && '• [Test Session]'}
                   </div>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <Link
-                  href={user.role === 'teacher' ? '/tutor-dashboard' : user.role === 'admin' ? '/admin' : '/student-dashboard'}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    background: 'var(--primary)',
-                    color: '#ffffff',
-                    fontWeight: 600,
-                    fontSize: '0.85rem',
-                    textDecoration: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <span>Go to My Dashboard</span>
-                  <ArrowRight size={15} />
-                </Link>
-              </div>
+              <Link
+                href={user.role === 'teacher' ? '/tutor-dashboard' : user.role === 'admin' ? '/admin' : '/student-dashboard'}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  background: 'var(--primary)',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span>Go to Dashboard</span>
+                <ArrowRight size={15} />
+              </Link>
             </div>
           )}
 
-          {/* Main Grid: Form Container + Instant Demo Sandbox */}
+          {/* Main Grid: Authentication Area & Quick Demo Access */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-            gap: '2rem',
+            gap: '2.2rem',
             alignItems: 'start'
           }}>
 
-            {/* Left Card: Supabase Auth Forms (Sign In, Sign Up, Magic Link) */}
+            {/* Left Card: Core Authentication Tabs */}
             <div style={{
               background: 'var(--card-bg)',
               border: '1px solid var(--border-color)',
               borderRadius: '20px',
-              padding: '2rem',
-              boxShadow: '0 12px 36px rgba(0,0,0,0.04)'
+              padding: '2.2rem',
+              boxShadow: '0 10px 32px rgba(0,0,0,0.04)'
             }}>
               
               {/* Tab Selector */}
@@ -341,8 +355,7 @@ export default function LoginPage() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '6px',
-                    transition: 'all 0.15s ease'
+                    gap: '6px'
                   }}
                 >
                   <LogIn size={15} />
@@ -365,8 +378,7 @@ export default function LoginPage() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '6px',
-                    transition: 'all 0.15s ease'
+                    gap: '6px'
                   }}
                 >
                   <UserPlus size={15} />
@@ -389,8 +401,7 @@ export default function LoginPage() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '6px',
-                    transition: 'all 0.15s ease'
+                    gap: '6px'
                   }}
                 >
                   <Zap size={15} />
@@ -437,7 +448,6 @@ export default function LoginPage() {
                 </div>
               )}
 
-              {/* Email confirmation helper alert */}
               {emailConfirmationRequired && (
                 <div style={{
                   padding: '12px 14px',
@@ -449,12 +459,7 @@ export default function LoginPage() {
                   marginBottom: '1.25rem',
                   lineHeight: '1.5'
                 }}>
-                  <div style={{ fontWeight: 700, marginBottom: '4px' }}>
-                    💡 Pro-Tip for Instant Testing:
-                  </div>
-                  <div>
-                    Supabase sends a confirmation email to verify new accounts. If you want to test dashboards right now without checking email, simply use the <strong>1-Click Instant Demo Login</strong> cards on the right!
-                  </div>
+                  <strong>Verification Note:</strong> Please check your email inbox and click the confirmation link to activate your account. You can also explore instantly using the test demo role cards on the right.
                 </div>
               )}
 
@@ -470,9 +475,10 @@ export default function LoginPage() {
                       <input
                         type="email"
                         required
-                        placeholder="you@example.com"
+                        placeholder="e.g. yourname@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        className="form-input"
                         style={{
                           width: '100%',
                           padding: '11px 14px 11px 40px',
@@ -511,9 +517,10 @@ export default function LoginPage() {
                       <input
                         type={showPassword ? 'text' : 'password'}
                         required
-                        placeholder="••••••••"
+                        placeholder="Enter your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        className="form-input"
                         style={{
                           width: '100%',
                           padding: '11px 42px 11px 40px',
@@ -545,7 +552,6 @@ export default function LoginPage() {
                     </div>
                   </div>
 
-                  {/* Forgot Password Inline Trigger */}
                   {showForgotPassword && (
                     <div style={{
                       padding: '12px',
@@ -557,7 +563,7 @@ export default function LoginPage() {
                       gap: '8px'
                     }}>
                       <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                        Enter your email above and click below to receive a Supabase password reset link:
+                        Enter your email above and click below to receive a password reset link:
                       </div>
                       <button
                         type="button"
@@ -598,26 +604,47 @@ export default function LoginPage() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '8px',
-                      opacity: isSubmitting ? 0.7 : 1
+                      gap: '8px'
                     }}
                   >
                     <LogIn size={17} />
-                    <span>{isSubmitting ? 'Signing in with Supabase...' : 'Sign In to Portal'}</span>
+                    <span>{isSubmitting ? 'Signing in...' : 'Sign In to Portal'}</span>
                   </button>
                 </form>
               )}
 
-              {/* ==================== TAB 2: REGISTER / SIGN UP ==================== */}
+              {/* ==================== TAB 2: REGISTRATION ==================== */}
               {activeTab === 'signup' && (
-                <form onSubmit={handleSignUp} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <form onSubmit={handleSignUp} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
                   
-                  {/* Account Type Selection */}
+                  {/* Role Switcher */}
                   <div>
                     <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
                       Register As:
                     </label>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRole('teacher')}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '8px',
+                          border: selectedRole === 'teacher' ? '2px solid #059669' : '1px solid var(--border-color)',
+                          background: selectedRole === 'teacher' ? 'rgba(5, 150, 105, 0.08)' : 'var(--bg-primary)',
+                          color: 'var(--text-primary)',
+                          fontWeight: selectedRole === 'teacher' ? 700 : 500,
+                          fontSize: '0.85rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <BookOpen size={16} color="#059669" />
+                        <span>Teacher / Tutor</span>
+                      </button>
+
                       <button
                         type="button"
                         onClick={() => setSelectedRole('student_parent')}
@@ -639,149 +666,432 @@ export default function LoginPage() {
                         <GraduationCap size={16} color="#2563eb" />
                         <span>Student / Parent</span>
                       </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setSelectedRole('teacher')}
-                        style={{
-                          padding: '10px',
-                          borderRadius: '8px',
-                          border: selectedRole === 'teacher' ? '2px solid #10b981' : '1px solid var(--border-color)',
-                          background: selectedRole === 'teacher' ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-primary)',
-                          color: 'var(--text-primary)',
-                          fontWeight: selectedRole === 'teacher' ? 700 : 500,
-                          fontSize: '0.85rem',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '6px'
-                        }}
-                      >
-                        <BookOpen size={16} color="#10b981" />
-                        <span>Teacher / Tutor</span>
-                      </button>
                     </div>
                   </div>
 
-                  {/* Full Name */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '5px' }}>
-                      Full Name
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <User size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-                      <input
-                        type="text"
-                        required
-                        placeholder={selectedRole === 'student_parent' ? 'e.g. Ramesh Sharma' : 'e.g. Harshit Patel'}
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        style={{
-                          width: '100%',
-                          padding: '10px 14px 10px 40px',
-                          borderRadius: '10px',
-                          border: '1px solid var(--border-color)',
-                          background: 'var(--bg-primary)',
-                          color: 'var(--text-primary)',
-                          fontSize: '0.92rem'
-                        }}
-                      />
+                  {/* Common Basic Info */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.84rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '5px' }}>
+                        {selectedRole === 'teacher' ? 'Full Name' : 'Student Full Name'}
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <User size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                        <input
+                          type="text"
+                          required
+                          placeholder={selectedRole === 'teacher' ? 'e.g. Harshit Patel' : 'e.g. Aaryan Sharma'}
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          className="form-input"
+                          style={{
+                            width: '100%',
+                            padding: '9px 12px 9px 36px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border-color)',
+                            background: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.9rem'
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.84rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '5px' }}>
+                        WhatsApp / Contact Phone
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <Phone size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                        <input
+                          type="tel"
+                          required
+                          placeholder="e.g. +91 98765 43210"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          className="form-input"
+                          style={{
+                            width: '100%',
+                            padding: '9px 12px 9px 36px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border-color)',
+                            background: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.9rem'
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  {/* Phone Number */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '5px' }}>
-                      Phone / WhatsApp Number
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <Phone size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-                      <input
-                        type="tel"
-                        placeholder="+91 98765 43210"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        style={{
-                          width: '100%',
-                          padding: '10px 14px 10px 40px',
-                          borderRadius: '10px',
-                          border: '1px solid var(--border-color)',
-                          background: 'var(--bg-primary)',
-                          color: 'var(--text-primary)',
-                          fontSize: '0.92rem'
-                        }}
-                      />
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.84rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '5px' }}>
+                        Email Address
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <Mail size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                        <input
+                          type="email"
+                          required
+                          placeholder="e.g. yourname@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="form-input"
+                          style={{
+                            width: '100%',
+                            padding: '9px 12px 9px 36px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border-color)',
+                            background: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.9rem'
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.84rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '5px' }}>
+                        Password (min 6 characters)
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <Lock size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          required
+                          placeholder="Create a secure password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="form-input"
+                          style={{
+                            width: '100%',
+                            padding: '9px 38px 9px 36px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border-color)',
+                            background: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.9rem'
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          style={{
+                            position: 'absolute',
+                            right: '10px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--text-secondary)',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Email */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '5px' }}>
-                      Email Address
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <Mail size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-                      <input
-                        type="email"
-                        required
-                        placeholder="yourname@gmail.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        style={{
-                          width: '100%',
-                          padding: '10px 14px 10px 40px',
-                          borderRadius: '10px',
-                          border: '1px solid var(--border-color)',
-                          background: 'var(--bg-primary)',
-                          color: 'var(--text-primary)',
-                          fontSize: '0.92rem'
-                        }}
-                      />
-                    </div>
-                  </div>
+                  {/* Teacher Specific Comprehensive Registration Fields */}
+                  {selectedRole === 'teacher' && (
+                    <div style={{
+                      padding: '1.2rem',
+                      background: 'rgba(5, 150, 105, 0.04)',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(5, 150, 105, 0.2)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '1rem'
+                    }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Award size={16} /> Educator Qualification & Background
+                      </div>
 
-                  {/* Password */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '5px' }}>
-                      Password (min 6 characters)
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <Lock size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        required
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        style={{
-                          width: '100%',
-                          padding: '10px 42px 10px 40px',
-                          borderRadius: '10px',
-                          border: '1px solid var(--border-color)',
-                          background: 'var(--bg-primary)',
-                          color: 'var(--text-primary)',
-                          fontSize: '0.92rem'
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        style={{
-                          position: 'absolute',
-                          right: '12px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--text-secondary)',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                            College / Institution
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. PCE PURNIA / Delhi University"
+                            value={college}
+                            onChange={(e) => setCollege(e.target.value)}
+                            className="form-input"
+                            style={{
+                              width: '100%',
+                              padding: '8px 12px',
+                              borderRadius: '8px',
+                              border: '1px solid var(--border-color)',
+                              background: 'var(--bg-primary)',
+                              color: 'var(--text-primary)',
+                              fontSize: '0.88rem'
+                            }}
+                          />
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                            Degree, Semester & CGPA
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. B.Tech/BS: 3rd sem with 7.2 CGPA"
+                            value={degreeStatus}
+                            onChange={(e) => setDegreeStatus(e.target.value)}
+                            className="form-input"
+                            style={{
+                              width: '100%',
+                              padding: '8px 12px',
+                              borderRadius: '8px',
+                              border: '1px solid var(--border-color)',
+                              background: 'var(--bg-primary)',
+                              color: 'var(--text-primary)',
+                              fontSize: '0.88rem'
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                            Teaching Experience
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. 3+ years teaching experience"
+                            value={experienceYears}
+                            onChange={(e) => setExperienceYears(e.target.value)}
+                            className="form-input"
+                            style={{
+                              width: '100%',
+                              padding: '8px 12px',
+                              borderRadius: '8px',
+                              border: '1px solid var(--border-color)',
+                              background: 'var(--bg-primary)',
+                              color: 'var(--text-primary)',
+                              fontSize: '0.88rem'
+                            }}
+                          />
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                            Teaching Medium Comfort
+                          </label>
+                          <select
+                            value={mediumPreference}
+                            onChange={(e) => setMediumPreference(e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: '8px 12px',
+                              borderRadius: '8px',
+                              border: '1px solid var(--border-color)',
+                              background: 'var(--bg-primary)',
+                              color: 'var(--text-primary)',
+                              fontSize: '0.88rem'
+                            }}
+                          >
+                            <option value="Hindi medium only">Hindi medium only</option>
+                            <option value="English medium only">English medium only</option>
+                            <option value="Bilingual (Hindi + English)">Bilingual (Hindi + English)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                          Primary Subjects & Classes Handled
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Mathematics, Science (Classes 8 to 10)"
+                          value={subjects}
+                          onChange={(e) => setSubjects(e.target.value)}
+                          className="form-input"
+                          style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border-color)',
+                            background: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.88rem'
+                          }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                          Short Bio & Teaching Philosophy
+                        </label>
+                        <textarea
+                          rows={2}
+                          placeholder="Briefly describe your concept clarity method, past board exam results, etc."
+                          value={bio}
+                          onChange={(e) => setBio(e.target.value)}
+                          className="form-input"
+                          style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border-color)',
+                            background: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.88rem',
+                            resize: 'vertical'
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Student / Parent Specific Fields */}
+                  {selectedRole === 'student_parent' && (
+                    <div style={{
+                      padding: '1.2rem',
+                      background: 'rgba(37, 99, 235, 0.04)',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(37, 99, 235, 0.2)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '1rem'
+                    }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2563eb', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <GraduationCap size={16} /> Student Academic Information
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                            Parent / Guardian Name
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Ramesh Sharma"
+                            value={parentName}
+                            onChange={(e) => setParentName(e.target.value)}
+                            className="form-input"
+                            style={{
+                              width: '100%',
+                              padding: '8px 12px',
+                              borderRadius: '8px',
+                              border: '1px solid var(--border-color)',
+                              background: 'var(--bg-primary)',
+                              color: 'var(--text-primary)',
+                              fontSize: '0.88rem'
+                            }}
+                          />
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                            Residential Area / Locality
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Line Bazar, Purnia"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            className="form-input"
+                            style={{
+                              width: '100%',
+                              padding: '8px 12px',
+                              borderRadius: '8px',
+                              border: '1px solid var(--border-color)',
+                              background: 'var(--bg-primary)',
+                              color: 'var(--text-primary)',
+                              fontSize: '0.88rem'
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                            Class
+                          </label>
+                          <select
+                            value={classLevel}
+                            onChange={(e) => setClassLevel(e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              borderRadius: '8px',
+                              border: '1px solid var(--border-color)',
+                              background: 'var(--bg-primary)',
+                              color: 'var(--text-primary)',
+                              fontSize: '0.85rem'
+                            }}
+                          >
+                            <option value="Class 5">Class 5</option>
+                            <option value="Class 6">Class 6</option>
+                            <option value="Class 7">Class 7</option>
+                            <option value="Class 8">Class 8</option>
+                            <option value="Class 9">Class 9</option>
+                            <option value="Class 10">Class 10</option>
+                            <option value="Class 11">Class 11</option>
+                            <option value="Class 12">Class 12</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                            Board
+                          </label>
+                          <select
+                            value={board}
+                            onChange={(e) => setBoard(e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              borderRadius: '8px',
+                              border: '1px solid var(--border-color)',
+                              background: 'var(--bg-primary)',
+                              color: 'var(--text-primary)',
+                              fontSize: '0.85rem'
+                            }}
+                          >
+                            <option value="CBSE">CBSE</option>
+                            <option value="ICSE">ICSE</option>
+                            <option value="State Board">State Board (BSEB)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                            Medium
+                          </label>
+                          <select
+                            value={schoolMedium}
+                            onChange={(e) => setSchoolMedium(e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              borderRadius: '8px',
+                              border: '1px solid var(--border-color)',
+                              background: 'var(--bg-primary)',
+                              color: 'var(--text-primary)',
+                              fontSize: '0.85rem'
+                            }}
+                          >
+                            <option value="Hindi Medium">Hindi Medium</option>
+                            <option value="English Medium">English Medium</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <button
                     type="submit"
@@ -790,7 +1100,7 @@ export default function LoginPage() {
                       width: '100%',
                       padding: '12px 18px',
                       borderRadius: '10px',
-                      background: selectedRole === 'teacher' ? '#10b981' : 'var(--primary)',
+                      background: selectedRole === 'teacher' ? '#059669' : 'var(--primary)',
                       color: '#ffffff',
                       border: 'none',
                       fontWeight: 700,
@@ -805,16 +1115,22 @@ export default function LoginPage() {
                     }}
                   >
                     <UserPlus size={17} />
-                    <span>{isSubmitting ? 'Registering with Supabase...' : `Register as ${selectedRole === 'teacher' ? 'Teacher' : 'Student/Parent'}`}</span>
+                    <span>
+                      {isSubmitting 
+                        ? 'Creating Account...' 
+                        : selectedRole === 'teacher' 
+                          ? 'Register as Accredited Tutor' 
+                          : 'Register Student & Book Assessment'}
+                    </span>
                   </button>
                 </form>
               )}
 
-              {/* ==================== TAB 3: MAGIC LINK / OTP ==================== */}
+              {/* ==================== TAB 3: MAGIC LINK ==================== */}
               {activeTab === 'magiclink' && (
                 <form onSubmit={handleMagicLink} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
                   <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                    No password required. We'll send a secure one-click sign-in link via Supabase Auth directly to your email.
+                    Sign in without entering a password. We will send a secure one-click link to your email address.
                   </div>
 
                   <div>
@@ -826,9 +1142,10 @@ export default function LoginPage() {
                       <input
                         type="email"
                         required
-                        placeholder="you@example.com"
+                        placeholder="e.g. you@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        className="form-input"
                         style={{
                           width: '100%',
                           padding: '11px 14px 11px 40px',
@@ -864,7 +1181,7 @@ export default function LoginPage() {
                     }}
                   >
                     <Send size={16} />
-                    <span>{isSubmitting ? 'Sending Magic Link...' : 'Send Magic Link to Email'}</span>
+                    <span>{isSubmitting ? 'Sending link...' : 'Send Magic Link to Email'}</span>
                   </button>
                 </form>
               )}
@@ -890,73 +1207,68 @@ export default function LoginPage() {
 
             </div>
 
-            {/* Right Column: 1-Click Instant Demo Sandbox (for Judges / Evaluators) */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* Right Column: Instant Role Demo Access (Clean & Executive) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
               
-              {/* Sandbox Intro Badge */}
               <div style={{
-                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(37, 99, 235, 0.08))',
-                border: '1px solid rgba(245, 158, 11, 0.3)',
+                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(37, 99, 235, 0.05))',
+                border: '1px solid rgba(245, 158, 11, 0.25)',
                 borderRadius: '16px',
-                padding: '1.25rem 1.5rem',
+                padding: '1.2rem 1.4rem',
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: '12px'
               }}>
-                <Zap size={22} color="#f59e0b" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <Zap size={20} color="#f59e0b" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <div>
-                  <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                    1-Click Instant Sandbox Access
+                  <h3 style={{ fontSize: '0.98rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '3px' }}>
+                    1-Click Instant Role Sandbox
                   </h3>
                   <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: '1.5', margin: 0 }}>
-                    Instant testing accounts pre-configured with full data in Supabase. Click any role below to test the corresponding live dashboard immediately:
+                    For instant review and testing. Click any role below to launch the live dashboard directly:
                   </p>
                 </div>
               </div>
 
-              {/* Demo Role Cards */}
-              {(['student_parent', 'teacher', 'admin'] as UserRole[]).map((r) => {
-                const cfg = roleDetails[r];
-                const Icon = cfg.icon;
+              {/* Role Cards */}
+              {(['teacher', 'student_parent', 'admin'] as UserRole[]).map((r) => {
+                const info = roleInfo[r];
+                const Icon = info.icon;
 
                 return (
                   <div
                     key={r}
                     style={{
                       background: 'var(--card-bg)',
-                      border: `1px solid ${cfg.borderColor}`,
+                      border: '1px solid var(--border-color)',
                       borderRadius: '16px',
-                      padding: '1.4rem',
-                      boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
-                      transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-                      position: 'relative'
+                      padding: '1.3rem',
+                      boxShadow: '0 4px 14px rgba(0,0,0,0.02)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.8rem'
                     }}
                   >
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginBottom: '0.75rem'
-                    }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{
-                          width: '38px',
-                          height: '38px',
-                          borderRadius: '10px',
-                          background: cfg.lightBg,
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: '9px',
+                          background: `${info.color}15`,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: cfg.accentColor
+                          color: info.color
                         }}>
-                          <Icon size={20} />
+                          <Icon size={19} />
                         </div>
                         <div>
-                          <h4 style={{ fontSize: '1.02rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                            {cfg.title}
+                          <h4 style={{ fontSize: '0.98rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                            {info.title}
                           </h4>
                           <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                            {cfg.subtitle}
+                            {info.subtitle}
                           </span>
                         </div>
                       </div>
@@ -966,55 +1278,49 @@ export default function LoginPage() {
                         fontWeight: 700,
                         padding: '3px 8px',
                         borderRadius: '6px',
-                        background: cfg.lightBg,
-                        color: cfg.accentColor
+                        background: `${info.color}15`,
+                        color: info.color
                       }}>
-                        {cfg.badge}
+                        {info.badge}
                       </span>
                     </div>
 
-                    <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: '1.5', marginBottom: '1rem' }}>
-                      {cfg.description}
-                    </p>
-
                     <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
                       background: 'var(--bg-primary)',
                       padding: '8px 12px',
                       borderRadius: '8px',
-                      marginBottom: '1rem',
-                      fontSize: '0.78rem',
-                      color: 'var(--text-secondary)'
+                      fontSize: '0.82rem',
+                      color: 'var(--text-secondary)',
+                      display: 'flex',
+                      justifyContent: 'space-between'
                     }}>
-                      <span>Demo Account:</span>
-                      <strong style={{ color: 'var(--text-primary)' }}>{cfg.demoUser.name.split(' (')[0]}</strong>
+                      <span>Demo Profile:</span>
+                      <strong style={{ color: 'var(--text-primary)' }}>{info.demoName}</strong>
                     </div>
 
                     <button
                       type="button"
-                      onClick={() => handleDemoLogin(r)}
+                      onClick={() => loginAs(r)}
                       disabled={authLoading}
                       style={{
                         width: '100%',
                         padding: '10px 14px',
-                        borderRadius: '10px',
-                        background: cfg.accentColor,
+                        borderRadius: '9px',
+                        background: info.color,
                         color: '#ffffff',
                         border: 'none',
                         fontWeight: 700,
-                        fontSize: '0.88rem',
+                        fontSize: '0.86rem',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: '8px',
-                        boxShadow: `0 4px 12px ${cfg.accentColor}33`
+                        gap: '6px',
+                        boxShadow: `0 3px 10px ${info.color}30`
                       }}
                     >
-                      <span>Launch as {cfg.demoUser.name.split(' ')[0]}</span>
-                      <ArrowRight size={16} />
+                      <span>Launch as {info.demoName}</span>
+                      <ArrowRight size={15} />
                     </button>
                   </div>
                 );
@@ -1026,6 +1332,14 @@ export default function LoginPage() {
 
         </div>
       </main>
+
+      <style jsx global>{`
+        .form-input::placeholder {
+          color: var(--text-tertiary, #94a3b8) !important;
+          opacity: 0.8 !important;
+        }
+      `}</style>
+
       <Footer />
     </>
   );

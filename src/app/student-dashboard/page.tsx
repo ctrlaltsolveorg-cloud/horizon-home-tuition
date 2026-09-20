@@ -52,13 +52,41 @@ export default function StudentDashboard() {
     async function loadData() {
       setLoading(true);
       try {
-        // Fetch student enquiry
-        const { data: enquiryData } = await supabase
-          .from('student_enquiries')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        // Fetch student enquiry matching logged-in user
+        let enquiryData = null;
+        if (user?.id) {
+          const { data } = await supabase
+            .from('student_enquiries')
+            .select('*')
+            .or(`student_id.eq.${user.id},email.eq.${user.email}`)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          enquiryData = data;
+        }
+
+        if (!enquiryData && !user?.isDemo && user?.email) {
+          // If real user registered, use their user metadata
+          const meta = user.profileData || {};
+          enquiryData = {
+            id: user.id,
+            student_name: user.name,
+            parent_name: meta.parent_name || 'Parent / Guardian',
+            phone: user.phone || meta.phone || '',
+            email: user.email,
+            class_level: meta.class_level || 'Class 9',
+            board: meta.board || 'CBSE',
+            school_medium: meta.school_medium || 'Hindi Medium',
+            address: meta.address || 'Purnia',
+            enquiry_date: new Date().toISOString(),
+            test_scheduled_date: new Date(Date.now() + 2 * 86400000).toISOString(),
+            test_status: 'Assessment Scheduled',
+            test_score: 'Evaluation in progress',
+            test_remarks: 'Baseline diagnostic assessment is scheduled with our academic counselor.',
+            fee_status: 'pending',
+            fee_amount: 4500
+          };
+        }
 
         // Fetch assigned teacher
         const { data: tutorData } = await supabase

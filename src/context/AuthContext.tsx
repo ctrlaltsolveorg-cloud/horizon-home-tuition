@@ -14,7 +14,31 @@ export interface AuthUser {
   role: UserRole;
   phone?: string;
   avatar_url?: string;
+  profileData?: any;
   isDemo?: boolean;
+}
+
+export interface TeacherExtraData {
+  college?: string;
+  degreeStatus?: string;
+  experienceYears?: string;
+  mediumPreference?: string;
+  subjects?: string;
+  bio?: string;
+}
+
+export interface StudentExtraData {
+  parentName?: string;
+  classLevel?: string;
+  board?: string;
+  schoolMedium?: string;
+  address?: string;
+}
+
+export interface SignUpMetadata extends TeacherExtraData, StudentExtraData {
+  fullName: string;
+  phone?: string;
+  role: UserRole;
 }
 
 export interface AuthResponse {
@@ -30,7 +54,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signInWithPassword: (email: string, password: string) => Promise<AuthResponse>;
-  signUp: (email: string, password: string, metadata: { fullName: string; phone?: string; role: UserRole }) => Promise<AuthResponse>;
+  signUp: (email: string, password: string, metadata: SignUpMetadata) => Promise<AuthResponse>;
   signInWithOtp: (email: string) => Promise<AuthResponse>;
   resetPassword: (email: string) => Promise<AuthResponse>;
   loginAs: (role: UserRole, customEmail?: string) => Promise<void>;
@@ -56,6 +80,14 @@ export const DEMO_USERS: Record<UserRole, AuthUser> = {
     email: 'harshit.patel@horizon.edu',
     role: 'teacher',
     phone: '+91 98765 43210',
+    profileData: {
+      college: 'PCE PURNIA',
+      degree_status: 'B.Tech/BS: 3rd sem with 7.2 CGPA',
+      experience_years: '3+ years teaching experience',
+      medium_preference: 'Hindi medium only',
+      subjects: 'Mathematics, Science, Foundation Physics',
+      bio_and_custom_notes: 'Dedicated home tutor from PCE Purnia. Specialized in CBSE and Bihar State Board Hindi-medium students.'
+    },
     isDemo: true
   },
   admin: {
@@ -87,11 +119,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       role: (profile?.role as UserRole) || fallbackRole,
       phone: profile?.phone || meta.phone || '',
       avatar_url: profile?.avatar_url || meta.avatar_url || '',
+      profileData: meta,
       isDemo: false
     };
   };
 
-  // Helper: fetch profile from Supabase profiles table
+  // Helper: fetch profile from profiles table
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
     try {
       const { data, error } = await supabase
@@ -100,39 +133,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', userId)
         .maybeSingle();
 
-      if (error) {
-        console.warn('Could not query profiles table:', error.message);
-        return null;
-      }
+      if (error) return null;
       return data as Profile;
-    } catch (e) {
-      console.warn('fetchProfile error:', e);
+    } catch {
       return null;
-    }
-  };
-
-  // Helper: ensure profile row exists in Supabase
-  const syncProfile = async (sbUser: User, role?: UserRole, fullName?: string, phone?: string) => {
-    try {
-      const existing = await fetchProfile(sbUser.id);
-      if (!existing) {
-        const meta = sbUser.user_metadata || {};
-        const newProfile: Partial<Profile> = {
-          id: sbUser.id,
-          email: sbUser.email || '',
-          role: role || meta.role || 'student_parent',
-          full_name: fullName || meta.full_name || sbUser.email?.split('@')[0] || 'User',
-          phone: phone || meta.phone || '',
-          updated_at: new Date().toISOString()
-        };
-
-        const { error } = await supabase.from('profiles').upsert(newProfile);
-        if (error) {
-          console.warn('syncProfile upsert error:', error.message);
-        }
-      }
-    } catch (e) {
-      console.warn('syncProfile error:', e);
     }
   };
 
@@ -142,7 +146,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     async function initAuth() {
       try {
-        // 1. Check active Supabase session
         const { data: { session: currentSession } } = await supabase.auth.getSession();
 
         if (currentSession?.user) {
@@ -156,7 +159,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        // 2. Check saved session (including demo users) in localStorage
         const savedUserStr = localStorage.getItem('horizon_auth_user');
         if (savedUserStr) {
           try {
@@ -164,12 +166,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (mounted) {
               setUser(savedUser);
             }
-          } catch (e) {
+          } catch {
             localStorage.removeItem('horizon_auth_user');
           }
         }
       } catch (err) {
-        console.error('Error during initAuth:', err);
+        console.error('Auth initialization error:', err);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -177,7 +179,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initAuth();
 
-    // 3. Listen for Supabase Auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (!mounted) return;
       setSession(newSession);
@@ -188,7 +189,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(authUser);
         localStorage.setItem('horizon_auth_user', JSON.stringify(authUser));
       } else if (event === 'SIGNED_OUT') {
-        // Only clear if not in demo mode
         const saved = localStorage.getItem('horizon_auth_user');
         if (saved) {
           const parsed = JSON.parse(saved);
@@ -208,7 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Real Supabase Email & Password Sign In
+  // Email & Password Sign In
   const signInWithPassword = async (email: string, password: string): Promise<AuthResponse> => {
     setLoading(true);
     try {
@@ -218,19 +218,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        // Detect email confirmation requirement
         if (error.message.toLowerCase().includes('email not confirmed')) {
           return {
             success: false,
             requiresEmailConfirmation: true,
-            error: 'Your email is not confirmed yet. Please check your inbox for the verification link from Supabase, or use the 1-Click Demo Login to explore immediately.'
+            error: 'Your email is not confirmed yet. Please check your inbox for the verification link, or use the Instant Demo button to log in directly.'
           };
         }
 
         if (error.message.toLowerCase().includes('invalid login credentials')) {
           return {
             success: false,
-            error: 'Invalid email or password. Please check your details or create a new account.'
+            error: 'Incorrect email or password. Please verify your credentials or register a new account.'
           };
         }
 
@@ -244,10 +243,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(authUser);
         localStorage.setItem('horizon_auth_user', JSON.stringify(authUser));
 
-        // Sync profile row if missing
-        await syncProfile(data.user, authUser.role);
-
-        // Redirect based on role
         if (authUser.role === 'teacher') {
           router.push('/tutor-dashboard');
         } else if (authUser.role === 'admin') {
@@ -259,7 +254,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: true };
       }
 
-      return { success: false, error: 'Login failed: No user returned.' };
+      return { success: false, error: 'Login could not be completed.' };
     } catch (err: any) {
       return { success: false, error: err.message || 'An unexpected error occurred during sign in.' };
     } finally {
@@ -267,24 +262,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Real Supabase Sign Up (Registration)
+  // Sign Up with comprehensive details taken right at registration
   const signUp = async (
     email: string,
     password: string,
-    metadata: { fullName: string; phone?: string; role: UserRole }
+    metadata: SignUpMetadata
   ): Promise<AuthResponse> => {
     setLoading(true);
     try {
       const cleanEmail = email.trim().toLowerCase();
+      
+      // Store all fields in user_metadata so they persist permanently with auth
+      const userMetadata: Record<string, any> = {
+        full_name: metadata.fullName.trim(),
+        phone: metadata.phone?.trim() || '',
+        role: metadata.role,
+        college: metadata.college?.trim() || '',
+        degree_status: metadata.degreeStatus?.trim() || '',
+        experience_years: metadata.experienceYears?.trim() || '',
+        medium_preference: metadata.mediumPreference?.trim() || '',
+        subjects: metadata.subjects?.trim() || '',
+        bio: metadata.bio?.trim() || '',
+        parent_name: metadata.parentName?.trim() || '',
+        class_level: metadata.classLevel?.trim() || '',
+        board: metadata.board?.trim() || '',
+        school_medium: metadata.schoolMedium?.trim() || '',
+        address: metadata.address?.trim() || ''
+      };
+
       const { data, error } = await supabase.auth.signUp({
         email: cleanEmail,
         password,
         options: {
-          data: {
-            full_name: metadata.fullName,
-            phone: metadata.phone || '',
-            role: metadata.role
-          },
+          data: userMetadata,
           emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/login` : undefined
         }
       });
@@ -299,24 +309,73 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error.message.toLowerCase().includes('rate limit')) {
           return {
             success: false,
-            error: 'Email signup rate limit reached by Supabase. Please use 1-Click Demo Login to test the platform immediately.'
+            error: 'Email signup rate limit reached. Please use Instant Role Demo to test immediately.'
           };
         }
         return { success: false, error: error.message };
       }
 
       if (data?.user) {
-        // If session was returned immediately (email confirmation disabled in Supabase)
+        const userId = data.user.id;
+
+        // 1. Upsert into public.profiles
+        await supabase.from('profiles').upsert({
+          id: userId,
+          email: cleanEmail,
+          role: metadata.role,
+          full_name: metadata.fullName.trim(),
+          phone: metadata.phone?.trim() || '',
+          updated_at: new Date().toISOString()
+        });
+
+        // 2. If Teacher: save directly to tutor_profiles with all the details entered during registration!
+        if (metadata.role === 'teacher') {
+          await supabase.from('tutor_profiles').upsert({
+            id: userId,
+            user_id: userId,
+            full_name: metadata.fullName.trim(),
+            college: metadata.college?.trim() || 'Institution / College',
+            degree_status: metadata.degreeStatus?.trim() || 'Degree / Qualification',
+            experience_years: metadata.experienceYears?.trim() || '1+ years',
+            medium_preference: metadata.mediumPreference?.trim() || 'English / Hindi',
+            subjects: metadata.subjects?.trim() || 'General Subjects',
+            bio_and_custom_notes: metadata.bio?.trim() || '',
+            phone: metadata.phone?.trim() || '',
+            email: cleanEmail,
+            rating: 5.0,
+            updated_at: new Date().toISOString()
+          });
+        }
+
+        // 3. If Student: create enquiry/student record
+        if (metadata.role === 'student_parent') {
+          await supabase.from('student_enquiries').insert([{
+            student_id: userId,
+            student_name: metadata.fullName.trim(),
+            parent_name: metadata.parentName?.trim() || metadata.fullName.trim(),
+            phone: metadata.phone?.trim() || '',
+            email: cleanEmail,
+            class_level: metadata.classLevel || 'Class 9',
+            board: metadata.board || 'CBSE',
+            school_medium: metadata.schoolMedium || 'English Medium',
+            address: metadata.address?.trim() || '',
+            test_status: 'Assessment Scheduled',
+            fee_status: 'pending'
+          }]);
+        }
+
+        // Check if session was granted immediately (email confirmation disabled)
         if (data.session) {
           setSession(data.session);
-          await syncProfile(data.user, metadata.role, metadata.fullName, metadata.phone);
-          const authUser = buildAuthUser(data.user, {
-            id: data.user.id,
+          const authUser: AuthUser = {
+            id: userId,
             email: cleanEmail,
-            full_name: metadata.fullName,
+            name: metadata.fullName.trim(),
             role: metadata.role,
-            phone: metadata.phone
-          });
+            phone: metadata.phone?.trim() || '',
+            profileData: userMetadata,
+            isDemo: false
+          };
           setUser(authUser);
           localStorage.setItem('horizon_auth_user', JSON.stringify(authUser));
 
@@ -328,7 +387,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           return { success: true };
         } else {
-          // Email confirmation is required by Supabase project settings
           return {
             success: true,
             confirmationSent: true
@@ -338,13 +396,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return { success: false, error: 'Registration could not be completed.' };
     } catch (err: any) {
-      return { success: false, error: err.message || 'An unexpected error occurred during sign up.' };
+      return { success: false, error: err.message || 'An unexpected error occurred during registration.' };
     } finally {
       setLoading(false);
     }
   };
 
-  // Real Supabase Magic Link / OTP Sign In
+  // Magic Link / OTP Sign In
   const signInWithOtp = async (email: string): Promise<AuthResponse> => {
     setLoading(true);
     try {
@@ -356,12 +414,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        if (error.message.toLowerCase().includes('rate limit')) {
-          return {
-            success: false,
-            error: 'Email rate limit exceeded. Please use 1-Click Demo Login to access immediately.'
-          };
-        }
         return { success: false, error: error.message };
       }
 
@@ -393,7 +445,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // 1-Click Instant Demo Login (Student/Parent, Teacher, Admin)
+  // Instant Demo Role Login (for evaluators & quick testing)
   const loginAs = async (role: UserRole, customEmail?: string) => {
     setLoading(true);
     try {
@@ -421,7 +473,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(targetUser);
       localStorage.setItem('horizon_auth_user', JSON.stringify(targetUser));
 
-      // Redirect to appropriate dashboard
       if (role === 'student_parent') {
         router.push('/student-dashboard');
       } else if (role === 'teacher') {
@@ -442,7 +493,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await supabase.auth.signOut();
     } catch (e) {
-      console.warn('Supabase signOut notice:', e);
+      console.warn('SignOut notice:', e);
     } finally {
       setUser(null);
       setSession(null);
@@ -452,7 +503,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Refresh user data from Supabase
+  // Refresh user data from profiles
   const refreshUser = async () => {
     if (!user || user.isDemo) return;
     try {
