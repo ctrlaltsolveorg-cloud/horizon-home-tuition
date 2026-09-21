@@ -66,11 +66,70 @@ export interface StudentEnquiry {
   created_at?: string;
 }
 
+export interface StudentAssignment {
+  id: string;
+  tutor_id?: string;
+  student_name: string;
+  parent_name?: string;
+  phone?: string;
+  class_grade: string;
+  board?: string;
+  medium?: string;
+  subjects: string;
+  status: 'active' | 'completed' | 'paused' | 'trial';
+  start_date?: string;
+  end_date?: string;
+  schedule_days?: string;
+  monthly_fee?: number;
+  attendance_percent?: number;
+  academic_score?: string;
+  location?: string;
+  created_at?: string;
+}
+
+export interface StudentReadingTask {
+  id: string;
+  student_name: string;
+  tutor_id?: string;
+  month_year: string;
+  task_title: string;
+  subject: string;
+  target_date?: string;
+  status: 'pending' | 'in_progress' | 'completed';
+  milestone_details?: string;
+  next_report_weight?: string;
+  created_at?: string;
+}
+
+export interface StudentTest {
+  id: string;
+  student_name: string;
+  tutor_id?: string;
+  conducted_by_tutor_name: string;
+  tutor_college_info?: string;
+  subject: string;
+  test_title: string;
+  test_date: string;
+  total_marks: number;
+  marks_obtained: number;
+  percentage?: number;
+  tutor_remarks?: string;
+  created_at?: string;
+}
+
 export interface MonthlyReport {
   id: string;
-  student_id: string;
-  report_month: string;
-  areas_of_improvement?: string;
+  tutor_id?: string;
+  student_name: string;
+  student_class?: string;
+  month: string;
+  attendance_percentage?: number;
+  marks_percentage?: number;
+  syllabus_covered?: string;
+  tutor_remarks?: string;
+  conducting_tutor_name?: string;
+  status?: string;
   created_at?: string;
   [key: string]: any;
 }
+
