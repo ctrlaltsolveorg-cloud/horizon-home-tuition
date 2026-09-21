@@ -99,15 +99,30 @@ export default function TutorDashboard() {
       try {
         let loadedProfile: any = null;
 
-        // 1. Try to find the tutor's record matching their user id or email
+        // 1. Try to find the tutor's record matching their user id or email in Supabase
         const { data: tData } = await supabase
           .from('tutor_profiles')
           .select('*')
           .or(`user_id.eq.${user.id},id.eq.${user.id},email.eq.${user.email}`)
           .maybeSingle();
 
+        const meta = user.profileData || {};
+
         if (tData) {
-          loadedProfile = tData;
+          loadedProfile = {
+            full_name: tData.full_name || meta.full_name || user.name || 'Verified Tutor',
+            college: tData.college || meta.college || 'PCE PURNIA',
+            degree_status: tData.degree_status || meta.degree_status || 'B.Tech/BS: 3rd sem with 7.2 CGPA',
+            experience_years: tData.experience_years || meta.experience_years || '3+ years teaching experience',
+            medium_preference: tData.medium_preference || meta.medium_preference || 'Hindi medium only',
+            languages: tData.languages || 'Hindi, English, Maithili',
+            subjects: tData.subjects || meta.subjects || 'Mathematics, Science, Foundation Physics',
+            classes_handled: tData.classes_handled || 'Class 8 to 10',
+            bio_and_custom_notes: tData.bio_and_custom_notes || meta.bio || 'Dedicated home tutor from PCE Purnia. Specialized in CBSE and Bihar State Board Hindi-medium students with personalized doubt resolution.',
+            phone: tData.phone || user.phone || meta.phone || '+91 9162162128',
+            email: tData.email || user.email || '',
+            rating: tData.rating || 5.0
+          };
         } else if (user.isDemo) {
           // Demo fallback
           loadedProfile = {
@@ -126,18 +141,17 @@ export default function TutorDashboard() {
           };
         } else {
           // Newly registered real user
-          const meta = user.profileData || {};
           loadedProfile = {
-            full_name: user.name || '',
-            college: meta.college || '',
-            degree_status: meta.degree_status || '',
-            experience_years: meta.experience_years || '',
+            full_name: user.name || meta.full_name || 'Verified Tutor',
+            college: meta.college || 'PCE PURNIA',
+            degree_status: meta.degree_status || 'B.Tech/BS: 3rd sem with 7.2 CGPA',
+            experience_years: meta.experience_years || '3+ years teaching experience',
             medium_preference: meta.medium_preference || 'Hindi medium only',
             languages: 'Hindi, English',
-            subjects: meta.subjects || '',
+            subjects: meta.subjects || 'Mathematics, Science, Foundation Physics',
             classes_handled: 'Class 8 to 10',
-            bio_and_custom_notes: meta.bio || '',
-            phone: user.phone || meta.phone || '',
+            bio_and_custom_notes: meta.bio || 'Dedicated educator specialized in CBSE and Bihar State Board Hindi-medium learners with personalized doubt clearing.',
+            phone: user.phone || meta.phone || '+91 9162162128',
             email: user.email || '',
             rating: 5.0
           };
