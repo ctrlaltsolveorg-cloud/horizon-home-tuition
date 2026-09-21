@@ -387,13 +387,6 @@ export default function Navbar() {
           </Link>
         </div>
       )}
-
-      <style jsx>{`
-        @media (max-width: 980px) {
-          .desktop-only { display: none !important; }
-          .mobile-toggle { display: block !important; }
-        }
-      `}</style>
     </header>
   );
 }

@@ -328,3 +328,13 @@ button, input, select, textarea {
     border: none !important;
   }
 }
+
+/* Responsive Navigation Utilities */
+@media (max-width: 980px) {
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-toggle {
+    display: block !important;
+  }
+}
