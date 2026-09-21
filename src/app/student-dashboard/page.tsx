@@ -216,73 +216,106 @@ export default function StudentDashboard() {
   return (
     <>
       <Navbar />
-      <main style={{ minHeight: '90vh', background: 'var(--bg-primary)', padding: '2rem 1rem 5rem' }}>
+      <main style={{
+        minHeight: '90vh',
+        background: 'radial-gradient(circle at 85% 15%, rgba(245, 158, 11, 0.08) 0%, transparent 45%), radial-gradient(circle at 15% 75%, rgba(59, 130, 246, 0.07) 0%, transparent 50%), var(--bg-main)',
+        padding: '2rem 1rem 5rem',
+        color: 'var(--text-primary)',
+        transition: 'background 0.3s ease'
+      }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           
-          {/* Top Banner / Welcome */}
+          {/* Top Banner / Welcome (Landing Page Luxury Aesthetic) */}
           <div style={{
-            background: 'linear-gradient(135deg, #1e3a8a, #2563eb)',
+            background: 'linear-gradient(135deg, rgba(20, 22, 27, 0.96) 0%, rgba(26, 29, 36, 0.92) 100%)',
+            border: '1px solid rgba(245, 158, 11, 0.3)',
             borderRadius: '20px',
-            padding: '2rem 2.2rem',
-            color: '#ffffff',
+            padding: '2.2rem 2.4rem',
+            color: 'var(--text-primary)',
             marginBottom: '2rem',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
             gap: '1.5rem',
-            boxShadow: '0 10px 25px rgba(37, 99, 235, 0.2)'
+            boxShadow: '0 12px 35px rgba(0, 0, 0, 0.45), 0 0 40px rgba(245, 158, 11, 0.05)',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
-            <div>
+            <div style={{
+              position: 'absolute',
+              top: '-40%',
+              right: '-10%',
+              width: '320px',
+              height: '320px',
+              background: 'radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%)',
+              pointerEvents: 'none'
+            }} />
+
+            <div style={{ position: 'relative', zIndex: 2 }}>
               <div style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '4px 12px',
-                borderRadius: '999px',
-                background: 'rgba(255,255,255,0.18)',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                marginBottom: '0.6rem'
+                gap: '7px',
+                padding: '5px 14px',
+                borderRadius: '30px',
+                background: 'var(--accent-gold-light)',
+                border: '1px solid rgba(245, 158, 11, 0.35)',
+                color: 'var(--accent-gold)',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                marginBottom: '0.75rem',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase'
               }}>
-                <GraduationCap size={14} /> Student & Parent Learning Portal
+                <Sparkles size={14} color="#F59E0B" /> Student & Parent Learning Portal
               </div>
-              <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', fontWeight: 800, margin: 0 }}>
+              <h1 style={{
+                fontFamily: 'var(--font-heading)',
+                fontSize: 'clamp(1.75rem, 3.2vw, 2.35rem)',
+                fontWeight: 800,
+                margin: 0,
+                color: 'var(--text-primary)',
+                letterSpacing: '-0.01em'
+              }}>
                 Welcome, {enquiry?.student_name || 'Student'}!
               </h1>
-              <p style={{ margin: '6px 0 0', opacity: 0.9, fontSize: '0.95rem' }}>
-                Parent: {enquiry?.parent_name || 'Parent'} • {enquiry?.class_level} ({enquiry?.board} - {enquiry?.school_medium})
+              <p style={{ margin: '8px 0 0', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+                Parent: <strong style={{ color: 'var(--text-primary)' }}>{enquiry?.parent_name || 'Parent'}</strong> • {enquiry?.class_level} ({enquiry?.board} - {enquiry?.school_medium})
               </p>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative', zIndex: 2 }}>
               <div style={{
-                background: 'rgba(255, 255, 255, 0.15)',
+                background: 'rgba(255, 255, 255, 0.06)',
+                border: '1px solid var(--border-highlight)',
                 padding: '10px 18px',
                 borderRadius: '12px',
                 backdropFilter: 'blur(8px)',
                 textAlign: 'right'
               }}>
-                <div style={{ fontSize: '0.75rem', opacity: 0.85 }}>Fee Status</div>
-                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#34d399', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Fee Status</div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--accent-green)', display: 'flex', alignItems: 'center', gap: '5px' }}>
                   <CheckCircle2 size={16} /> {enquiry?.fee_status || 'PAID'} (₹{enquiry?.fee_amount || 4500})
                 </div>
               </div>
               <button
+                type="button"
                 onClick={logout}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  padding: '10px 16px',
+                  padding: '10px 14px',
                   borderRadius: '10px',
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  color: '#ffffff',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.25)',
+                  color: '#F87171',
                   fontWeight: 600,
                   fontSize: '0.85rem',
                   cursor: 'pointer'
                 }}
+                title="Logout"
               >
                 <LogOut size={16} /> Logout
               </button>

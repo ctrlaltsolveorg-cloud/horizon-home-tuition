@@ -23,6 +23,10 @@
   --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.6);
   --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.8);
   --portal-bg: #0D0E11;
+  --card-bg: #14161B;
+  --bg-primary: #0B0C0E;
+  --primary: #3B82F6;
+  --text-tertiary: #6B7280;
   --blob-bg-1: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
   --blob-bg-2: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
   --pill-bg: rgba(20, 22, 27, 0.94);
@@ -59,6 +63,10 @@
   --shadow-md: 0 10px 30px rgba(15, 23, 42, 0.08);
   --shadow-lg: 0 20px 40px rgba(15, 23, 42, 0.12);
   --portal-bg: #E2E8F0;
+  --card-bg: #FFFFFF;
+  --bg-primary: #F8FAFC;
+  --primary: #2563EB;
+  --text-tertiary: #64748B;
   --blob-bg-1: linear-gradient(135deg, #C7D2FE 0%, #E0E7FF 100%);
   --blob-bg-2: linear-gradient(135deg, #FDE68A 0%, #FEF3C7 100%);
   --pill-bg: rgba(255, 255, 255, 0.95);
@@ -338,3 +346,15 @@ button, input, select, textarea {
     display: block !important;
   }
 }
+
+.form-input::placeholder {
+  color: var(--text-tertiary, #94a3b8) !important;
+  opacity: 0.75 !important;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent-gold) !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
+}
+

@@ -252,50 +252,87 @@ export default function TutorDashboard() {
   return (
     <>
       <Navbar />
-      <main style={{ minHeight: '90vh', background: 'var(--bg-primary)', padding: '2.5rem 1rem 5rem' }}>
+      <main style={{
+        minHeight: '90vh',
+        background: 'radial-gradient(circle at 85% 15%, rgba(245, 158, 11, 0.08) 0%, transparent 45%), radial-gradient(circle at 15% 75%, rgba(59, 130, 246, 0.07) 0%, transparent 50%), var(--bg-main)',
+        padding: '2.5rem 1rem 5rem',
+        color: 'var(--text-primary)',
+        transition: 'background 0.3s ease'
+      }}>
         <div style={{ maxWidth: '1180px', margin: '0 auto' }}>
           
-          {/* Top Executive Header */}
+          {/* Top Executive Header (Landing Page Luxury Aesthetic) */}
           <div style={{
-            background: 'linear-gradient(135deg, #065f46, #059669)',
+            background: 'linear-gradient(135deg, rgba(20, 22, 27, 0.96) 0%, rgba(26, 29, 36, 0.92) 100%)',
+            border: '1px solid rgba(245, 158, 11, 0.3)',
             borderRadius: '20px',
             padding: '2.2rem 2.4rem',
-            color: '#ffffff',
+            color: 'var(--text-primary)',
             marginBottom: '2rem',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
             gap: '1.5rem',
-            boxShadow: '0 10px 30px rgba(5, 150, 105, 0.2)'
+            boxShadow: '0 12px 35px rgba(0, 0, 0, 0.45), 0 0 40px rgba(245, 158, 11, 0.05)',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
-            <div>
+            {/* Ambient subtle glow inside header */}
+            <div style={{
+              position: 'absolute',
+              top: '-40%',
+              right: '-10%',
+              width: '320px',
+              height: '320px',
+              background: 'radial-gradient(circle, rgba(245, 158, 11, 0.12) 0%, transparent 70%)',
+              pointerEvents: 'none'
+            }} />
+
+            <div style={{ position: 'relative', zIndex: 2 }}>
               <div style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '4px 12px',
-                borderRadius: '999px',
-                background: 'rgba(255,255,255,0.18)',
-                fontSize: '0.8rem',
+                gap: '7px',
+                padding: '5px 14px',
+                borderRadius: '30px',
+                background: 'var(--accent-gold-light)',
+                border: '1px solid rgba(245, 158, 11, 0.35)',
+                color: 'var(--accent-gold)',
+                fontSize: '0.78rem',
                 fontWeight: 700,
-                marginBottom: '0.6rem',
-                letterSpacing: '0.04em',
+                marginBottom: '0.75rem',
+                letterSpacing: '0.06em',
                 textTransform: 'uppercase'
               }}>
-                <BookOpen size={14} /> Official Tutor Workspace
+                <Sparkles size={14} color="#F59E0B" /> Official Tutor Workspace
               </div>
-              <h1 style={{ fontSize: 'clamp(1.6rem, 3.2vw, 2.3rem)', fontWeight: 800, margin: 0 }}>
+              <h1 style={{
+                fontFamily: 'var(--font-heading)',
+                fontSize: 'clamp(1.75rem, 3.2vw, 2.35rem)',
+                fontWeight: 800,
+                margin: 0,
+                color: 'var(--text-primary)',
+                letterSpacing: '-0.01em'
+              }}>
                 {tutorProfile.full_name || 'Tutor Portal'}
               </h1>
-              <p style={{ margin: '6px 0 0', opacity: 0.9, fontSize: '0.95rem' }}>
-                {tutorProfile.college ? `${tutorProfile.college} • ` : ''}
-                {tutorProfile.degree_status ? `${tutorProfile.degree_status} • ` : ''}
-                Verified Home Tutor
+              <p style={{ margin: '8px 0 0', color: 'var(--text-secondary)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                {tutorProfile.college && <span>{tutorProfile.college} •</span>}
+                {tutorProfile.degree_status && <span>{tutorProfile.degree_status} •</span>}
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  color: 'var(--accent-green)',
+                  fontWeight: 700
+                }}>
+                  <CheckCircle2 size={15} /> Verified Home Tutor
+                </span>
               </p>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', position: 'relative', zIndex: 2 }}>
               <button
                 type="button"
                 onClick={() => {
@@ -306,14 +343,15 @@ export default function TutorDashboard() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  padding: '10px 16px',
+                  padding: '10px 18px',
                   borderRadius: '10px',
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  border: '1px solid rgba(255, 255, 255, 0.35)',
-                  color: '#ffffff',
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid var(--border-highlight)',
+                  color: 'var(--text-primary)',
                   fontWeight: 700,
                   fontSize: '0.85rem',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
                 }}
               >
                 <Edit3 size={15} /> Edit Details
@@ -326,15 +364,16 @@ export default function TutorDashboard() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  padding: '10px 18px',
+                  padding: '10px 20px',
                   borderRadius: '10px',
-                  background: '#ffffff',
-                  color: '#065f46',
-                  fontWeight: 700,
+                  background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                  color: '#0B0C0E',
+                  fontWeight: 800,
                   fontSize: '0.85rem',
                   border: 'none',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 14px rgba(0,0,0,0.1)'
+                  boxShadow: '0 4px 18px rgba(245, 158, 11, 0.35)',
+                  transition: 'all 0.2s ease'
                 }}
               >
                 <FileSpreadsheet size={16} /> Submit Monthly Report
@@ -349,13 +388,14 @@ export default function TutorDashboard() {
                   gap: '6px',
                   padding: '10px 14px',
                   borderRadius: '10px',
-                  background: 'rgba(0, 0, 0, 0.2)',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  color: '#ffffff',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.25)',
+                  color: '#F87171',
                   fontWeight: 600,
                   fontSize: '0.85rem',
                   cursor: 'pointer'
                 }}
+                title="Logout"
               >
                 <LogOut size={15} /> Logout
               </button>
@@ -407,21 +447,21 @@ export default function TutorDashboard() {
             marginBottom: '2rem'
           }}>
             <div style={{
-              background: 'var(--card-bg)',
+              background: 'var(--bg-card)',
               border: '1px solid var(--border-color)',
               borderRadius: '16px',
               padding: '1.3rem',
               display: 'flex',
               alignItems: 'center',
               gap: '1rem',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+              boxShadow: 'var(--shadow-sm)'
             }}>
               <div style={{
                 width: '46px',
                 height: '46px',
                 borderRadius: '12px',
-                background: 'rgba(5, 150, 105, 0.1)',
-                color: '#059669',
+                background: 'rgba(59, 130, 246, 0.12)',
+                color: 'var(--primary-blue)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
@@ -437,21 +477,21 @@ export default function TutorDashboard() {
             </div>
 
             <div style={{
-              background: 'var(--card-bg)',
+              background: 'var(--bg-card)',
               border: '1px solid var(--border-color)',
               borderRadius: '16px',
               padding: '1.3rem',
               display: 'flex',
               alignItems: 'center',
               gap: '1rem',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+              boxShadow: 'var(--shadow-sm)'
             }}>
               <div style={{
                 width: '46px',
                 height: '46px',
                 borderRadius: '12px',
-                background: 'rgba(245, 158, 11, 0.1)',
-                color: '#f59e0b',
+                background: 'var(--accent-gold-light)',
+                color: 'var(--accent-gold)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
@@ -461,27 +501,27 @@ export default function TutorDashboard() {
               <div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Academic Rating</div>
                 <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                  {tutorProfile.rating || '4.9'} <span style={{ fontSize: '0.85rem', color: '#f59e0b' }}>★</span>
+                  {tutorProfile.rating || '4.9'} <span style={{ fontSize: '0.85rem', color: 'var(--accent-gold)' }}>★</span>
                 </div>
               </div>
             </div>
 
             <div style={{
-              background: 'var(--card-bg)',
+              background: 'var(--bg-card)',
               border: '1px solid var(--border-color)',
               borderRadius: '16px',
               padding: '1.3rem',
               display: 'flex',
               alignItems: 'center',
               gap: '1rem',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+              boxShadow: 'var(--shadow-sm)'
             }}>
               <div style={{
                 width: '46px',
                 height: '46px',
                 borderRadius: '12px',
-                background: 'rgba(37, 99, 235, 0.1)',
-                color: '#2563eb',
+                background: 'rgba(139, 92, 246, 0.12)',
+                color: '#A78BFA',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
@@ -497,21 +537,21 @@ export default function TutorDashboard() {
             </div>
 
             <div style={{
-              background: 'var(--card-bg)',
+              background: 'var(--bg-card)',
               border: '1px solid var(--border-color)',
               borderRadius: '16px',
               padding: '1.3rem',
               display: 'flex',
               alignItems: 'center',
               gap: '1rem',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+              boxShadow: 'var(--shadow-sm)'
             }}>
               <div style={{
                 width: '46px',
                 height: '46px',
                 borderRadius: '12px',
-                background: 'rgba(16, 185, 129, 0.1)',
-                color: '#10b981',
+                background: 'var(--accent-green-light)',
+                color: 'var(--accent-green)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
@@ -520,7 +560,7 @@ export default function TutorDashboard() {
               </div>
               <div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Verification Status</div>
-                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#059669' }}>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--accent-green)' }}>
                   Verified Tutor
                 </div>
               </div>
@@ -529,12 +569,12 @@ export default function TutorDashboard() {
 
           {/* Tutor Dossier Card (Clean, Professional Full-Width Presentation) */}
           <div style={{
-            background: 'var(--card-bg)',
+            background: 'var(--bg-card)',
             border: '1px solid var(--border-color)',
             borderRadius: '18px',
             padding: '2rem',
             marginBottom: '2.5rem',
-            boxShadow: '0 4px 18px rgba(0,0,0,0.03)',
+            boxShadow: 'var(--shadow-sm)',
             position: 'relative'
           }}>
             <div style={{
@@ -552,18 +592,18 @@ export default function TutorDashboard() {
                   width: '64px',
                   height: '64px',
                   borderRadius: '16px',
-                  background: 'linear-gradient(135deg, #059669, #10b981)',
-                  color: '#ffffff',
+                  background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                  color: '#0B0C0E',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '1.6rem',
-                  fontWeight: 800
+                  fontWeight: 900
                 }}>
                   {tutorProfile.full_name?.charAt(0) || 'T'}
                 </div>
                 <div>
-                  <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px' }}>
+                  <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px', fontFamily: 'var(--font-heading)' }}>
                     {tutorProfile.full_name}
                   </h2>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -573,8 +613,9 @@ export default function TutorDashboard() {
                       gap: '4px',
                       fontSize: '0.78rem',
                       fontWeight: 700,
-                      color: '#059669',
-                      background: 'rgba(5, 150, 105, 0.1)',
+                      color: 'var(--accent-green)',
+                      background: 'var(--accent-green-light)',
+                      border: '1px solid rgba(16, 185, 129, 0.3)',
                       padding: '3px 10px',
                       borderRadius: '999px'
                     }}>
@@ -599,8 +640,8 @@ export default function TutorDashboard() {
                   gap: '6px',
                   padding: '8px 16px',
                   borderRadius: '8px',
-                  background: 'var(--bg-primary)',
-                  border: '1px solid var(--border-color)',
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid var(--border-highlight)',
                   color: 'var(--text-primary)',
                   fontWeight: 600,
                   fontSize: '0.85rem',
@@ -619,7 +660,7 @@ export default function TutorDashboard() {
               marginBottom: '1.5rem'
             }}>
               <div>
-                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.04em' }}>
                   Institution / College
                 </div>
                 <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)' }}>
@@ -628,28 +669,28 @@ export default function TutorDashboard() {
               </div>
 
               <div>
-                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.04em' }}>
                   Degree & Performance
                 </div>
-                <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#2563eb' }}>
+                <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--primary-blue)' }}>
                   {tutorProfile.degree_status || '—'}
                 </div>
               </div>
 
               <div>
-                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.04em' }}>
                   Teaching Experience
                 </div>
-                <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#059669' }}>
+                <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--accent-green)' }}>
                   {tutorProfile.experience_years || '—'}
                 </div>
               </div>
 
               <div>
-                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.04em' }}>
                   Teaching Medium Comfort
                 </div>
-                <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#d97706' }}>
+                <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--accent-gold)' }}>
                   {tutorProfile.medium_preference || '—'}
                 </div>
               </div>
@@ -668,16 +709,16 @@ export default function TutorDashboard() {
 
             {tutorProfile.bio_and_custom_notes && (
               <div style={{
-                background: 'var(--bg-primary)',
-                padding: '1rem 1.25rem',
+                background: 'var(--bg-input)',
+                padding: '1.1rem 1.3rem',
                 borderRadius: '12px',
                 border: '1px solid var(--border-color)',
                 marginBottom: '1.25rem'
               }}>
-                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.04em' }}>
                   Teaching Methodology & Bio
                 </div>
-                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-primary)', lineHeight: '1.6' }}>
+                <p style={{ margin: 0, fontSize: '0.92rem', color: 'var(--text-primary)', lineHeight: '1.65' }}>
                   "{tutorProfile.bio_and_custom_notes}"
                 </p>
               </div>
@@ -694,7 +735,7 @@ export default function TutorDashboard() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.2rem' }}>
               <div>
-                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, fontFamily: 'var(--font-heading)' }}>
                   Assigned Students Roster
                 </h2>
                 <p style={{ margin: '4px 0 0', fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
@@ -708,11 +749,11 @@ export default function TutorDashboard() {
                 <div
                   key={stud.id || idx}
                   style={{
-                    background: 'var(--card-bg)',
+                    background: 'var(--bg-card)',
                     border: '1px solid var(--border-color)',
                     borderRadius: '16px',
                     padding: '1.5rem',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+                    boxShadow: 'var(--shadow-sm)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
@@ -725,8 +766,9 @@ export default function TutorDashboard() {
                       width: '48px',
                       height: '48px',
                       borderRadius: '12px',
-                      background: 'rgba(37, 99, 235, 0.08)',
-                      color: 'var(--primary)',
+                      background: 'rgba(59, 130, 246, 0.12)',
+                      border: '1px solid rgba(59, 130, 246, 0.25)',
+                      color: 'var(--primary-blue)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -736,11 +778,11 @@ export default function TutorDashboard() {
                       {stud.student_name?.charAt(0) || 'S'}
                     </div>
                     <div>
-                      <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 3px' }}>
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 3px', fontFamily: 'var(--font-heading)' }}>
                         {stud.student_name}
                       </h3>
                       <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        <span>{stud.class_level || 'Class 9'}</span>
+                        <span style={{ color: 'var(--primary-blue)', fontWeight: 600 }}>{stud.class_level || 'Class 9'}</span>
                         <span>•</span>
                         <span>{stud.school_medium || 'Hindi Medium'}</span>
                         <span>•</span>
@@ -759,17 +801,18 @@ export default function TutorDashboard() {
                         setShowReportModal(true);
                       }}
                       style={{
-                        padding: '9px 15px',
+                        padding: '9px 16px',
                         borderRadius: '8px',
-                        background: '#059669',
-                        color: '#ffffff',
+                        background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                        color: '#0B0C0E',
                         border: 'none',
                         fontSize: '0.84rem',
-                        fontWeight: 700,
+                        fontWeight: 800,
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px'
+                        gap: '6px',
+                        boxShadow: '0 2px 10px rgba(245, 158, 11, 0.25)'
                       }}
                     >
                       <FileSpreadsheet size={15} /> Submit Report
@@ -780,7 +823,7 @@ export default function TutorDashboard() {
                       style={{
                         padding: '9px 14px',
                         borderRadius: '8px',
-                        background: 'var(--bg-primary)',
+                        background: 'rgba(255, 255, 255, 0.06)',
                         border: '1px solid var(--border-color)',
                         color: 'var(--text-primary)',
                         fontSize: '0.84rem',
@@ -810,8 +853,8 @@ export default function TutorDashboard() {
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'rgba(0,0,0,0.6)',
-          backdropFilter: 'blur(6px)',
+          background: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(8px)',
           zIndex: 999,
           display: 'flex',
           alignItems: 'center',
@@ -819,19 +862,19 @@ export default function TutorDashboard() {
           padding: '1rem'
         }}>
           <div style={{
-            background: 'var(--card-bg)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '18px',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-highlight)',
+            borderRadius: '20px',
             width: '100%',
             maxWidth: '620px',
             maxHeight: '90vh',
             overflowY: 'auto',
-            padding: '2rem',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.25)'
+            padding: '2.2rem',
+            boxShadow: 'var(--shadow-lg)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Edit3 size={18} color="#059669" /> Edit Profile Details
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--font-heading)' }}>
+                <Edit3 size={18} color="var(--accent-gold)" /> Edit Profile Details
               </h3>
               <button
                 type="button"
@@ -859,7 +902,7 @@ export default function TutorDashboard() {
                     padding: '9px 12px',
                     borderRadius: '8px',
                     border: '1px solid var(--border-color)',
-                    background: 'var(--bg-primary)',
+                    background: 'var(--bg-input)',
                     color: 'var(--text-primary)',
                     fontSize: '0.9rem'
                   }}
@@ -883,7 +926,7 @@ export default function TutorDashboard() {
                       padding: '9px 12px',
                       borderRadius: '8px',
                       border: '1px solid var(--border-color)',
-                      background: 'var(--bg-primary)',
+                      background: 'var(--bg-input)',
                       color: 'var(--text-primary)',
                       fontSize: '0.9rem'
                     }}
@@ -906,7 +949,7 @@ export default function TutorDashboard() {
                       padding: '9px 12px',
                       borderRadius: '8px',
                       border: '1px solid var(--border-color)',
-                      background: 'var(--bg-primary)',
+                      background: 'var(--bg-input)',
                       color: 'var(--text-primary)',
                       fontSize: '0.9rem'
                     }}
@@ -931,7 +974,7 @@ export default function TutorDashboard() {
                       padding: '9px 12px',
                       borderRadius: '8px',
                       border: '1px solid var(--border-color)',
-                      background: 'var(--bg-primary)',
+                      background: 'var(--bg-input)',
                       color: 'var(--text-primary)',
                       fontSize: '0.9rem'
                     }}
@@ -950,7 +993,7 @@ export default function TutorDashboard() {
                       padding: '9px 12px',
                       borderRadius: '8px',
                       border: '1px solid var(--border-color)',
-                      background: 'var(--bg-primary)',
+                      background: 'var(--bg-input)',
                       color: 'var(--text-primary)',
                       fontSize: '0.9rem'
                     }}
@@ -978,7 +1021,7 @@ export default function TutorDashboard() {
                     padding: '9px 12px',
                     borderRadius: '8px',
                     border: '1px solid var(--border-color)',
-                    background: 'var(--bg-primary)',
+                    background: 'var(--bg-input)',
                     color: 'var(--text-primary)',
                     fontSize: '0.9rem'
                   }}
@@ -1000,7 +1043,7 @@ export default function TutorDashboard() {
                     padding: '9px 12px',
                     borderRadius: '8px',
                     border: '1px solid var(--border-color)',
-                    background: 'var(--bg-primary)',
+                    background: 'var(--bg-input)',
                     color: 'var(--text-primary)',
                     fontSize: '0.9rem',
                     resize: 'vertical'
@@ -1013,7 +1056,7 @@ export default function TutorDashboard() {
                   type="button"
                   onClick={() => setShowEditModal(false)}
                   style={{
-                    padding: '10px 16px',
+                    padding: '10px 18px',
                     borderRadius: '8px',
                     background: 'none',
                     border: '1px solid var(--border-color)',
@@ -1028,12 +1071,13 @@ export default function TutorDashboard() {
                   type="submit"
                   disabled={saving}
                   style={{
-                    padding: '10px 20px',
+                    padding: '10px 22px',
                     borderRadius: '8px',
-                    background: '#059669',
-                    color: '#ffffff',
+                    background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                    color: '#0B0C0E',
                     border: 'none',
-                    fontWeight: 700,
+                    fontWeight: 800,
+                    boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)',
                     cursor: saving ? 'not-allowed' : 'pointer'
                   }}
                 >
@@ -1053,8 +1097,8 @@ export default function TutorDashboard() {
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'rgba(0,0,0,0.6)',
-          backdropFilter: 'blur(6px)',
+          background: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(8px)',
           zIndex: 999,
           display: 'flex',
           alignItems: 'center',
@@ -1062,17 +1106,17 @@ export default function TutorDashboard() {
           padding: '1rem'
         }}>
           <div style={{
-            background: 'var(--card-bg)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '18px',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-highlight)',
+            borderRadius: '20px',
             width: '100%',
             maxWidth: '560px',
-            padding: '2rem',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.25)'
+            padding: '2.2rem',
+            boxShadow: 'var(--shadow-lg)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
               <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, fontFamily: 'var(--font-heading)' }}>
                   Monthly Academic Progress Report
                 </h3>
                 <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
@@ -1106,7 +1150,7 @@ export default function TutorDashboard() {
                       padding: '9px 12px',
                       borderRadius: '8px',
                       border: '1px solid var(--border-color)',
-                      background: 'var(--bg-primary)',
+                      background: 'var(--bg-input)',
                       color: 'var(--text-primary)',
                       fontSize: '0.9rem'
                     }}
@@ -1129,7 +1173,7 @@ export default function TutorDashboard() {
                       padding: '9px 12px',
                       borderRadius: '8px',
                       border: '1px solid var(--border-color)',
-                      background: 'var(--bg-primary)',
+                      background: 'var(--bg-input)',
                       color: 'var(--text-primary)',
                       fontSize: '0.9rem'
                     }}
@@ -1153,7 +1197,7 @@ export default function TutorDashboard() {
                     padding: '9px 12px',
                     borderRadius: '8px',
                     border: '1px solid var(--border-color)',
-                    background: 'var(--bg-primary)',
+                    background: 'var(--bg-input)',
                     color: 'var(--text-primary)',
                     fontSize: '0.9rem'
                   }}
@@ -1176,7 +1220,7 @@ export default function TutorDashboard() {
                     padding: '9px 12px',
                     borderRadius: '8px',
                     border: '1px solid var(--border-color)',
-                    background: 'var(--bg-primary)',
+                    background: 'var(--bg-input)',
                     color: 'var(--text-primary)',
                     fontSize: '0.9rem',
                     resize: 'vertical'
@@ -1189,7 +1233,7 @@ export default function TutorDashboard() {
                   type="button"
                   onClick={() => setShowReportModal(false)}
                   style={{
-                    padding: '10px 16px',
+                    padding: '10px 18px',
                     borderRadius: '8px',
                     background: 'none',
                     border: '1px solid var(--border-color)',
@@ -1204,12 +1248,13 @@ export default function TutorDashboard() {
                   type="submit"
                   disabled={submittingReport}
                   style={{
-                    padding: '10px 20px',
+                    padding: '10px 22px',
                     borderRadius: '8px',
-                    background: '#059669',
-                    color: '#ffffff',
+                    background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                    color: '#0B0C0E',
                     border: 'none',
-                    fontWeight: 700,
+                    fontWeight: 800,
+                    boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)',
                     cursor: submittingReport ? 'not-allowed' : 'pointer'
                   }}
                 >
@@ -1220,13 +1265,6 @@ export default function TutorDashboard() {
           </div>
         </div>
       )}
-
-      <style jsx global>{`
-        .form-input::placeholder {
-          color: var(--text-tertiary, #94a3b8) !important;
-          opacity: 0.75 !important;
-        }
-      `}</style>
 
       <Footer />
     </>
