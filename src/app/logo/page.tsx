@@ -22,7 +22,7 @@ import {
   TrendingUp,
   Award,
   Grid
-} from 'lucide-react';
+import HorizonLogoIcon from '@/components/HorizonLogoSvg';
 
 export function HorizonLogoMark({
   size = 120,
@@ -36,100 +36,28 @@ export function HorizonLogoMark({
   fillColor?: string;
   accentColor?: string;
   glow?: boolean;
-  variant?: 'primary' | 'monogram' | 'badge' | 'stacked';
+  variant?: 'primary' | 'monogram' | 'badge' | 'stacked' | 'full';
   className?: string;
 }) {
   const primaryFill = fillColor || '#F59E0B';
-  const secondaryFill = accentColor || primaryFill;
+  const lockupVariant = variant === 'monogram' ? 'icon' : variant === 'stacked' ? 'stacked' : 'full';
 
-  if (variant === 'monogram') {
-    return (
-      <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} className={className}>
-        {glow && (
-          <div style={{
-            position: 'absolute',
-            inset: '-20%',
-            background: 'radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, transparent 70%)',
-            filter: 'blur(24px)',
-            borderRadius: '50%',
-            pointerEvents: 'none'
-          }} />
-        )}
-        <svg
-          width={size}
-          height={Math.round(size * 0.96)}
-          viewBox="160 15 500 485"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          style={{ overflow: 'visible', display: 'inline-block' }}
-        >
-          {/* Outer Chevron & Base */}
-          <path
-            d="M 482,20 L 165,495 L 390,494 L 390,476 L 203,475 L 481,58 L 630,280 L 656,281 Z"
-            fill={primaryFill}
-          />
-          {/* Inner Chevron & Base */}
-          <path
-            d="M 482,93 L 239,457 L 390,457 L 390,443 L 268,441 L 481,122 L 587,279 L 607,281 Z"
-            fill={secondaryFill}
-          />
-        </svg>
-      </div>
-    );
-  }
-
-  // Full Lockup with HORIZON wordmark integrated into bottom right
   return (
-    <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} className={className}>
-      {glow && (
-        <div style={{
-          position: 'absolute',
-          inset: '-20%',
-          background: 'radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, transparent 70%)',
-          filter: 'blur(24px)',
-          borderRadius: '50%',
-          pointerEvents: 'none'
-        }} />
-      )}
-      <svg
-        width={size * 1.7}
-        height={Math.round(size * 0.95)}
-        viewBox="150 15 760 490"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ overflow: 'visible', display: 'inline-block' }}
-      >
-        {/* Outer Chevron & Base */}
-        <path
-          d="M 482,20 L 165,495 L 390,494 L 390,476 L 203,475 L 481,58 L 630,280 L 656,281 Z"
-          fill={primaryFill}
-        />
-        {/* Inner Chevron & Base */}
-        <path
-          d="M 482,93 L 239,457 L 390,457 L 390,443 L 268,441 L 481,122 L 587,279 L 607,281 Z"
-          fill={secondaryFill}
-        />
-        {/* Wordmark HORIZON */}
-        <text
-          x="420"
-          y="426"
-          fill={primaryFill}
-          fontFamily="var(--font-heading, 'Outfit', 'Inter', system-ui, sans-serif)"
-          fontSize="88"
-          fontWeight="900"
-          letterSpacing="0.04em"
-        >
-          HORIZON
-        </text>
-      </svg>
-    </div>
+    <HorizonLogoIcon
+      size={size}
+      color={primaryFill}
+      textColor={primaryFill}
+      glow={glow}
+      variant={lockupVariant as any}
+      className={className}
+    />
   );
 }
 
 export default function LogoTheoryPage() {
   const [logoVariant, setLogoVariant] = useState<'primary' | 'monogram' | 'badge' | 'stacked'>('primary');
   const [themeMode, setThemeMode] = useState<'dark' | 'light' | 'gold' | 'emerald'>('dark');
-  const [logoSize, setLogoSize] = useState<number>(200);
+  const [logoSize, setLogoSize] = useState<number>(180);
   const [glowEnabled, setGlowEnabled] = useState<boolean>(true);
   const [animationMode, setAnimationMode] = useState<'shimmer' | 'float' | 'pulse' | 'none'>('shimmer');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -143,22 +71,22 @@ export default function LogoTheoryPage() {
   // Generate Exact SVG Code string for export
   const getRawSvg = () => {
     const fill = themeMode === 'light' ? '#0F172A' : themeMode === 'gold' ? '#F59E0B' : themeMode === 'emerald' ? '#10B981' : '#FFFFFF';
-    const accent = themeMode === 'gold' ? '#FBBF24' : themeMode === 'emerald' ? '#34D399' : fill;
+    const gold = '#F59E0B';
     if (logoVariant === 'monogram') {
-      return `<svg width="${logoSize}" height="${Math.round(logoSize * 0.96)}" viewBox="160 15 500 485" fill="none" xmlns="http://www.w3.org/2000/svg">
+      return `<svg width="${logoSize}" height="${Math.round(logoSize * 0.92)}" viewBox="0 0 160 148" fill="none" xmlns="http://www.w3.org/2000/svg">
   <!-- Outer Chevron & Base -->
-  <path d="M 482,20 L 165,495 L 390,494 L 390,476 L 203,475 L 481,58 L 630,280 L 656,281 Z" fill="${fill}" />
+  <path d="M 80,6 L 10,126 L 110,126 L 110,114 L 26,114 L 80,22 L 138,72 L 148,72 Z" fill="${gold}" />
   <!-- Inner Chevron & Base -->
-  <path d="M 482,93 L 239,457 L 390,457 L 390,443 L 268,441 L 481,122 L 587,279 L 607,281 Z" fill="${accent}" />
+  <path d="M 80,34 L 38,106 L 110,106 L 110,96 L 49,96 L 80,44 L 122,72 L 130,72 Z" fill="${gold}" />
 </svg>`;
     }
-    return `<svg width="${Math.round(logoSize * 1.7)}" height="${Math.round(logoSize * 0.95)}" viewBox="150 15 760 490" fill="none" xmlns="http://www.w3.org/2000/svg">
+    return `<svg width="${Math.round(logoSize * 4.1)}" height="${logoSize}" viewBox="0 0 380 92" fill="none" xmlns="http://www.w3.org/2000/svg">
   <!-- Outer Chevron & Base -->
-  <path d="M 482,20 L 165,495 L 390,494 L 390,476 L 203,475 L 481,58 L 630,280 L 656,281 Z" fill="${fill}" />
+  <path d="M 52,6 L 8,82 L 96,82 L 96,73 L 22,73 L 52,19 L 126,50 L 136,50 Z" fill="${gold}" />
   <!-- Inner Chevron & Base -->
-  <path d="M 482,93 L 239,457 L 390,457 L 390,443 L 268,441 L 481,122 L 587,279 L 607,281 Z" fill="${accent}" />
+  <path d="M 52,26 L 28,68 L 96,68 L 96,61 L 36,61 L 52,34 L 114,50 L 121,50 Z" fill="${gold}" />
   <!-- Wordmark HORIZON -->
-  <text x="420" y="426" fill="${fill}" font-family="Outfit, Inter, sans-serif" font-size="88" font-weight="900" letter-spacing="0.04em">HORIZON</text>
+  <text x="100" y="77" fill="${fill}" font-family="Outfit, Inter, sans-serif" font-size="56" font-weight="900" letter-spacing="0.06em">HORIZON</text>
 </svg>`;
   };
 
