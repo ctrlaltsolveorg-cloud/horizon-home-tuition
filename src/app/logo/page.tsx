@@ -22,6 +22,7 @@ import {
   TrendingUp,
   Award,
   Grid
+} from 'lucide-react';
 import HorizonLogoIcon from '@/components/HorizonLogoSvg';
 
 export function HorizonLogoMark({
