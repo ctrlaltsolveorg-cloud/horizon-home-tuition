@@ -89,7 +89,7 @@ export default function LoginPage() {
     setSuccessMsg('');
     setEmailConfirmationRequired(false);
 
-    const res = await signInWithPassword(email, password);
+    const res = await signInWithPassword(email.trim().toLowerCase(), password);
 
     if (res.success) {
       setSuccessMsg('Signed in successfully! Redirecting to your dashboard...');
@@ -121,7 +121,7 @@ export default function LoginPage() {
     setSuccessMsg('');
     setEmailConfirmationRequired(false);
 
-    const res = await signUp(email, password, {
+    const res = await signUp(email.trim().toLowerCase(), password, {
       fullName: fullName.trim(),
       phone: phoneNumber.trim(),
       role: selectedRole,
