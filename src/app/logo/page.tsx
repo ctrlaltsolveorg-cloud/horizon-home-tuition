@@ -19,16 +19,141 @@ import {
   Eye,
   BookOpen,
   ArrowRight,
+  TrendingUp,
   Award,
-  CheckCircle2,
   Grid
 } from 'lucide-react';
 
+export function HorizonLogoMark({
+  size = 120,
+  fillColor,
+  accentColor,
+  glow = false,
+  className = ''
+}: {
+  size?: number;
+  fillColor?: string;
+  accentColor?: string;
+  glow?: boolean;
+  className?: string;
+}) {
+  const primaryFill = fillColor || 'currentColor';
+  const arrowFill = accentColor || primaryFill;
+
+  return (
+    <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} className={className}>
+      {glow && (
+        <div style={{
+          position: 'absolute',
+          inset: '-15%',
+          background: 'radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, rgba(16, 185, 129, 0.15) 50%, transparent 70%)',
+          filter: 'blur(20px)',
+          borderRadius: '50%',
+          pointerEvents: 'none'
+        }} />
+      )}
+      <svg
+        width={size}
+        height={size * 0.9}
+        viewBox="0 0 200 180"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ overflow: 'visible' }}
+      >
+        <defs>
+          <linearGradient id="hzGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FBBF24" />
+            <stop offset="100%" stopColor="#D97706" />
+          </linearGradient>
+          <linearGradient id="hzEmeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#34D399" />
+            <stop offset="100%" stopColor="#059669" />
+          </linearGradient>
+          <linearGradient id="hzArrowGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+            <stop offset="0%" stopColor="#F59E0B" />
+            <stop offset="100%" stopColor="#FFFFFF" />
+          </linearGradient>
+        </defs>
+
+        {/* 
+          ACCURATE MATHEMATICAL RECONSTRUCTION OF THE HORIZON INTERLOCKING MONOGRAM:
+          Apex at (100, 15), Base Left at (15, 165), Base Right at (185, 165)
+          Features:
+          1. Outer Triangular Apex & Right Diagonal Leg
+          2. Left 'H' Interlocking Block with lower cutout window
+          3. Central Upward Ascension Arrow
+        */}
+
+        {/* Top Triangle Apex & Right Hook Leg */}
+        <path
+          d="M 100 15 
+             L 185 165 
+             L 142 165 
+             L 125 135 
+             L 145 100 
+             L 118 54 
+             L 100 86 
+             L 82 54 
+             L 100 22 
+             Z"
+          fill={primaryFill}
+        />
+
+        {/* Right Hook Base Contour */}
+        <path
+          d="M 142 165 
+             L 102 165 
+             L 118 137 
+             L 136 137 
+             L 155 165 
+             Z"
+          fill={primaryFill}
+        />
+
+        {/* Left 'H' Block & Lower Diagonal Base */}
+        <path
+          d="M 15 165 
+             L 78 55 
+             L 96 86 
+             L 78 118 
+             L 94 146 
+             L 83 165 
+             L 15 165 
+             Z"
+          fill={primaryFill}
+        />
+
+        {/* Left 'H' Inner Cutout Window */}
+        <path
+          d="M 46 148 
+             L 72 148 
+             L 60 127 
+             L 34 127 
+             Z"
+          fill="var(--bg-card, #0B0C0E)"
+        />
+
+        {/* Central Upward Ascension Arrow */}
+        <path
+          d="M 100 48 
+             L 116 75 
+             L 108 75 
+             L 108 122 
+             L 92 122 
+             L 92 75 
+             L 84 75 
+             Z"
+          fill={arrowFill}
+        />
+      </svg>
+    </div>
+  );
+}
+
 export default function LogoTheoryPage() {
-  // Interactive Canvas State
   const [logoVariant, setLogoVariant] = useState<'primary' | 'monogram' | 'badge' | 'stacked'>('primary');
-  const [themeMode, setThemeMode] = useState<'dark' | 'light' | 'gold' | 'monochrome'>('dark');
-  const [logoSize, setLogoSize] = useState<number>(220);
+  const [themeMode, setThemeMode] = useState<'dark' | 'light' | 'gold' | 'emerald'>('dark');
+  const [logoSize, setLogoSize] = useState<number>(200);
   const [glowEnabled, setGlowEnabled] = useState<boolean>(true);
   const [animationMode, setAnimationMode] = useState<'shimmer' | 'float' | 'pulse' | 'none'>('shimmer');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -39,35 +164,19 @@ export default function LogoTheoryPage() {
     setTimeout(() => setCopiedCode(null), 2200);
   };
 
-  // Raw SVG string generator
+  // Generate SVG Code string for export
   const getRawSvg = () => {
-    return `<svg width="${logoSize}" height="${Math.round(logoSize * 0.8)}" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="horizonGold" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#F59E0B" />
-      <stop offset="100%" stop-color="#D97706" />
-    </linearGradient>
-    <linearGradient id="horizonEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#34D399" />
-      <stop offset="100%" stop-color="#059669" />
-    </linearGradient>
-  </defs>
-
-  <!-- Base Horizon Curve -->
-  <path d="M 20 120 Q 100 70 180 120" stroke="url(#horizonEmerald)" stroke-width="6" stroke-linecap="round" fill="none" />
-  
-  <!-- Left Ascension Pillar (Classes 5-8) -->
-  <rect x="52" y="42" width="14" height="66" rx="7" fill="url(#horizonGold)" />
-
-  <!-- Right Ascension Pillar (Classes 9-12) -->
-  <rect x="134" y="42" width="14" height="66" rx="7" fill="url(#horizonGold)" />
-
-  <!-- Central Horizon Bridge (The H Crossbar) -->
-  <path d="M 56 75 C 80 65, 120 65, 144 75" stroke="url(#horizonGold)" stroke-width="10" stroke-linecap="round" fill="none" />
-
-  <!-- The Rising Sun / Diamond Core -->
-  <circle cx="100" cy="55" r="12" fill="#FBBF24" />
-  <path d="M 100 35 L 104 50 L 118 55 L 104 60 L 100 75 L 96 60 L 82 55 L 96 50 Z" fill="#FFFFFF" />
+    const fill = themeMode === 'light' ? '#0F172A' : themeMode === 'gold' ? '#F59E0B' : themeMode === 'emerald' ? '#10B981' : '#FFFFFF';
+    const arrow = themeMode === 'gold' ? '#FBBF24' : themeMode === 'emerald' ? '#34D399' : '#F59E0B';
+    return `<svg width="${logoSize}" height="${Math.round(logoSize * 0.9)}" viewBox="0 0 200 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Top Apex & Right Hook -->
+  <path d="M 100 15 L 185 165 L 142 165 L 125 135 L 145 100 L 118 54 L 100 86 L 82 54 L 100 22 Z" fill="${fill}" />
+  <path d="M 142 165 L 102 165 L 118 137 L 136 137 L 155 165 Z" fill="${fill}" />
+  <!-- Left 'H' Base Structure -->
+  <path d="M 15 165 L 78 55 L 96 86 L 78 118 L 94 146 L 83 165 L 15 165 Z" fill="${fill}" />
+  <path d="M 46 148 L 72 148 L 60 127 L 34 127 Z" fill="#0B0C0E" />
+  <!-- Central Ascension Arrow -->
+  <path d="M 100 48 L 116 75 L 108 75 L 108 122 L 92 122 L 92 75 L 84 75 Z" fill="${arrow}" />
 </svg>`;
   };
 
@@ -76,11 +185,26 @@ export default function LogoTheoryPage() {
     const url = URL.createObjectURL(svgBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `HORIZON-Logo-${logoVariant}.svg`;
+    link.download = `HORIZON-Emblem-${logoVariant}.svg`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
+
+  // Compute Active Fill
+  const activeFill = themeMode === 'light' 
+    ? '#0F172A' 
+    : themeMode === 'gold' 
+    ? '#F59E0B' 
+    : themeMode === 'emerald' 
+    ? '#10B981' 
+    : '#FFFFFF';
+
+  const activeArrow = themeMode === 'gold' 
+    ? '#FDE68A' 
+    : themeMode === 'emerald' 
+    ? '#6EE7B7' 
+    : '#F59E0B';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-primary)', transition: 'background 0.3s ease, color 0.3s ease' }}>
@@ -123,11 +247,11 @@ export default function LogoTheoryPage() {
           }}>
             <Sparkles size={16} color="#F59E0B" />
             <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-gold)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              BRAND ARCHITECTURE & SACRED GEOMETRY
+              OFFICIAL HORIZON EMBLEM & SACRED GEOMETRY
             </span>
           </div>
 
-          {/* Headline matching Landing Page typography */}
+          {/* Headline */}
           <h1 style={{
             fontFamily: 'var(--font-heading)',
             fontSize: 'clamp(2.5rem, 5vw, 4.2rem)',
@@ -137,7 +261,7 @@ export default function LogoTheoryPage() {
             letterSpacing: '-0.02em',
             color: 'var(--text-primary)'
           }}>
-            The Anatomy of{' '}
+            The Geometry of{' '}
             <span style={{
               fontFamily: 'serif',
               fontStyle: 'italic',
@@ -147,7 +271,7 @@ export default function LogoTheoryPage() {
               WebkitTextFillColor: 'transparent',
               paddingRight: '0.2rem'
             }}>
-              HORIZON.
+              Ascension.
             </span>
           </h1>
 
@@ -158,7 +282,7 @@ export default function LogoTheoryPage() {
             maxWidth: '750px',
             margin: '0 auto 2.5rem auto'
           }}>
-            The visual philosophy, mathematical proportions, and cognitive symbolism behind India’s premier managed home-tuition mark.
+            An interlocking fusion of the letter <strong>‘H’</strong>, the <strong>Ascending Growth Arrow</strong>, and the <strong>Equilateral Pyramid Apex</strong> — embodying structured home-tuition mastery.
           </p>
 
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
@@ -188,25 +312,25 @@ export default function LogoTheoryPage() {
                 textDecoration: 'none'
               }}
             >
-              <BookOpen size={18} /> Read Brand Philosophy
+              <BookOpen size={18} /> Read Design Theory
             </a>
           </div>
 
         </div>
       </section>
 
-      {/* 2. INTERACTIVE LOGO STUDIO (EXACT CARD & BORDER THEME) */}
+      {/* 2. INTERACTIVE LOGO STUDIO (REAL-TIME VECTOR CANVAS) */}
       <section id="interactive-visualizer" style={{ padding: '4.5rem 1.5rem', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--accent-gold)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-            LIVE ENGINE
+            VECTOR STUDIO
           </span>
           <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.4rem', fontWeight: 800, marginTop: '0.35rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
-            Interactive Brand Canvas
+            Interactive Emblem Studio
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1.02rem', maxWidth: '650px', margin: '0 auto' }}>
-            Experiment with logo variants, chromatic palettes, glow intensity, and motion dynamics rendered in pure vector code.
+            Inspect the custom mathematical vector paths across various lockups, themes, and dynamic scales.
           </p>
         </div>
 
@@ -226,7 +350,7 @@ export default function LogoTheoryPage() {
             position: 'relative',
             minHeight: '440px',
             borderRadius: '12px',
-            background: themeMode === 'light' ? '#FFFFFF' : themeMode === 'gold' ? '#0F1117' : themeMode === 'monochrome' ? '#000000' : '#0B0C0E',
+            background: themeMode === 'light' ? '#FFFFFF' : themeMode === 'gold' ? '#0F1117' : themeMode === 'emerald' ? '#064E3B' : '#0B0C0E',
             border: '1px solid var(--border-color)',
             display: 'flex',
             flexDirection: 'column',
@@ -245,9 +369,11 @@ export default function LogoTheoryPage() {
                 height: `${logoSize * 1.5}px`,
                 background: themeMode === 'gold' 
                   ? 'radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, transparent 70%)'
+                  : themeMode === 'emerald'
+                  ? 'radial-gradient(circle, rgba(16, 185, 129, 0.3) 0%, transparent 70%)'
                   : themeMode === 'light'
                   ? 'radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%)'
-                  : 'radial-gradient(circle, rgba(16, 185, 129, 0.22) 0%, rgba(245, 158, 11, 0.16) 40%, transparent 70%)',
+                  : 'radial-gradient(circle, rgba(245, 158, 11, 0.18) 0%, rgba(16, 185, 129, 0.12) 40%, transparent 70%)',
                 filter: 'blur(40px)',
                 pointerEvents: 'none',
                 animation: animationMode === 'pulse' ? 'pulseGlow 3s infinite alternate' : 'none'
@@ -260,70 +386,26 @@ export default function LogoTheoryPage() {
               flexDirection: logoVariant === 'stacked' ? 'column' : 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: logoVariant === 'stacked' ? '1rem' : '1.5rem',
+              gap: logoVariant === 'stacked' ? '1.25rem' : '1.75rem',
               transform: `scale(${logoSize / 200})`,
               transition: 'transform 0.2s ease',
               animation: animationMode === 'float' ? 'floatLogo 4s ease-in-out infinite' : 'none'
             }}>
 
-              {/* LOGO ICON / EMBLEM SVG */}
-              <div style={{ position: 'relative' }}>
-                <svg width="140" height="112" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <linearGradient id="canvasHorizonGold" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor={themeMode === 'monochrome' ? '#FFFFFF' : '#F59E0B'} />
-                      <stop offset="100%" stopColor={themeMode === 'monochrome' ? '#94A3B8' : '#D97706'} />
-                    </linearGradient>
-                    <linearGradient id="canvasHorizonEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor={themeMode === 'monochrome' ? '#E2E8F0' : '#34D399'} />
-                      <stop offset="100%" stopColor={themeMode === 'monochrome' ? '#64748B' : '#059669'} />
-                    </linearGradient>
-                  </defs>
+              {/* RENDER THE ACCURATE VECTOR ICON */}
+              <HorizonLogoMark
+                size={140}
+                fillColor={activeFill}
+                accentColor={activeArrow}
+                glow={glowEnabled && animationMode === 'shimmer'}
+              />
 
-                  {/* Horizon Arc */}
-                  <path
-                    d="M 20 120 Q 100 70 180 120"
-                    stroke="url(#canvasHorizonEmerald)"
-                    strokeWidth="6"
-                    strokeLinecap="round"
-                    fill="none"
-                  />
-
-                  {/* Left Column (Class 5-8 Foundation) */}
-                  <rect x="52" y="42" width="14" height="66" rx="7" fill="url(#canvasHorizonGold)" />
-
-                  {/* Right Column (Class 9-12 Mastery) */}
-                  <rect x="134" y="42" width="14" height="66" rx="7" fill="url(#canvasHorizonGold)" />
-
-                  {/* Cross Horizon Bridge (Tutor Connection) */}
-                  <path
-                    d="M 56 75 C 80 65, 120 65, 144 75"
-                    stroke="url(#canvasHorizonGold)"
-                    strokeWidth="10"
-                    strokeLinecap="round"
-                    fill="none"
-                  />
-
-                  {/* Rising Sun Diamond Star */}
-                  <circle cx="100" cy="55" r="13" fill={themeMode === 'monochrome' ? '#FFFFFF' : '#FBBF24'} />
-                  <path
-                    d="M 100 32 L 105 50 L 123 55 L 105 60 L 100 78 L 95 60 L 77 55 L 95 50 Z"
-                    fill={themeMode === 'light' ? '#0F172A' : '#FFFFFF'}
-                  />
-
-                  {/* Circular Shield Outline for 'Badge' Variant */}
-                  {logoVariant === 'badge' && (
-                    <circle cx="100" cy="80" r="74" stroke="url(#canvasHorizonGold)" strokeWidth="3" strokeDasharray="6 4" fill="none" />
-                  )}
-                </svg>
-              </div>
-
-              {/* LOGO TYPOGRAPHY LOCKUP (Except for Monogram only) */}
+              {/* TYPOGRAPHY LOCKUP */}
               {logoVariant !== 'monogram' && (
                 <div style={{ textAlign: logoVariant === 'stacked' ? 'center' : 'left' }}>
                   <div style={{
                     fontFamily: 'var(--font-heading)',
-                    fontSize: '2.4rem',
+                    fontSize: '2.5rem',
                     fontWeight: 900,
                     letterSpacing: '0.12em',
                     color: themeMode === 'light' ? '#0F172A' : '#FFFFFF',
@@ -336,14 +418,14 @@ export default function LogoTheoryPage() {
                     alignItems: 'center',
                     justifyContent: logoVariant === 'stacked' ? 'center' : 'flex-start',
                     gap: '0.5rem',
-                    marginTop: '0.4rem'
+                    marginTop: '0.45rem'
                   }}>
                     <span style={{
-                      background: themeMode === 'monochrome' ? '#334155' : 'var(--accent-gold-light)',
-                      color: themeMode === 'monochrome' ? '#FFFFFF' : 'var(--accent-gold)',
+                      background: themeMode === 'emerald' ? 'rgba(52, 211, 153, 0.2)' : 'var(--accent-gold-light)',
+                      color: themeMode === 'emerald' ? '#34D399' : 'var(--accent-gold)',
                       fontSize: '0.65rem',
                       fontWeight: 800,
-                      padding: '0.15rem 0.55rem',
+                      padding: '0.18rem 0.6rem',
                       borderRadius: '12px',
                       letterSpacing: '0.1em',
                       textTransform: 'uppercase',
@@ -351,7 +433,7 @@ export default function LogoTheoryPage() {
                     }}>
                       MANAGED
                     </span>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '0.04em' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '0.04em' }}>
                       Home Tuition Platform
                     </span>
                   </div>
@@ -360,7 +442,7 @@ export default function LogoTheoryPage() {
 
             </div>
 
-            {/* Quick Export Bar at bottom of canvas */}
+            {/* Quick Export Bar */}
             <div style={{
               position: 'absolute',
               bottom: '1rem',
@@ -388,7 +470,7 @@ export default function LogoTheoryPage() {
                 }}
               >
                 {copiedCode === 'svg' ? <Check size={14} /> : <Copy size={14} />}
-                {copiedCode === 'svg' ? 'SVG Copied!' : 'Copy Raw SVG'}
+                {copiedCode === 'svg' ? 'SVG Copied!' : 'Copy Vector SVG'}
               </button>
 
               <span style={{ color: 'var(--border-color)' }}>|</span>
@@ -426,7 +508,7 @@ export default function LogoTheoryPage() {
                   { id: 'primary', label: 'Primary Lockup' },
                   { id: 'monogram', label: 'Monogram Only' },
                   { id: 'stacked', label: 'Vertical Stack' },
-                  { id: 'badge', label: 'Managed Crest' }
+                  { id: 'badge', label: 'Emblem Seal' }
                 ].map((v) => (
                   <button
                     key={v.id}
@@ -456,9 +538,9 @@ export default function LogoTheoryPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
                 {[
                   { id: 'dark', label: '🌌 Obsidian Dark' },
-                  { id: 'light', label: '☀️ Pristine Light' },
+                  { id: 'light', label: '☀️ Pure White' },
                   { id: 'gold', label: '👑 Luxury Gold' },
-                  { id: 'monochrome', label: '⚪ Monochrome' }
+                  { id: 'emerald', label: '🌿 Emerald Rich' }
                 ].map((t) => (
                   <button
                     key={t.id}
@@ -554,7 +636,7 @@ export default function LogoTheoryPage() {
 
       </section>
 
-      {/* 3. LOGO THEORY & PHILOSOPHY (EXACT 4 CARDS DESIGN) */}
+      {/* 3. LOGO THEORY & PHILOSOPHY OF THE ATTACHED EMBLEM */}
       <section id="logo-theory" style={{
         padding: '5rem 1.5rem',
         background: 'var(--bg-secondary)',
@@ -565,58 +647,26 @@ export default function LogoTheoryPage() {
           
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--accent-gold)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              DESIGN PHILOSOPHY
+              SYMBOLIC ANATOMY
             </span>
             <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.5rem', fontWeight: 900, marginTop: '0.35rem', color: 'var(--text-primary)' }}>
-              The 4 Core Elements of HORIZON
+              The 4 Theoretical Pillars of the Emblem
             </h2>
-            <p style={{ color: 'var(--text-secondary)', maxWidth: '700px', margin: '0.5rem auto 0 auto', lineHeight: 1.7, fontSize: '1.02rem' }}>
-              Every coordinate, curve, and proportional ratio in the HORIZON logo is calibrated to reflect academic excellence, student empowerment, and parental confidence.
+            <p style={{ color: 'var(--text-secondary)', maxWidth: '750px', margin: '0.5rem auto 0 auto', lineHeight: 1.7, fontSize: '1.02rem' }}>
+              Detailed geometric breakdown of the interlocking ‘H’ monogram, the upward ascension vector, and the delta triangle crest.
             </p>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.75rem' }}>
             
-            {/* Card 1 */}
-            <div style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)',
-              padding: '2.25rem 1.75rem',
-              borderTop: '4px solid var(--accent-green)',
-              boxShadow: 'var(--shadow-sm)',
-              transition: 'transform 0.2s ease, border-color 0.2s ease'
-            }}>
-              <div style={{
-                width: '50px',
-                height: '50px',
-                borderRadius: '12px',
-                background: 'var(--accent-green-light)',
-                color: 'var(--accent-green)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '1.25rem'
-              }}>
-                <Compass size={26} />
-              </div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.65rem', color: 'var(--text-primary)' }}>
-                1. The Ascending Horizon (क्षितिज)
-              </h3>
-              <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>
-                The upward-curving green arc reflects the infinite horizon line. In classical Sanskrit philosophy, <em>Kshitij</em> represents the infinite sphere of student potential when supported by individual mentorship.
-              </p>
-            </div>
-
-            {/* Card 2 */}
+            {/* Card 1: The 'H' Foundation */}
             <div style={{
               background: 'var(--bg-card)',
               border: '1px solid var(--border-color)',
               borderRadius: 'var(--radius-md)',
               padding: '2.25rem 1.75rem',
               borderTop: '4px solid var(--accent-gold)',
-              boxShadow: 'var(--shadow-sm)',
-              transition: 'transform 0.2s ease, border-color 0.2s ease'
+              boxShadow: 'var(--shadow-sm)'
             }}>
               <div style={{
                 width: '50px',
@@ -632,22 +682,51 @@ export default function LogoTheoryPage() {
                 <Layers size={26} />
               </div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.65rem', color: 'var(--text-primary)' }}>
-                2. The Twin Pillars of Mastery
+                1. The Interlocking ‘H’ (Horizon)
               </h3>
               <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>
-                The geometric vertical gold bars form the iconic letter <strong>‘H’</strong>. The left pillar represents foundational learning (Classes 5–8), while the right represents board exam mastery (Classes 9–12).
+                The left diagonal beam weaves with the lower window to form an architectural <strong>‘H’</strong>. It represents the foundational academic bedrock (Classes 5 to 12) built through verified home tutoring.
               </p>
             </div>
 
-            {/* Card 3 */}
+            {/* Card 2: The Upward Ascension Vector */}
+            <div style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-color)',
+              borderRadius: 'var(--radius-md)',
+              padding: '2.25rem 1.75rem',
+              borderTop: '4px solid var(--accent-green)',
+              boxShadow: 'var(--shadow-sm)'
+            }}>
+              <div style={{
+                width: '50px',
+                height: '50px',
+                borderRadius: '12px',
+                background: 'var(--accent-green-light)',
+                color: 'var(--accent-green)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '1.25rem'
+              }}>
+                <TrendingUp size={26} />
+              </div>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.65rem', color: 'var(--text-primary)' }}>
+                2. The Ascension Arrow (Growth)
+              </h3>
+              <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>
+                Emerging from the center is a vertical arrow pointing directly toward the peak. It embodies continuous score elevation, goal orientation, and rapid academic acceleration.
+              </p>
+            </div>
+
+            {/* Card 3: The Delta Pyramid Apex */}
             <div style={{
               background: 'var(--bg-card)',
               border: '1px solid var(--border-color)',
               borderRadius: 'var(--radius-md)',
               padding: '2.25rem 1.75rem',
               borderTop: '4px solid var(--primary-blue)',
-              boxShadow: 'var(--shadow-sm)',
-              transition: 'transform 0.2s ease, border-color 0.2s ease'
+              boxShadow: 'var(--shadow-sm)'
             }}>
               <div style={{
                 width: '50px',
@@ -660,25 +739,24 @@ export default function LogoTheoryPage() {
                 justifyContent: 'center',
                 marginBottom: '1.25rem'
               }}>
-                <Sparkles size={26} />
+                <Compass size={26} />
               </div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.65rem', color: 'var(--text-primary)' }}>
-                3. The Diamond Core Spark
+                3. The Delta Triangle (Peak Merit)
               </h3>
               <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>
-                Positioned at the apex is the 8-point golden diamond star. It captures the moment of "Eureka!" — when dedicated 1-on-1 tuition turns confusion into crystal clear conceptual understanding.
+                The equilateral triangle is the most geometrically stable polygon in physics. It symbolizes maximum stability, structural discipline, and reaching the top percentile in board exams.
               </p>
             </div>
 
-            {/* Card 4 */}
+            {/* Card 4: The Closed Loop Synergy */}
             <div style={{
               background: 'var(--bg-card)',
               border: '1px solid var(--border-color)',
               borderRadius: 'var(--radius-md)',
               padding: '2.25rem 1.75rem',
               borderTop: '4px solid #8B5CF6',
-              boxShadow: 'var(--shadow-sm)',
-              transition: 'transform 0.2s ease, border-color 0.2s ease'
+              boxShadow: 'var(--shadow-sm)'
             }}>
               <div style={{
                 width: '50px',
@@ -694,10 +772,10 @@ export default function LogoTheoryPage() {
                 <ShieldCheck size={26} />
               </div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.65rem', color: 'var(--text-primary)' }}>
-                4. The Managed Crest (Assurance)
+                4. The Interlocking Synergy (Trust)
               </h3>
               <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>
-                The surrounding protective contour represents peace of mind for parents — background verification, monthly progress cards, and structured academic alignment.
+                The right hook closes the perimeter to represent the 3-way partnership: <strong>Student + Educator + Parent</strong>, fortified by Horizon’s verified academic oversight.
               </p>
             </div>
 
@@ -716,7 +794,7 @@ export default function LogoTheoryPage() {
             Mathematical Construction
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1.02rem' }}>
-            Engineered with the divine Golden Ratio (φ = 1.618) and a calibrated 8px grid hierarchy.
+            Engineered with strict 60° triangular angles and balanced negative space channels.
           </p>
         </div>
 
@@ -742,11 +820,9 @@ export default function LogoTheoryPage() {
               background: 'var(--bg-main)'
             }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontFamily: 'monospace', fontSize: '0.82rem', color: 'var(--primary-blue)', fontWeight: 700, marginBottom: '0.5rem' }}>
-                  1 : 1.618 GOLDEN PROPORTION
-                </div>
-                <div style={{ width: '130px', height: '80px', border: '2px solid var(--accent-gold)', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--accent-gold)', fontWeight: 800 }}>EMBLEM BOX</span>
+                <HorizonLogoMark size={100} fillColor="var(--accent-gold)" accentColor="#FFFFFF" />
+                <div style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: 'var(--primary-blue)', fontWeight: 700, marginTop: '0.5rem' }}>
+                  60° ISOMETRIC TRIANGLE ALIGNMENT
                 </div>
               </div>
             </div>
@@ -763,28 +839,28 @@ export default function LogoTheoryPage() {
             
             <div style={{ background: 'var(--bg-card)', padding: '1.25rem 1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
               <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.3rem' }}>
-                📐 Quadratic Parabola Curves
+                📐 60° Delta Trajectory
               </h4>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-                The horizon curve is rendered using quadratic Bézier curves <code>(Q 100 70 180 120)</code>, providing aerodynamic upward lift.
+                The side strokes follow precise 60-degree angles corresponding to an equilateral triangle, creating optical equilibrium.
               </p>
             </div>
 
             <div style={{ background: 'var(--bg-card)', padding: '1.25rem 1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
               <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.3rem' }}>
-                🛡️ Protective Safe Zone
+                🛡️ Channel Negative Space
               </h4>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-                A mandatory exclusion boundary equivalent to the height of the letter ‘H’ isolates the logo from conflicting typography or graphics.
+                Uniform 8px negative space channels separate the 'H' stroke, the arrow head, and the right leg, guaranteeing maximum legibility even down to favicon resolutions.
               </p>
             </div>
 
             <div style={{ background: 'var(--bg-card)', padding: '1.25rem 1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
               <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.3rem' }}>
-                🔤 Outfit Geometric Typography
+                🔤 Outfit Geometric Wordmark
               </h4>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-                The wordmark is set in <strong>Outfit</strong> with wide tracking <code>letter-spacing: 0.12em</code>, giving it instant authority across digital portals and print banners.
+                The accompanying typography uses <strong>Outfit</strong> with wide <code>letter-spacing: 0.12em</code>, pairing bold presence with modern technological precision.
               </p>
             </div>
 
@@ -793,147 +869,7 @@ export default function LogoTheoryPage() {
         </div>
       </section>
 
-      {/* 5. COLOR PALETTE MATRIX & PSYCHOLOGY */}
-      <section style={{
-        padding: '5rem 1.5rem',
-        background: 'var(--bg-secondary)',
-        borderTop: '1px solid var(--border-color)',
-        borderBottom: '1px solid var(--border-color)'
-      }}>
-        <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--accent-gold)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              CHROMATIC IDENTITY
-            </span>
-            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.5rem', fontWeight: 900, marginTop: '0.35rem', color: 'var(--text-primary)' }}>
-              Brand Color Palette
-            </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>
-              Click any color swatch below to copy its HEX value.
-            </p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
-            
-            {/* Color 1: Solar Amber */}
-            <div style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)',
-              overflow: 'hidden',
-              boxShadow: 'var(--shadow-sm)'
-            }}>
-              <div style={{ height: '110px', background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)', display: 'flex', alignItems: 'flex-end', padding: '1rem' }}>
-                <span style={{ background: 'rgba(0,0,0,0.6)', color: '#FFFFFF', fontSize: '0.72rem', fontWeight: 800, padding: '0.2rem 0.6rem', borderRadius: '20px' }}>
-                  PRIMARY GOLD
-                </span>
-              </div>
-              <div style={{ padding: '1.25rem' }}>
-                <h4 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.2rem', color: 'var(--text-primary)' }}>Solar Amber</h4>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem', lineHeight: 1.6 }}>
-                  Embodies academic intellect, student ambition, and gold-standard merit.
-                </p>
-                <button
-                  onClick={() => copyToClipboard('#F59E0B', 'hex1')}
-                  style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '0.45rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}
-                >
-                  <span>HEX: #F59E0B</span>
-                  <span style={{ color: 'var(--accent-gold)' }}>{copiedCode === 'hex1' ? '✓ Copied' : 'Copy'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Color 2: Emerald Vitality */}
-            <div style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)',
-              overflow: 'hidden',
-              boxShadow: 'var(--shadow-sm)'
-            }}>
-              <div style={{ height: '110px', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', display: 'flex', alignItems: 'flex-end', padding: '1rem' }}>
-                <span style={{ background: 'rgba(0,0,0,0.6)', color: '#FFFFFF', fontSize: '0.72rem', fontWeight: 800, padding: '0.2rem 0.6rem', borderRadius: '20px' }}>
-                  ACCENT GROWTH
-                </span>
-              </div>
-              <div style={{ padding: '1.25rem' }}>
-                <h4 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.2rem', color: 'var(--text-primary)' }}>Emerald Growth</h4>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem', lineHeight: 1.6 }}>
-                  Represents structured score improvement, peace of mind, and vitality.
-                </p>
-                <button
-                  onClick={() => copyToClipboard('#10B981', 'hex2')}
-                  style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '0.45rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}
-                >
-                  <span>HEX: #10B981</span>
-                  <span style={{ color: 'var(--accent-green)' }}>{copiedCode === 'hex2' ? '✓ Copied' : 'Copy'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Color 3: Deep Obsidian Navy */}
-            <div style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)',
-              overflow: 'hidden',
-              boxShadow: 'var(--shadow-sm)'
-            }}>
-              <div style={{ height: '110px', background: 'linear-gradient(135deg, #1E293B 0%, #0B0C0E 100%)', display: 'flex', alignItems: 'flex-end', padding: '1rem' }}>
-                <span style={{ background: 'rgba(255,255,255,0.15)', color: '#FFFFFF', fontSize: '0.72rem', fontWeight: 800, padding: '0.2rem 0.6rem', borderRadius: '20px' }}>
-                  BASE CANVAS
-                </span>
-              </div>
-              <div style={{ padding: '1.25rem' }}>
-                <h4 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.2rem', color: 'var(--text-primary)' }}>Obsidian Midnight</h4>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem', lineHeight: 1.6 }}>
-                  Reflects deep institutional discipline, security, and focused quiet study.
-                </p>
-                <button
-                  onClick={() => copyToClipboard('#0B0C0E', 'hex3')}
-                  style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '0.45rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}
-                >
-                  <span>HEX: #0B0C0E</span>
-                  <span style={{ color: 'var(--text-secondary)' }}>{copiedCode === 'hex3' ? '✓ Copied' : 'Copy'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Color 4: Pure Horizon Ice */}
-            <div style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--radius-md)',
-              overflow: 'hidden',
-              boxShadow: 'var(--shadow-sm)'
-            }}>
-              <div style={{ height: '110px', background: 'linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%)', display: 'flex', alignItems: 'flex-end', padding: '1rem' }}>
-                <span style={{ background: 'rgba(0,0,0,0.7)', color: '#FFFFFF', fontSize: '0.72rem', fontWeight: 800, padding: '0.2rem 0.6rem', borderRadius: '20px' }}>
-                  CLARITY WHITE
-                </span>
-              </div>
-              <div style={{ padding: '1.25rem' }}>
-                <h4 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.2rem', color: 'var(--text-primary)' }}>Horizon Crisp White</h4>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem', lineHeight: 1.6 }}>
-                  Reflects absolute transparency, conceptual precision, and unclouded logic.
-                </p>
-                <button
-                  onClick={() => copyToClipboard('#FFFFFF', 'hex4')}
-                  style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: '0.45rem', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}
-                >
-                  <span>HEX: #FFFFFF</span>
-                  <span style={{ color: 'var(--text-secondary)' }}>{copiedCode === 'hex4' ? '✓ Copied' : 'Copy'}</span>
-                </button>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* 6. CALL TO ACTION: BACK TO HOME */}
+      {/* 5. CALL TO ACTION */}
       <section style={{
         padding: '5rem 1.5rem',
         textAlign: 'center',
@@ -981,7 +917,7 @@ export default function LogoTheoryPage() {
         </div>
       </section>
 
-      {/* Global CSS Keyframes for Logo Studio Animations */}
+      {/* Animations */}
       <style jsx global>{`
         @keyframes pulseGlow {
           0% { transform: scale(0.92); opacity: 0.6; }
