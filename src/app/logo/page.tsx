@@ -37,113 +37,41 @@ export function HorizonLogoMark({
   glow?: boolean;
   className?: string;
 }) {
-  const primaryFill = fillColor || 'currentColor';
-  const arrowFill = accentColor || primaryFill;
+  const primaryFill = fillColor || '#F59E0B';
+  const rightHookFill = accentColor || primaryFill;
+  const height = Math.round(size * 0.86);
 
   return (
     <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} className={className}>
       {glow && (
         <div style={{
           position: 'absolute',
-          inset: '-15%',
-          background: 'radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, rgba(16, 185, 129, 0.15) 50%, transparent 70%)',
-          filter: 'blur(20px)',
+          inset: '-20%',
+          background: 'radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, rgba(16, 185, 129, 0.15) 50%, transparent 70%)',
+          filter: 'blur(24px)',
           borderRadius: '50%',
           pointerEvents: 'none'
         }} />
       )}
       <svg
         width={size}
-        height={size * 0.9}
-        viewBox="0 0 200 180"
+        height={height}
+        viewBox="60 30 870 750"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ overflow: 'visible' }}
+        style={{ overflow: 'visible', display: 'inline-block' }}
       >
-        <defs>
-          <linearGradient id="hzGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#FBBF24" />
-            <stop offset="100%" stopColor="#D97706" />
-          </linearGradient>
-          <linearGradient id="hzEmeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#34D399" />
-            <stop offset="100%" stopColor="#059669" />
-          </linearGradient>
-          <linearGradient id="hzArrowGrad" x1="0%" y1="100%" x2="0%" y2="0%">
-            <stop offset="0%" stopColor="#F59E0B" />
-            <stop offset="100%" stopColor="#FFFFFF" />
-          </linearGradient>
-        </defs>
-
-        {/* 
-          ACCURATE MATHEMATICAL RECONSTRUCTION OF THE HORIZON INTERLOCKING MONOGRAM:
-          Apex at (100, 15), Base Left at (15, 165), Base Right at (185, 165)
-          Features:
-          1. Outer Triangular Apex & Right Diagonal Leg
-          2. Left 'H' Interlocking Block with lower cutout window
-          3. Central Upward Ascension Arrow
-        */}
-
-        {/* Top Triangle Apex & Right Hook Leg */}
+        {/* Main Body with interlocking 'H' cutout window and central ascension arrow */}
         <path
-          d="M 100 15 
-             L 185 165 
-             L 142 165 
-             L 125 135 
-             L 145 100 
-             L 118 54 
-             L 100 86 
-             L 82 54 
-             L 100 22 
-             Z"
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M 502,51 L 297,394 L 379,396 L 435,488 L 477,411 L 467,324 L 430,314 L 501,201 L 567,317 L 530,323 L 524,404 L 447,526 L 312,525 L 360,433 L 275,431 L 87,758 L 414,746 L 657,326 Z M 220,680 L 264,602 L 401,601 L 360,682 Z"
           fill={primaryFill}
         />
-
-        {/* Right Hook Base Contour */}
+        {/* Right Hook and Base Diagonal Leg */}
         <path
-          d="M 142 165 
-             L 102 165 
-             L 118 137 
-             L 136 137 
-             L 155 165 
-             Z"
-          fill={primaryFill}
-        />
-
-        {/* Left 'H' Block & Lower Diagonal Base */}
-        <path
-          d="M 15 165 
-             L 78 55 
-             L 96 86 
-             L 78 118 
-             L 94 146 
-             L 83 165 
-             L 15 165 
-             Z"
-          fill={primaryFill}
-        />
-
-        {/* Left 'H' Inner Cutout Window */}
-        <path
-          d="M 46 148 
-             L 72 148 
-             L 60 127 
-             L 34 127 
-             Z"
-          fill="var(--bg-card, #0B0C0E)"
-        />
-
-        {/* Central Upward Ascension Arrow */}
-        <path
-          d="M 100 48 
-             L 116 75 
-             L 108 75 
-             L 108 122 
-             L 92 122 
-             L 92 75 
-             L 84 75 
-             Z"
-          fill={arrowFill}
+          d="M 680,357 L 636,433 L 776,680 L 638,682 L 564,561 L 520,629 L 595,758 L 912,757 Z"
+          fill={rightHookFill}
         />
       </svg>
     </div>
@@ -164,19 +92,15 @@ export default function LogoTheoryPage() {
     setTimeout(() => setCopiedCode(null), 2200);
   };
 
-  // Generate SVG Code string for export
+  // Generate Exact SVG Code string for export
   const getRawSvg = () => {
     const fill = themeMode === 'light' ? '#0F172A' : themeMode === 'gold' ? '#F59E0B' : themeMode === 'emerald' ? '#10B981' : '#FFFFFF';
-    const arrow = themeMode === 'gold' ? '#FBBF24' : themeMode === 'emerald' ? '#34D399' : '#F59E0B';
-    return `<svg width="${logoSize}" height="${Math.round(logoSize * 0.9)}" viewBox="0 0 200 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Top Apex & Right Hook -->
-  <path d="M 100 15 L 185 165 L 142 165 L 125 135 L 145 100 L 118 54 L 100 86 L 82 54 L 100 22 Z" fill="${fill}" />
-  <path d="M 142 165 L 102 165 L 118 137 L 136 137 L 155 165 Z" fill="${fill}" />
-  <!-- Left 'H' Base Structure -->
-  <path d="M 15 165 L 78 55 L 96 86 L 78 118 L 94 146 L 83 165 L 15 165 Z" fill="${fill}" />
-  <path d="M 46 148 L 72 148 L 60 127 L 34 127 Z" fill="#0B0C0E" />
-  <!-- Central Ascension Arrow -->
-  <path d="M 100 48 L 116 75 L 108 75 L 108 122 L 92 122 L 92 75 L 84 75 Z" fill="${arrow}" />
+    const accent = themeMode === 'gold' ? '#FBBF24' : themeMode === 'emerald' ? '#34D399' : '#F59E0B';
+    return `<svg width="${logoSize}" height="${Math.round(logoSize * 0.86)}" viewBox="60 30 870 750" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Exact Interlocking 'H' + Central Ascension Arrow + Cutout Window -->
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M 502,51 L 297,394 L 379,396 L 435,488 L 477,411 L 467,324 L 430,314 L 501,201 L 567,317 L 530,323 L 524,404 L 447,526 L 312,525 L 360,433 L 275,431 L 87,758 L 414,746 L 657,326 Z M 220,680 L 264,602 L 401,601 L 360,682 Z" fill="${fill}" />
+  <!-- Right Hook & Diagonal Leg Contour -->
+  <path d="M 680,357 L 636,433 L 776,680 L 638,682 L 564,561 L 520,629 L 595,758 L 912,757 Z" fill="${accent}" />
 </svg>`;
   };
 

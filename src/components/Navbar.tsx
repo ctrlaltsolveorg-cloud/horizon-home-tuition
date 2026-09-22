@@ -7,6 +7,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { Menu, X, Sun, Moon, Home, PhoneCall, Headphones, Phone, LogOut, LayoutDashboard } from 'lucide-react';
+import HorizonLogoIcon from '@/components/HorizonLogoSvg';
 
 export default function Navbar() {
   const { lang, setLang, t } = useLanguage();
@@ -39,13 +40,7 @@ export default function Navbar() {
         {/* BRAND LOGO */}
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>
           {/* Official Interlocking Vector Emblem */}
-          <svg width="26" height="24" viewBox="0 0 200 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M 100 15 L 185 165 L 142 165 L 125 135 L 145 100 L 118 54 L 100 86 L 82 54 L 100 22 Z" fill="#F59E0B" />
-            <path d="M 142 165 L 102 165 L 118 137 L 136 137 L 155 165 Z" fill="#F59E0B" />
-            <path d="M 15 165 L 78 55 L 96 86 L 78 118 L 94 146 L 83 165 L 15 165 Z" fill="#F59E0B" />
-            <path d="M 46 148 L 72 148 L 60 127 L 34 127 Z" fill="var(--bg-main, #0B0C0E)" />
-            <path d="M 100 48 L 116 75 L 108 75 L 108 122 L 92 122 L 92 75 L 84 75 Z" fill="#34D399" />
-          </svg>
+          <HorizonLogoIcon size={30} color="#F59E0B" />
 
           <span style={{
             fontFamily: 'var(--font-heading)',
