@@ -37,20 +37,9 @@ export default function Navbar() {
         justifyContent: 'space-between',
         height: '70px'
       }}>
-        {/* BRAND LOGO */}
+        {/* BRAND LOGO — EXACT UNIFIED CHEVRON OVERHANG LOCKUP */}
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-          {/* Official Interlocking Vector Emblem */}
-          <HorizonLogoIcon size={30} color="#F59E0B" />
-
-          <span style={{
-            fontFamily: 'var(--font-heading)',
-            fontSize: '1.65rem',
-            fontWeight: 800,
-            letterSpacing: '0.08em',
-            color: 'var(--text-primary)'
-          }}>
-            HORIZON
-          </span>
+          <HorizonLogoIcon size={36} color="#F59E0B" textColor="var(--text-primary)" variant="full" />
           <span style={{
             background: 'var(--accent-gold-light)',
             border: '1px solid rgba(245, 158, 11, 0.3)',

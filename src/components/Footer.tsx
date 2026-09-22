@@ -29,17 +29,7 @@ export default function Footer() {
         {/* Col 1: Brand Info */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1rem' }}>
-            <HorizonLogoIcon size={34} color="#F59E0B" />
-
-            <span style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: '2rem',
-              fontWeight: 900,
-              color: 'var(--text-primary)',
-              letterSpacing: '0.08em'
-            }}>
-              HORIZON
-            </span>
+            <HorizonLogoIcon size={44} color="#F59E0B" textColor="var(--text-primary)" variant="full" />
             <span className="badge badge-gold" style={{ fontSize: '0.68rem' }}>
               MANAGED
             </span>

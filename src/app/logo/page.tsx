@@ -374,53 +374,14 @@ export default function LogoTheoryPage() {
               animation: animationMode === 'float' ? 'floatLogo 4s ease-in-out infinite' : 'none'
             }}>
 
-              {/* RENDER THE ACCURATE VECTOR ICON */}
+              {/* RENDER THE ACCURATE VECTOR ICON / UNIFIED LOCKUP */}
               <HorizonLogoMark
-                size={140}
+                size={logoVariant === 'monogram' ? 160 : 180}
                 fillColor={activeFill}
                 accentColor={activeArrow}
+                variant={logoVariant}
                 glow={glowEnabled && animationMode === 'shimmer'}
               />
-
-              {/* TYPOGRAPHY LOCKUP */}
-              {logoVariant !== 'monogram' && (
-                <div style={{ textAlign: logoVariant === 'stacked' ? 'center' : 'left' }}>
-                  <div style={{
-                    fontFamily: 'var(--font-heading)',
-                    fontSize: '2.5rem',
-                    fontWeight: 900,
-                    letterSpacing: '0.12em',
-                    color: themeMode === 'light' ? '#0F172A' : '#FFFFFF',
-                    lineHeight: 1
-                  }}>
-                    HORIZON
-                  </div>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: logoVariant === 'stacked' ? 'center' : 'flex-start',
-                    gap: '0.5rem',
-                    marginTop: '0.45rem'
-                  }}>
-                    <span style={{
-                      background: themeMode === 'emerald' ? 'rgba(52, 211, 153, 0.2)' : 'var(--accent-gold-light)',
-                      color: themeMode === 'emerald' ? '#34D399' : 'var(--accent-gold)',
-                      fontSize: '0.65rem',
-                      fontWeight: 800,
-                      padding: '0.18rem 0.6rem',
-                      borderRadius: '12px',
-                      letterSpacing: '0.1em',
-                      textTransform: 'uppercase',
-                      border: '1px solid rgba(245, 158, 11, 0.3)'
-                    }}>
-                      MANAGED
-                    </span>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '0.04em' }}>
-                      Home Tuition Platform
-                    </span>
-                  </div>
-                </div>
-              )}
 
             </div>
 
