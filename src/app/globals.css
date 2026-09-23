@@ -347,14 +347,75 @@ button, input, select, textarea {
   }
 }
 
-.form-input::placeholder {
-  color: var(--text-tertiary, #94a3b8) !important;
-  opacity: 0.75 !important;
+/* Universal Input & Placeholder Low-Contrast Styling */
+input::placeholder,
+textarea::placeholder,
+select::placeholder,
+.form-input::placeholder,
+.form-textarea::placeholder,
+.form-select::placeholder {
+  color: #64748B !important;
+  opacity: 0.65 !important;
+  font-weight: 400 !important;
+  font-size: 0.92em !important;
+  letter-spacing: 0.01em !important;
 }
 
-.form-input:focus {
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder,
+[data-theme="light"] select::placeholder,
+[data-theme="light"] .form-input::placeholder,
+[data-theme="light"] .form-textarea::placeholder {
+  color: #94A3B8 !important;
+  opacity: 0.75 !important;
+  font-weight: 400 !important;
+}
+
+/* WebKit, Mozilla & Edge Fallbacks */
+::-webkit-input-placeholder {
+  color: #64748B !important;
+  opacity: 0.65 !important;
+  font-weight: 400 !important;
+}
+:-moz-placeholder {
+  color: #64748B !important;
+  opacity: 0.65 !important;
+  font-weight: 400 !important;
+}
+::-moz-placeholder {
+  color: #64748B !important;
+  opacity: 0.65 !important;
+  font-weight: 400 !important;
+}
+:-ms-input-placeholder {
+  color: #64748B !important;
+  opacity: 0.65 !important;
+  font-weight: 400 !important;
+}
+
+/* Crisp Active Typed Text in Inputs */
+input:not(:placeholder-shown),
+textarea:not(:placeholder-shown) {
+  color: var(--text-primary) !important;
+  font-weight: 600;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
   outline: none;
-  border-color: var(--accent-gold) !important;
-  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
+  border-color: #F59E0B !important;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2) !important;
+}
+
+/* Disabled / Read-Only Input Styling */
+input:disabled,
+textarea:disabled,
+.input-readonly {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #94A3B8 !important;
+  cursor: not-allowed !important;
+  user-select: none !important;
 }
 

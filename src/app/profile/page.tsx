@@ -680,59 +680,92 @@ function ProfilePageContent() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '4px' }}>
-                  Full Name
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '6px' }}>
+                  Full Name <span style={{ color: '#F59E0B' }}>*</span>
                 </label>
                 {isEditMode ? (
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Harshit Patel"
                     required
                     style={{
                       width: '100%',
-                      padding: '8px 12px',
-                      background: '#1F2937',
-                      border: '1px solid #374151',
+                      padding: '10px 14px',
+                      background: '#0F172A',
+                      border: '1.5px solid #3B82F6',
                       borderRadius: '8px',
-                      color: '#FFF',
-                      fontSize: '0.92rem'
+                      color: '#FFFFFF',
+                      fontSize: '0.95rem',
+                      fontWeight: 600
                     }}
                   />
                 ) : (
-                  <div style={{ fontSize: '1rem', fontWeight: 700, color: '#FFF' }}>{name || '—'}</div>
+                  <div style={{
+                    padding: '10px 14px',
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '8px',
+                    color: '#FFFFFF',
+                    fontSize: '0.95rem',
+                    fontWeight: 700
+                  }}>
+                    {name || '—'}
+                  </div>
                 )}
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '4px' }}>
-                  Email Address (Read Only)
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '6px' }}>
+                  Email Address <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 500 }}>(Read Only)</span>
                 </label>
-                <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#CBD5E1' }}>{user?.email}</div>
+                <div style={{
+                  padding: '10px 14px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '8px',
+                  color: '#94A3B8',
+                  fontSize: '0.92rem',
+                  fontWeight: 500
+                }}>
+                  {user?.email}
+                </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '4px' }}>
-                  Phone / WhatsApp
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '6px' }}>
+                  Phone / WhatsApp Number
                 </label>
                 {isEditMode ? (
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 98765 43210"
+                    placeholder="e.g. +91 98765 43210"
                     style={{
                       width: '100%',
-                      padding: '8px 12px',
-                      background: '#1F2937',
-                      border: '1px solid #374151',
+                      padding: '10px 14px',
+                      background: '#0F172A',
+                      border: '1.5px solid #374151',
                       borderRadius: '8px',
-                      color: '#FFF',
-                      fontSize: '0.92rem'
+                      color: '#FFFFFF',
+                      fontSize: '0.95rem',
+                      fontWeight: 600
                     }}
                   />
                 ) : (
-                  <div style={{ fontSize: '1rem', fontWeight: 700, color: '#34D399' }}>{phone || '—'}</div>
+                  <div style={{
+                    padding: '10px 14px',
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '8px',
+                    color: phone ? '#34D399' : '#64748B',
+                    fontSize: '0.95rem',
+                    fontWeight: 700
+                  }}>
+                    {phone || '— (No phone added)'}
+                  </div>
                 )}
               </div>
             </div>
@@ -753,90 +786,105 @@ function ProfilePageContent() {
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '4px' }}>College / Institution</label>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '6px' }}>College / Institution</label>
                   {isEditMode ? (
                     <input
                       type="text"
                       value={college}
                       onChange={(e) => setCollege(e.target.value)}
-                      style={{ width: '100%', padding: '8px 12px', background: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#FFF' }}
+                      placeholder="e.g. PCE Purnia / DU"
+                      style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1.5px solid #374151', borderRadius: '8px', color: '#FFF', fontSize: '0.92rem' }}
                     />
                   ) : (
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#38BDF8' }}>{college || 'PCE PURNIA'}</div>
+                    <div style={{ padding: '10px 14px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', color: '#38BDF8', fontWeight: 700 }}>
+                      {college || '—'}
+                    </div>
                   )}
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '4px' }}>Degree &amp; Status</label>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '6px' }}>Degree &amp; Status</label>
                   {isEditMode ? (
                     <input
                       type="text"
                       value={degreeStatus}
                       onChange={(e) => setDegreeStatus(e.target.value)}
-                      style={{ width: '100%', padding: '8px 12px', background: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#FFF' }}
+                      placeholder="e.g. B.Tech/BS 3rd sem with 7.2 CGPA"
+                      style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1.5px solid #374151', borderRadius: '8px', color: '#FFF', fontSize: '0.92rem' }}
                     />
                   ) : (
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#FFF' }}>{degreeStatus || 'B.Tech/BS: 3rd sem with 7.2 CGPA'}</div>
+                    <div style={{ padding: '10px 14px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', color: '#FFF', fontWeight: 700 }}>
+                      {degreeStatus || '—'}
+                    </div>
                   )}
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '4px' }}>Teaching Experience</label>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '6px' }}>Teaching Experience</label>
                   {isEditMode ? (
                     <input
                       type="text"
                       value={experienceYears}
                       onChange={(e) => setExperienceYears(e.target.value)}
-                      style={{ width: '100%', padding: '8px 12px', background: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#FFF' }}
+                      placeholder="e.g. 3+ years experience"
+                      style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1.5px solid #374151', borderRadius: '8px', color: '#FFF', fontSize: '0.92rem' }}
                     />
                   ) : (
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#34D399' }}>{experienceYears || '3+ years teaching experience'}</div>
+                    <div style={{ padding: '10px 14px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', color: '#34D399', fontWeight: 700 }}>
+                      {experienceYears || '—'}
+                    </div>
                   )}
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '4px' }}>Medium Preference</label>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '6px' }}>Medium Preference</label>
                   {isEditMode ? (
                     <select
                       value={mediumPreference}
                       onChange={(e) => setMediumPreference(e.target.value)}
-                      style={{ width: '100%', padding: '8px 12px', background: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#FFF' }}
+                      style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1.5px solid #374151', borderRadius: '8px', color: '#FFF', fontSize: '0.92rem' }}
                     >
                       <option value="Hindi medium only">Hindi medium only</option>
                       <option value="English medium only">English medium only</option>
                       <option value="Bilingual (Hindi & English)">Bilingual (Hindi & English)</option>
                     </select>
                   ) : (
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#F59E0B' }}>{mediumPreference}</div>
+                    <div style={{ padding: '10px 14px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', color: '#F59E0B', fontWeight: 700 }}>
+                      {mediumPreference}
+                    </div>
                   )}
                 </div>
 
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '4px' }}>Subjects Handled</label>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '6px' }}>Subjects Handled</label>
                   {isEditMode ? (
                     <input
                       type="text"
                       value={subjects}
                       onChange={(e) => setSubjects(e.target.value)}
-                      style={{ width: '100%', padding: '8px 12px', background: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#FFF' }}
+                      placeholder="e.g. Mathematics, Science, Foundation Physics"
+                      style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1.5px solid #374151', borderRadius: '8px', color: '#FFF', fontSize: '0.92rem' }}
                     />
                   ) : (
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#F1F5F9' }}>{subjects || 'Mathematics, Science, Foundation Physics'}</div>
+                    <div style={{ padding: '10px 14px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', color: '#F1F5F9', fontWeight: 700 }}>
+                      {subjects || '—'}
+                    </div>
                   )}
                 </div>
 
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '4px' }}>Bio &amp; Teaching Philosophy</label>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '6px' }}>Bio &amp; Teaching Philosophy</label>
                   {isEditMode ? (
                     <textarea
                       rows={3}
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
-                      style={{ width: '100%', padding: '8px 12px', background: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#FFF', fontFamily: 'inherit' }}
+                      placeholder="e.g. Dedicated educator specialized in CBSE and State Board learners with structured weekly assessments."
+                      style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1.5px solid #374151', borderRadius: '8px', color: '#FFF', fontFamily: 'inherit', fontSize: '0.92rem' }}
                     />
                   ) : (
-                    <div style={{ fontSize: '0.9rem', color: '#CBD5E1', fontStyle: 'italic', lineHeight: 1.5 }}>
-                      "{bio || 'Dedicated educator specialized in personalized concept clarity and regular assessment tests.'}"
+                    <div style={{ padding: '12px 14px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', color: '#CBD5E1', fontStyle: 'italic', lineHeight: 1.5 }}>
+                      "{bio || 'Dedicated educator specialized in personalized mentorship and regular testing.'}"
                     </div>
                   )}
                 </div>
@@ -856,80 +904,92 @@ function ProfilePageContent() {
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '4px' }}>Parent / Guardian Name</label>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '6px' }}>Parent / Guardian Name</label>
                   {isEditMode ? (
                     <input
                       type="text"
                       value={parentName}
                       onChange={(e) => setParentName(e.target.value)}
-                      style={{ width: '100%', padding: '8px 12px', background: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#FFF' }}
+                      placeholder="e.g. Ramesh Sharma"
+                      style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1.5px solid #374151', borderRadius: '8px', color: '#FFF' }}
                     />
                   ) : (
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#FFF' }}>{parentName || 'Ramesh Sharma'}</div>
+                    <div style={{ padding: '10px 14px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', color: '#FFF', fontWeight: 700 }}>
+                      {parentName || '—'}
+                    </div>
                   )}
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '4px' }}>Class / Grade</label>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '6px' }}>Class / Grade</label>
                   {isEditMode ? (
                     <select
                       value={classLevel}
                       onChange={(e) => setClassLevel(e.target.value)}
-                      style={{ width: '100%', padding: '8px 12px', background: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#FFF' }}
+                      style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1.5px solid #374151', borderRadius: '8px', color: '#FFF' }}
                     >
                       {['Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11 (PCM)', 'Class 11 (PCB)', 'Class 12 (PCM)', 'Class 12 (PCB)'].map((c) => (
                         <option key={c} value={c}>{c}</option>
                       ))}
                     </select>
                   ) : (
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#38BDF8' }}>{classLevel}</div>
+                    <div style={{ padding: '10px 14px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', color: '#38BDF8', fontWeight: 700 }}>
+                      {classLevel}
+                    </div>
                   )}
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '4px' }}>Board</label>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '6px' }}>Board</label>
                   {isEditMode ? (
                     <select
                       value={board}
                       onChange={(e) => setBoard(e.target.value)}
-                      style={{ width: '100%', padding: '8px 12px', background: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#FFF' }}
+                      style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1.5px solid #374151', borderRadius: '8px', color: '#FFF' }}
                     >
                       <option value="CBSE">CBSE</option>
                       <option value="ICSE">ICSE</option>
                       <option value="Bihar State Board">Bihar State Board</option>
                     </select>
                   ) : (
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#F59E0B' }}>{board}</div>
+                    <div style={{ padding: '10px 14px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', color: '#F59E0B', fontWeight: 700 }}>
+                      {board}
+                    </div>
                   )}
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '4px' }}>School Medium</label>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '6px' }}>School Medium</label>
                   {isEditMode ? (
                     <select
                       value={schoolMedium}
                       onChange={(e) => setSchoolMedium(e.target.value)}
-                      style={{ width: '100%', padding: '8px 12px', background: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#FFF' }}
+                      style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1.5px solid #374151', borderRadius: '8px', color: '#FFF' }}
                     >
                       <option value="Hindi Medium">Hindi Medium</option>
                       <option value="English Medium">English Medium</option>
                     </select>
                   ) : (
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#34D399' }}>{schoolMedium}</div>
+                    <div style={{ padding: '10px 14px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', color: '#34D399', fontWeight: 700 }}>
+                      {schoolMedium}
+                    </div>
                   )}
                 </div>
 
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '4px' }}>Address</label>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#94A3B8', marginBottom: '6px' }}>Residential Address</label>
                   {isEditMode ? (
                     <input
                       type="text"
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
-                      style={{ width: '100%', padding: '8px 12px', background: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#FFF' }}
+                      placeholder="e.g. Line Bazar, Near Medical College, Purnia"
+                      style={{ width: '100%', padding: '10px 14px', background: '#0F172A', border: '1.5px solid #374151', borderRadius: '8px', color: '#FFF' }}
                     />
                   ) : (
-                    <div style={{ fontSize: '0.92rem', color: '#CBD5E1' }}>{address || 'Line Bazar, Purnia'}</div>
+                    <div style={{ padding: '10px 14px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', color: '#CBD5E1' }}>
+                      {address || '—'}
+                    </div>
                   )}
                 </div>
               </div>
