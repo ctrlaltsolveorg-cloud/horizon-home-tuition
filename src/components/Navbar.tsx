@@ -7,7 +7,6 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { Menu, X, Sun, Moon, Home, PhoneCall, Headphones, Phone, LogOut, LayoutDashboard } from 'lucide-react';
-import HorizonLogoIcon from '@/components/HorizonLogoSvg';
 
 export default function Navbar() {
   const { lang, setLang, t } = useLanguage();
@@ -39,9 +38,6 @@ export default function Navbar() {
       }}>
         {/* BRAND LOGO */}
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-          {/* Official Interlocking Vector Emblem */}
-          <HorizonLogoIcon size={30} color="#F59E0B" />
-
           <span style={{
             fontFamily: 'var(--font-heading)',
             fontSize: '1.65rem',

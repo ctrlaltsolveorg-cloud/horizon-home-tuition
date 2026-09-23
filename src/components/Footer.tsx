@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 import { Phone, MessageCircle, Mail, MapPin } from 'lucide-react';
-import HorizonLogoIcon from '@/components/HorizonLogoSvg';
 
 export default function Footer() {
   const { lang, setLang, t } = useLanguage();
@@ -29,8 +28,6 @@ export default function Footer() {
         {/* Col 1: Brand Info */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1rem' }}>
-            <HorizonLogoIcon size={34} color="#F59E0B" />
-
             <span style={{
               fontFamily: 'var(--font-heading)',
               fontSize: '2rem',
