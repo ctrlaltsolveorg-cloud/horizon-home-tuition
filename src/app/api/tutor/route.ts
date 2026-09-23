@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import db, { initDB } from '@/lib/db';
 import { sendAdminNotification } from '@/lib/email';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   try {
     initDB();
