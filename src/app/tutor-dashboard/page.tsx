@@ -1754,29 +1754,52 @@ export default function TutorDashboard() {
                               </div>
                             </div>
 
-                            <button
-                              onClick={() => {
-                                setSelectedStudentForEval({ id: sId, name: stName, class_grade: 'Class 7th • CBSE/ICSE' });
-                                setSelectedDutyForEval(duty);
-                                setShowEditorModal(true);
-                              }}
-                              style={{
-                                padding: '6px 12px',
-                                borderRadius: '6px',
-                                background: existingRep ? 'rgba(16, 185, 129, 0.2)' : 'linear-gradient(135deg, #F59E0B, #D97706)',
-                                color: existingRep ? '#34D399' : '#000000',
-                                border: existingRep ? '1px solid #059669' : 'none',
-                                fontWeight: 800,
-                                fontSize: '0.78rem',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px'
-                              }}
-                            >
-                              <Edit3 size={13} />
-                              <span>{existingRep ? 'Edit / Retest' : 'Conduct Test & Fill Report'}</span>
-                            </button>
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <Link
+                                href={`/report-card/fill?studentName=${encodeURIComponent(stName)}&classGrade=${encodeURIComponent('Class 7th • CBSE/ICSE')}&tutorName=${encodeURIComponent('Harshit Patel')}&dutyId=${encodeURIComponent(duty.id)}&centerName=${encodeURIComponent(duty.center_name)}`}
+                                style={{
+                                  padding: '6px 14px',
+                                  borderRadius: '6px',
+                                  background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                                  color: '#000000',
+                                  fontWeight: 800,
+                                  fontSize: '0.78rem',
+                                  textDecoration: 'none',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '5px',
+                                  boxShadow: '0 2px 8px rgba(245, 158, 11, 0.25)'
+                                }}
+                              >
+                                <Sparkles size={13} />
+                                <span>{existingRep ? 'Open & Edit PDF Sheet' : 'Live Fill PDF Report Card'}</span>
+                              </Link>
+
+                              <button
+                                onClick={() => {
+                                  setSelectedStudentForEval({ id: sId, name: stName, class_grade: 'Class 7th • CBSE/ICSE' });
+                                  setSelectedDutyForEval(duty);
+                                  setShowEditorModal(true);
+                                }}
+                                style={{
+                                  padding: '6px 10px',
+                                  borderRadius: '6px',
+                                  background: '#334155',
+                                  color: '#F8FAFC',
+                                  border: '1px solid #475569',
+                                  fontWeight: 700,
+                                  fontSize: '0.76rem',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '4px'
+                                }}
+                                title="Quick Dialog View"
+                              >
+                                <Edit3 size={13} />
+                                <span>Quick Form</span>
+                              </button>
+                            </div>
                           </div>
                         );
                       })}
@@ -1804,6 +1827,26 @@ export default function TutorDashboard() {
                   Official verified single-page reports matching the Horizon quality audit standard. Teaching tutors can view reports for guidance, but cannot edit cross-examiner marks.
                 </p>
               </div>
+
+              <Link
+                href="/report-card/fill"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '9px 16px',
+                  borderRadius: '8px',
+                  background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                  color: '#000000',
+                  fontWeight: 800,
+                  fontSize: '0.86rem',
+                  textDecoration: 'none',
+                  boxShadow: '0 4px 15px rgba(245, 158, 11, 0.35)'
+                }}
+              >
+                <Sparkles size={16} />
+                <span>➕ Live Fill Report Card (PDF Sheet)</span>
+              </Link>
             </div>
 
             <div style={{ display: 'grid', gap: '1.25rem' }}>

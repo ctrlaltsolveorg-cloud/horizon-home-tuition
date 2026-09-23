@@ -1,6 +1,9 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React from 'react';
+import Link from 'next/link';
 import ReportCardView from '@/components/ReportCardView';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -91,6 +94,46 @@ export default function ReportCardMainPage() {
       </div>
 
       <main style={{ minHeight: '90vh', background: '#0B0F19' }}>
+        {/* Navigation Quick Bar */}
+        <div className="no-print" style={{
+          maxWidth: '900px',
+          margin: '0 auto',
+          padding: '1.25rem 1rem 0',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <div>
+            <h2 style={{ color: '#F8FAFC', fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>
+              Horizon Official Monthly Progress Report
+            </h2>
+            <p style={{ color: '#94A3B8', fontSize: '0.82rem', margin: '2px 0 0 0' }}>
+              Standardized single-page evaluation matching official printable audit blueprints.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Link
+              href="/report-card/fill"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '9px 16px',
+                background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                color: '#000',
+                borderRadius: '8px',
+                fontWeight: 800,
+                fontSize: '0.86rem',
+                textDecoration: 'none',
+                boxShadow: '0 4px 15px rgba(245, 158, 11, 0.35)'
+              }}
+            >
+              <span>✏️ Live Direct-Fill Report Card</span>
+            </Link>
+          </div>
+        </div>
+
         <ReportCardView report={SAMPLE_AUDIT_REPORT} />
       </main>
 
@@ -100,3 +143,4 @@ export default function ReportCardMainPage() {
     </>
   );
 }
+
