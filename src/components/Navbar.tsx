@@ -223,6 +223,27 @@ export default function Navbar() {
                 <LayoutDashboard size={14} />
                 <span>{user.name.split(' ')[0]}</span>
               </Link>
+              <Link
+                href="/profile"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '0.42rem 0.65rem',
+                  borderRadius: '20px',
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  gap: '4px'
+                }}
+                title="Manage Profile"
+              >
+                <User size={13} />
+                <span>Profile</span>
+              </Link>
               <button
                 type="button"
                 onClick={() => logout()}
@@ -347,6 +368,21 @@ export default function Navbar() {
                 }}
               >
                 <LayoutDashboard size={18} /> My Dashboard ({user.name.split(' ')[0]})
+              </Link>
+              <Link
+                href="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  color: 'var(--text-primary)',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  textDecoration: 'none'
+                }}
+              >
+                <User size={18} /> Manage Profile
               </Link>
               <button
                 type="button"

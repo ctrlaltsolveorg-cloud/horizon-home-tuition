@@ -56,7 +56,26 @@ interface AuthContextType {
   signInWithPassword: (email: string, password: string) => Promise<AuthResponse>;
   signUp: (email: string, password: string, metadata: SignUpMetadata) => Promise<AuthResponse>;
   signInWithOtp: (email: string) => Promise<AuthResponse>;
+  signInWithGoogle: (preferredRole?: UserRole) => Promise<AuthResponse>;
   resetPassword: (email: string) => Promise<AuthResponse>;
+  updateProfile: (profileData: {
+    name?: string;
+    phone?: string;
+    role?: UserRole;
+    avatar_url?: string;
+    college?: string;
+    degree_status?: string;
+    experience_years?: string;
+    medium_preference?: string;
+    subjects?: string;
+    bio_and_custom_notes?: string;
+    parent_name?: string;
+    class_level?: string;
+    board?: string;
+    school_medium?: string;
+    address?: string;
+    [key: string]: any;
+  }) => Promise<AuthResponse>;
   loginAs: (role: UserRole, customEmail?: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -487,6 +506,143 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Google OAuth Sign In
+  const signInWithGoogle = async (preferredRole?: UserRole): Promise<AuthResponse> => {
+    setLoading(true);
+    try {
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      if (preferredRole) {
+        localStorage.setItem('horizon_pending_role', preferredRole);
+      }
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
+        }
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to initiate Google sign in.' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update Profile (Syncs to Supabase profiles + tutor_profiles / student_enquiries)
+  const updateProfile = async (profileData: {
+    name?: string;
+    phone?: string;
+    role?: UserRole;
+    avatar_url?: string;
+    college?: string;
+    degree_status?: string;
+    experience_years?: string;
+    medium_preference?: string;
+    subjects?: string;
+    bio_and_custom_notes?: string;
+    parent_name?: string;
+    class_level?: string;
+    board?: string;
+    school_medium?: string;
+    address?: string;
+    [key: string]: any;
+  }): Promise<AuthResponse> => {
+    if (!user) {
+      return { success: false, error: 'User is not logged in.' };
+    }
+
+    setLoading(true);
+    try {
+      const userId = user.id;
+      const newRole = profileData.role || user.role;
+      const newName = profileData.name || user.name;
+      const newPhone = profileData.phone !== undefined ? profileData.phone : (user.phone || '');
+      const newAvatar = profileData.avatar_url || user.avatar_url || '';
+
+      // 1. If not demo user, update Supabase public.profiles
+      if (!user.isDemo) {
+        await supabase.from('profiles').upsert({
+          id: userId,
+          email: user.email,
+          role: newRole,
+          full_name: newName,
+          phone: newPhone,
+          avatar_url: newAvatar,
+          updated_at: new Date().toISOString()
+        });
+
+        // 2. If Teacher, upsert into tutor_profiles
+        if (newRole === 'teacher') {
+          await supabase.from('tutor_profiles').upsert({
+            id: userId,
+            user_id: userId,
+            full_name: newName,
+            phone: newPhone,
+            email: user.email,
+            college: profileData.college || user.profileData?.college || 'Institution',
+            degree_status: profileData.degree_status || user.profileData?.degree_status || 'Graduated',
+            experience_years: profileData.experience_years || user.profileData?.experience_years || '1+ years',
+            medium_preference: profileData.medium_preference || user.profileData?.medium_preference || 'Hindi / English',
+            subjects: profileData.subjects || user.profileData?.subjects || 'All Subjects',
+            bio_and_custom_notes: profileData.bio_and_custom_notes || user.profileData?.bio_and_custom_notes || '',
+            rating: 5.0,
+            updated_at: new Date().toISOString()
+          });
+        }
+
+        // 3. If Student, update student_enquiries
+        if (newRole === 'student_parent') {
+          await supabase.from('student_enquiries').upsert({
+            student_id: userId,
+            student_name: newName,
+            parent_name: profileData.parent_name || newName,
+            phone: newPhone,
+            email: user.email,
+            class_level: profileData.class_level || 'Class 9',
+            board: profileData.board || 'CBSE',
+            school_medium: profileData.school_medium || 'English Medium',
+            address: profileData.address || '',
+            test_status: 'Active Enrolled',
+            fee_status: 'PAID'
+          });
+        }
+      }
+
+      // Update Local State
+      const updatedUser: AuthUser = {
+        ...user,
+        name: newName,
+        phone: newPhone,
+        role: newRole,
+        avatar_url: newAvatar,
+        profileData: {
+          ...(user.profileData || {}),
+          ...profileData
+        }
+      };
+
+      setUser(updatedUser);
+      localStorage.setItem('horizon_auth_user', JSON.stringify(updatedUser));
+
+      return { success: true };
+    } catch (err: any) {
+      console.error('Update profile error:', err);
+      return { success: false, error: err.message || 'Failed to update profile.' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Sign out
   const logout = async () => {
     setLoading(true);
@@ -498,6 +654,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setSession(null);
       localStorage.removeItem('horizon_auth_user');
+      localStorage.removeItem('horizon_pending_role');
       setLoading(false);
       router.push('/login');
     }
@@ -509,11 +666,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const profile = await fetchProfile(user.id);
       if (profile) {
+        let extraProfileData: any = {};
+        if (profile.role === 'teacher') {
+          const { data: tutor } = await supabase.from('tutor_profiles').select('*').eq('id', user.id).maybeSingle();
+          if (tutor) extraProfileData = tutor;
+        } else if (profile.role === 'student_parent') {
+          const { data: student } = await supabase.from('student_enquiries').select('*').eq('student_id', user.id).maybeSingle();
+          if (student) extraProfileData = student;
+        }
+
         const updated: AuthUser = {
           ...user,
           name: profile.full_name,
           phone: profile.phone,
-          role: profile.role as UserRole
+          role: profile.role as UserRole,
+          avatar_url: profile.avatar_url,
+          profileData: {
+            ...user.profileData,
+            ...extraProfileData
+          }
         };
         setUser(updated);
         localStorage.setItem('horizon_auth_user', JSON.stringify(updated));
@@ -533,7 +704,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signInWithPassword,
         signUp,
         signInWithOtp,
+        signInWithGoogle,
         resetPassword,
+        updateProfile,
         loginAs,
         logout,
         refreshUser
