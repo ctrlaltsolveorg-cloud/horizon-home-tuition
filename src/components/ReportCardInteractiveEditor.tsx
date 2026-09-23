@@ -1427,6 +1427,11 @@ export default function ReportCardInteractiveEditor({
           box-sizing: border-box;
           transition: border-color 0.2s, background 0.2s;
         }
+        .live-input::placeholder {
+          color: #475569 !important;
+          opacity: 0.9 !important;
+          font-weight: 500 !important;
+        }
         .live-input:focus {
           border-color: #0284C7;
           background: #FFFFFF;
@@ -1440,9 +1445,9 @@ export default function ReportCardInteractiveEditor({
         .live-table-input {
           width: 100%;
           background: #F8FAFC;
-          border: 1px solid transparent;
-          border-radius: 2px;
-          padding: 2.5px 5px;
+          border: 1px solid #E2E8F0;
+          border-radius: 3px;
+          padding: 3px 6px;
           font-size: 0.73rem;
           color: #1E293B;
           font-weight: 600;
@@ -1450,8 +1455,13 @@ export default function ReportCardInteractiveEditor({
           box-sizing: border-box;
           transition: all 0.15s;
         }
+        .live-table-input::placeholder {
+          color: #475569 !important;
+          opacity: 0.9 !important;
+          font-weight: 500 !important;
+        }
         .live-table-input:hover {
-          border-color: #CBD5E1;
+          border-color: #94A3B8;
           background: #FFFFFF;
         }
         .live-table-input:focus {
@@ -1464,9 +1474,9 @@ export default function ReportCardInteractiveEditor({
           width: 100%;
           max-width: 95px;
           background: #F8FAFC;
-          border: 1px solid transparent;
-          border-radius: 2px;
-          padding: 2px 4px;
+          border: 1px solid #E2E8F0;
+          border-radius: 3px;
+          padding: 2.5px 5px;
           font-size: 0.76rem;
           color: #0F172A;
           font-weight: 800;
@@ -1476,8 +1486,13 @@ export default function ReportCardInteractiveEditor({
           box-sizing: border-box;
           transition: all 0.15s;
         }
+        .live-table-score-input::placeholder {
+          color: #475569 !important;
+          opacity: 0.9 !important;
+          font-weight: 500 !important;
+        }
         .live-table-score-input:hover {
-          border-color: #CBD5E1;
+          border-color: #94A3B8;
           background: #FFFFFF;
         }
         .live-table-score-input:focus {
@@ -1489,8 +1504,8 @@ export default function ReportCardInteractiveEditor({
           width: 90px;
           background: #F8FAFC;
           border: 1px solid #CBD5E1;
-          border-radius: 2px;
-          padding: 2px 4px;
+          border-radius: 3px;
+          padding: 2.5px 5px;
           font-size: 0.74rem;
           color: #0284C7;
           font-weight: 800;
@@ -1498,33 +1513,49 @@ export default function ReportCardInteractiveEditor({
           font-family: 'Inter', monospace;
           outline: none;
         }
+        .live-pillar-score-input::placeholder {
+          color: #475569 !important;
+          opacity: 0.9 !important;
+          font-weight: 500 !important;
+        }
 
         .live-textarea {
           width: 100%;
-          background: #FFFFFF;
-          border: 1px solid #E2E8F0;
-          border-radius: 2px;
-          padding: 3px 5px;
-          font-size: 0.67rem;
-          color: #334155;
+          background: #F8FAFC;
+          border: 1px solid #CBD5E1;
+          border-radius: 3px;
+          padding: 4px 6px;
+          font-size: 0.68rem;
+          color: #1E293B;
           outline: none;
           resize: vertical;
           box-sizing: border-box;
         }
+        .live-textarea::placeholder {
+          color: #475569 !important;
+          opacity: 0.9 !important;
+          font-weight: 500 !important;
+        }
         .live-textarea:focus {
           border-color: #0284C7;
+          background: #FFFFFF;
         }
 
         .live-summary-input {
-          background: #FFFFFF;
+          background: #F8FAFC;
           border: 1px solid #CBD5E1;
-          border-radius: 2px;
-          padding: 2px 6px;
+          border-radius: 3px;
+          padding: 3px 6px;
           font-size: 0.73rem;
           font-weight: 600;
           color: #0F172A;
           outline: none;
           width: 180px;
+        }
+        .live-summary-input::placeholder {
+          color: #475569 !important;
+          opacity: 0.9 !important;
+          font-weight: 500 !important;
         }
 
         /* Meta Grid */

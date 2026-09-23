@@ -347,18 +347,18 @@ button, input, select, textarea {
   }
 }
 
-/* Universal Input & Placeholder Low-Contrast Styling */
+/* Universal Input & Placeholder Styling */
 input::placeholder,
 textarea::placeholder,
 select::placeholder,
 .form-input::placeholder,
 .form-textarea::placeholder,
 .form-select::placeholder {
-  color: #64748B !important;
-  opacity: 0.65 !important;
-  font-weight: 400 !important;
-  font-size: 0.92em !important;
-  letter-spacing: 0.01em !important;
+  color: #64748B;
+  opacity: 0.75;
+  font-weight: 400;
+  font-size: 0.92em;
+  letter-spacing: 0.01em;
 }
 
 [data-theme="light"] input::placeholder,
@@ -366,31 +366,46 @@ select::placeholder,
 [data-theme="light"] select::placeholder,
 [data-theme="light"] .form-input::placeholder,
 [data-theme="light"] .form-textarea::placeholder {
-  color: #94A3B8 !important;
-  opacity: 0.75 !important;
-  font-weight: 400 !important;
+  color: #475569;
+  opacity: 0.85;
+  font-weight: 400;
+}
+
+/* White background / Paper Sheet Placeholder Styling - Crisp & Distinct */
+.report-card-paper input::placeholder,
+.report-card-paper textarea::placeholder,
+.report-card-paper select::placeholder,
+.live-input::placeholder,
+.live-table-input::placeholder,
+.live-table-score-input::placeholder,
+.live-pillar-score-input::placeholder,
+.live-textarea::placeholder,
+.live-summary-input::placeholder {
+  color: #475569 !important;
+  opacity: 0.9 !important;
+  font-weight: 500 !important;
 }
 
 /* WebKit, Mozilla & Edge Fallbacks */
 ::-webkit-input-placeholder {
-  color: #64748B !important;
-  opacity: 0.65 !important;
-  font-weight: 400 !important;
+  color: #64748B;
+  opacity: 0.75;
+  font-weight: 400;
 }
 :-moz-placeholder {
-  color: #64748B !important;
-  opacity: 0.65 !important;
-  font-weight: 400 !important;
+  color: #64748B;
+  opacity: 0.75;
+  font-weight: 400;
 }
 ::-moz-placeholder {
-  color: #64748B !important;
-  opacity: 0.65 !important;
-  font-weight: 400 !important;
+  color: #64748B;
+  opacity: 0.75;
+  font-weight: 400;
 }
 :-ms-input-placeholder {
-  color: #64748B !important;
-  opacity: 0.65 !important;
-  font-weight: 400 !important;
+  color: #64748B;
+  opacity: 0.75;
+  font-weight: 400;
 }
 
 /* Crisp Active Typed Text in Inputs */
