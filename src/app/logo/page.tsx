@@ -24,7 +24,7 @@ import {
   Grid
 } from 'lucide-react';
 
-export function HorizonLogoMark({
+function HorizonLogoMark({
   size = 120,
   fillColor,
   accentColor,

@@ -338,13 +338,13 @@ export default function TutorDashboard() {
         if (tpData) {
           const merged = {
             ...tpData,
-            full_name: tpData.full_name || user.user_metadata?.full_name || 'PIYUSH KUMAR PATEL',
+            full_name: tpData.full_name || user.name || 'PIYUSH KUMAR PATEL',
             college: tpData.college || 'PCE PURNIA',
             degree_status: tpData.degree_status || 'B.Tech/BS: 3rd sem with 7.2 CGPA',
             experience_years: tpData.experience_years || '3+ years teaching experience',
             medium_preference: tpData.medium_preference || 'Hindi medium only',
             subjects: tpData.subjects || 'Mathematics, Science, Foundation Physics',
-            phone: tpData.phone || user.user_metadata?.phone || '+91 9162162128',
+            phone: tpData.phone || user.phone || '+91 9162162128',
             email: tpData.email || user.email || 'piyushkumarsihari@gmail.com',
             rating: tpData.rating || 5.0
           };

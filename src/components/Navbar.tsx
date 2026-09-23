@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
-import { Menu, X, Sun, Moon, Home, PhoneCall, Headphones, Phone, LogOut, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Sun, Moon, Home, PhoneCall, Headphones, Phone, LogOut, LayoutDashboard, User } from 'lucide-react';
 
 export default function Navbar() {
   const { lang, setLang, t } = useLanguage();
