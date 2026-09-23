@@ -6,12 +6,8 @@ import { useAuth } from '@/context/AuthContext';
 import {
   supabase,
   StudentAssignment,
-  StudentReadingTask,
-  StudentTest,
-  MonthlyReport,
   MonthlyReportCard,
-  EvaluationDuty,
-  TestCenter
+  EvaluationDuty
 } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -20,7 +16,6 @@ import Link from 'next/link';
 import {
   User,
   GraduationCap,
-  BookOpen,
   Calendar,
   CheckCircle2,
   Clock,
@@ -32,47 +27,34 @@ import {
   Mail,
   ShieldCheck,
   Users,
-  FileSpreadsheet,
   Plus,
-  Search,
-  Filter,
-  TrendingUp,
-  FileText,
-  CheckSquare,
-  ClipboardList,
-  ChevronRight,
   Sparkles,
   AlertCircle,
   X,
-  Languages,
-  BookMarked,
   Building2,
   Printer,
-  Eye,
-  ShieldAlert
+  ShieldAlert,
+  ArrowRight
 } from 'lucide-react';
 
 export default function TutorDashboard() {
-  const { user, role, logout, loading: authLoading } = useAuth();
+  const { user, logout, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'active_students' | 'past_students' | 'reading_tasks' | 'tests' | 'reports' | 'exam_duties' | 'audit_reports'>('active_students');
+  const [activeTab, setActiveTab] = useState<'active_students' | 'past_students' | 'exam_duties' | 'audit_reports'>('active_students');
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
   // Modals state
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
-  const [showAddTestModal, setShowAddTestModal] = useState(false);
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
-  const [showReportModal, setShowReportModal] = useState(false);
   const [showEditorModal, setShowEditorModal] = useState(false);
   const [selectedStudentForEval, setSelectedStudentForEval] = useState<{ id: string; name: string; class_grade?: string } | null>(null);
   const [selectedDutyForEval, setSelectedDutyForEval] = useState<EvaluationDuty | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // New Cross-Evaluation & Audit Report States
+  // Cross-Evaluation & Audit Report States
   const [evaluationDuties, setEvaluationDuties] = useState<EvaluationDuty[]>([]);
   const [monthlyReportCards, setMonthlyReportCards] = useState<MonthlyReportCard[]>([]);
 
@@ -103,7 +85,7 @@ export default function TutorDashboard() {
     bio_and_custom_notes: 'Dedicated educator specialized in CBSE and Bihar State Board Hindi-medium learners with personalized doubt clearing.'
   });
 
-  // Students, Tasks, Tests, Reports Lists
+  // Students Lists
   const [activeStudents, setActiveStudents] = useState<StudentAssignment[]>([
     {
       id: 'stud-1',
@@ -180,133 +162,7 @@ export default function TutorDashboard() {
     }
   ]);
 
-  const [readingTasks, setReadingTasks] = useState<StudentReadingTask[]>([
-    {
-      id: 'task-1',
-      student_name: 'Aarav Sharma',
-      month_year: 'September 2026',
-      task_title: 'NCERT Ch-4 Quadratic Equations: Word Problems Exercise 4.3 & 4.4',
-      subject: 'Mathematics',
-      target_date: '2026-09-24',
-      status: 'in_progress',
-      milestone_details: 'Crucial for upcoming Monthly Report Card & Term Assessment',
-      next_report_weight: 'High (Included in upcoming Monthly Report)'
-    },
-    {
-      id: 'task-2',
-      student_name: 'Aarav Sharma',
-      month_year: 'September 2026',
-      task_title: 'Physics Ray Optics: Lens Formula & Sign Convention Numerical practice',
-      subject: 'Science (Physics)',
-      target_date: '2026-09-27',
-      status: 'pending',
-      milestone_details: 'Will be evaluated in next Sunday test',
-      next_report_weight: 'High (Included in upcoming Monthly Report)'
-    },
-    {
-      id: 'task-3',
-      student_name: 'Rohan Verma',
-      month_year: 'September 2026',
-      task_title: 'Polynomials Factor Theorem & Remainder Theorem Proofs',
-      subject: 'Mathematics',
-      target_date: '2026-09-25',
-      status: 'in_progress',
-      milestone_details: 'Target for September final report assessment',
-      next_report_weight: 'High (Included in upcoming Monthly Report)'
-    }
-  ]);
-
-  const [testRecords, setTestRecords] = useState<StudentTest[]>([
-    {
-      id: 'test-1',
-      student_name: 'Aarav Sharma',
-      conducted_by_tutor_name: 'PIYUSH KUMAR PATEL',
-      tutor_college_info: 'PCE PURNIA',
-      subject: 'Mathematics',
-      test_title: 'Monthly Unit Test 2 — Arithmetic Progressions & Quadratic Equations',
-      test_date: '2026-09-16',
-      total_marks: 50,
-      marks_obtained: 46,
-      percentage: 92.0,
-      tutor_remarks: 'Brilliant precision in formula substitution. Speed improved by 25%.'
-    },
-    {
-      id: 'test-2',
-      student_name: 'Aarav Sharma',
-      conducted_by_tutor_name: 'PIYUSH KUMAR PATEL',
-      tutor_college_info: 'PCE PURNIA',
-      subject: 'Science',
-      test_title: 'Physics Quiz — Reflection of Light & Mirror Equations',
-      test_date: '2026-09-08',
-      total_marks: 30,
-      marks_obtained: 27,
-      percentage: 90.0,
-      tutor_remarks: 'Ray diagrams were neatly drawn with accurate focal distance markers.'
-    },
-    {
-      id: 'test-3',
-      student_name: 'Rohan Verma',
-      conducted_by_tutor_name: 'PIYUSH KUMAR PATEL',
-      tutor_college_info: 'PCE PURNIA',
-      subject: 'Mathematics',
-      test_title: 'Number Systems & Rationalisation Mastery Test',
-      test_date: '2026-09-12',
-      total_marks: 40,
-      marks_obtained: 35,
-      percentage: 87.5,
-      tutor_remarks: 'Very good foundation. Just needs revision in radical conjugates.'
-    }
-  ]);
-
-  const [monthlyReports, setMonthlyReports] = useState<MonthlyReport[]>([
-    {
-      id: 'rep-1',
-      student_name: 'Aarav Sharma',
-      student_class: 'Class 10 (CBSE)',
-      month: 'September 2026',
-      attendance_percentage: 96,
-      marks_percentage: 88,
-      syllabus_covered: 'Quadratic Equations (Ex 4.1 to 4.3), Light Reflection & Spherical Mirrors, Chemical Reactions balancing.',
-      tutor_remarks: 'Aarav has shown remarkable dedication this month. Daily problem solving has elevated his confidence in Mathematics.',
-      conducting_tutor_name: 'PIYUSH KUMAR PATEL',
-      status: 'published'
-    },
-    {
-      id: 'rep-2',
-      student_name: 'Rohan Verma',
-      student_class: 'Class 9 (CBSE)',
-      month: 'September 2026',
-      attendance_percentage: 92,
-      marks_percentage: 84,
-      syllabus_covered: 'Polynomials factorization, Laws of Motion & Momentum numericals.',
-      tutor_remarks: 'Active participation in doubt clearing. Homework submitted punctually.',
-      conducting_tutor_name: 'PIYUSH KUMAR PATEL',
-      status: 'published'
-    }
-  ]);
-
-  // Form states for modals
-  const [newTaskForm, setNewTaskForm] = useState({
-    student_name: 'Aarav Sharma',
-    month_year: 'September 2026',
-    task_title: '',
-    subject: 'Mathematics',
-    target_date: '2026-09-30',
-    milestone_details: 'Mandatory for upcoming monthly progress card evaluation'
-  });
-
-  const [newTestForm, setNewTestForm] = useState({
-    student_name: 'Aarav Sharma',
-    conducted_by_tutor_name: 'PIYUSH KUMAR PATEL',
-    tutor_college_info: 'PCE PURNIA',
-    subject: 'Mathematics',
-    test_title: '',
-    test_date: new Date().toISOString().split('T')[0],
-    total_marks: 50,
-    marks_obtained: 45,
-    tutor_remarks: 'Solid understanding of concepts with clear step-by-step calculations.'
-  });
-
+  // Form states for add student modal
   const [newStudentForm, setNewStudentForm] = useState({
     student_name: '',
     parent_name: '',
@@ -318,17 +174,6 @@ export default function TutorDashboard() {
     schedule_days: 'Mon, Wed, Fri (5:00 PM - 6:30 PM)',
     monthly_fee: 4500,
     location: 'Purnia'
-  });
-
-  const [newReportForm, setNewReportForm] = useState({
-    student_name: 'Aarav Sharma',
-    student_class: 'Class 10 (CBSE)',
-    month: 'September 2026',
-    attendance_percentage: 96,
-    marks_percentage: 88,
-    syllabus_covered: '',
-    tutor_remarks: 'Consistently improving and actively completing monthly reading targets.',
-    conducting_tutor_name: 'PIYUSH KUMAR PATEL'
   });
 
   // Redirect if not logged in
@@ -380,37 +225,7 @@ export default function TutorDashboard() {
         setPastStudents(studentsData.filter((s: StudentAssignment) => s.status === 'completed'));
       }
 
-      // 3. Reading Tasks
-      const { data: tasksData } = await supabase
-        .from('student_reading_tasks')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (tasksData && tasksData.length > 0) {
-        setReadingTasks(tasksData);
-      }
-
-      // 4. Tests
-      const { data: testsData } = await supabase
-        .from('student_tests')
-        .select('*')
-        .order('test_date', { ascending: false });
-
-      if (testsData && testsData.length > 0) {
-        setTestRecords(testsData);
-      }
-
-      // 5. Monthly Reports
-      const { data: reportsData } = await supabase
-        .from('monthly_reports')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (reportsData && reportsData.length > 0) {
-        setMonthlyReports(reportsData);
-      }
-
-      // 6. Cross-Evaluation Duties
+      // 3. Cross-Evaluation Duties
       const { data: dutiesData } = await supabase
         .from('evaluation_duties')
         .select('*')
@@ -439,7 +254,7 @@ export default function TutorDashboard() {
         ]);
       }
 
-      // 7. Official Monthly Report Cards
+      // 4. Official Monthly Report Cards
       const { data: reportCardsData } = await supabase
         .from('monthly_report_cards')
         .select('*')
@@ -620,7 +435,7 @@ export default function TutorDashboard() {
 
       if (user) payload.tutor_id = user.id;
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('student_assignments')
         .insert([payload])
         .select()
@@ -644,134 +459,6 @@ export default function TutorDashboard() {
       });
     } catch (err: any) {
       setErrorMsg(err.message || 'Failed to add student');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // Handle Add Reading Task
-  const handleAddReadingTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      const payload: any = {
-        student_name: newTaskForm.student_name,
-        month_year: newTaskForm.month_year,
-        task_title: newTaskForm.task_title,
-        subject: newTaskForm.subject,
-        target_date: newTaskForm.target_date,
-        status: 'in_progress',
-        milestone_details: newTaskForm.milestone_details,
-        next_report_weight: 'High (Included in upcoming Monthly Report)'
-      };
-
-      if (user) payload.tutor_id = user.id;
-
-      const { data } = await supabase
-        .from('student_reading_tasks')
-        .insert([payload])
-        .select()
-        .single();
-
-      const taskRecord = data || { ...payload, id: `task-${Date.now()}` };
-      setReadingTasks((prev) => [taskRecord, ...prev]);
-      setSuccessMsg(`Reading task assigned for ${payload.student_name}!`);
-      setShowAddTaskModal(false);
-      setNewTaskForm({
-        student_name: 'Aarav Sharma',
-        month_year: 'September 2026',
-        task_title: '',
-        subject: 'Mathematics',
-        target_date: '2026-09-30',
-        milestone_details: 'Mandatory for upcoming monthly progress card evaluation'
-      });
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to add task');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // Handle Add Test Record
-  const handleAddTest = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      const pct = Number(((newTestForm.marks_obtained / newTestForm.total_marks) * 100).toFixed(1));
-      const payload: any = {
-        student_name: newTestForm.student_name,
-        conducted_by_tutor_name: newTestForm.conducted_by_tutor_name || tutorProfile.full_name,
-        tutor_college_info: newTestForm.tutor_college_info || tutorProfile.college,
-        subject: newTestForm.subject,
-        test_title: newTestForm.test_title,
-        test_date: newTestForm.test_date,
-        total_marks: Number(newTestForm.total_marks),
-        marks_obtained: Number(newTestForm.marks_obtained),
-        percentage: pct,
-        tutor_remarks: newTestForm.tutor_remarks
-      };
-
-      if (user) payload.tutor_id = user.id;
-
-      const { data } = await supabase
-        .from('student_tests')
-        .insert([payload])
-        .select()
-        .single();
-
-      const testRecord = data || { ...payload, id: `test-${Date.now()}` };
-      setTestRecords((prev) => [testRecord, ...prev]);
-      setSuccessMsg(`Test record logged for ${payload.student_name} (${pct}%)!`);
-      setShowAddTestModal(false);
-      setNewTestForm({
-        student_name: 'Aarav Sharma',
-        conducted_by_tutor_name: tutorProfile.full_name,
-        tutor_college_info: tutorProfile.college,
-        subject: 'Mathematics',
-        test_title: '',
-        test_date: new Date().toISOString().split('T')[0],
-        total_marks: 50,
-        marks_obtained: 45,
-        tutor_remarks: 'Solid understanding of concepts with clear step-by-step calculations.'
-      });
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to add test');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // Handle Submit Monthly Report
-  const handleSubmitReport = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      const payload: any = {
-        student_name: newReportForm.student_name,
-        student_class: newReportForm.student_class,
-        month: newReportForm.month,
-        attendance_percentage: Number(newReportForm.attendance_percentage),
-        marks_percentage: Number(newReportForm.marks_percentage),
-        syllabus_covered: newReportForm.syllabus_covered,
-        tutor_remarks: newReportForm.tutor_remarks,
-        conducting_tutor_name: newReportForm.conducting_tutor_name || tutorProfile.full_name,
-        status: 'published'
-      };
-
-      if (user) payload.tutor_id = user.id;
-
-      const { data } = await supabase
-        .from('monthly_reports')
-        .insert([payload])
-        .select()
-        .single();
-
-      const reportRecord = data || { ...payload, id: `rep-${Date.now()}` };
-      setMonthlyReports((prev) => [reportRecord, ...prev]);
-      setSuccessMsg(`Monthly Report published for ${payload.student_name}!`);
-      setShowReportModal(false);
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to submit report');
     } finally {
       setSubmitting(false);
     }
@@ -802,126 +489,126 @@ export default function TutorDashboard() {
           </div>
         )}
 
-        {/* 1. COMPACT SLEEK EDUCATOR HEADER (Takes minimal height, strictly professional) */}
+        {/* 1. TUTOR PROFILE HEADER CARD */}
         <div style={{
           background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
           border: '1px solid #334155',
-          borderRadius: '14px',
-          padding: '1rem 1.5rem',
-          marginBottom: '1.5rem',
+          borderRadius: '16px',
+          padding: '1.75rem',
+          marginBottom: '1.75rem',
           display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '1rem',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.35)'
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1.25rem',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
         }}>
-          {/* Tutor Info Left */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
             <div style={{
-              width: '46px',
-              height: '46px',
-              borderRadius: '10px',
+              width: '70px',
+              height: '70px',
+              borderRadius: '50%',
               background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
               color: '#0F172A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              fontSize: '1.8rem',
               fontWeight: 800,
-              fontSize: '1.25rem',
-              boxShadow: '0 4px 12px rgba(245,158,11,0.3)'
+              boxShadow: '0 4px 15px rgba(245,158,11,0.3)'
             }}>
               {tutorProfile.full_name?.charAt(0) || 'P'}
             </div>
-
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FFFFFF', margin: 0, letterSpacing: '0.02em' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
                   {tutorProfile.full_name}
-                </h2>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(16, 185, 129, 0.18)', color: '#34D399', fontSize: '0.72rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '20px', border: '1px solid rgba(52, 211, 153, 0.3)' }}>
-                  <ShieldCheck size={13} /> Verified Tutor
-                </span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(245, 158, 11, 0.18)', color: '#FBBF24', fontSize: '0.72rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: '20px' }}>
-                  <Star size={13} fill="#FBBF24" /> {tutorProfile.rating || 5.0} Rating
+                </h1>
+                <span style={{
+                  background: 'rgba(16, 185, 129, 0.15)',
+                  color: '#10B981',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  padding: '0.2rem 0.65rem',
+                  borderRadius: '20px',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem'
+                }}>
+                  <ShieldCheck size={13} /> Verified Horizon Tutor
                 </span>
               </div>
-
-              {/* Badges in single compact line */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.25rem', fontSize: '0.8rem', color: '#94A3B8', flexWrap: 'wrap' }}>
-                <span style={{ color: '#E2E8F0', fontWeight: 600 }}>🎓 {tutorProfile.college}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.35rem', color: '#94A3B8', fontSize: '0.88rem', flexWrap: 'wrap' }}>
+                <span style={{ color: '#38BDF8', fontWeight: 700 }}>🏛️ {tutorProfile.college}</span>
                 <span>•</span>
-                <span style={{ color: '#93C5FD' }}>{tutorProfile.degree_status}</span>
+                <span>🎓 {tutorProfile.degree_status}</span>
                 <span>•</span>
-                <span style={{ color: '#FCD34D' }}>🗣️ {tutorProfile.medium_preference}</span>
-                <span>•</span>
-                <span>⏳ {tutorProfile.experience_years}</span>
+                <span style={{ color: '#F59E0B', fontWeight: 700 }}>⭐ {tutorProfile.rating || 5.0} Rating</span>
               </div>
             </div>
           </div>
 
-          {/* Action Buttons Right */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <button
-              onClick={() => { setEditForm({ ...tutorProfile }); setShowEditModal(true); }}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <Link
+              href="/profile"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.4rem',
-                background: 'rgba(255,255,255,0.06)',
+                background: '#1E293B',
                 color: '#E2E8F0',
                 border: '1px solid #475569',
-                padding: '0.45rem 0.9rem',
+                padding: '0.55rem 1rem',
                 borderRadius: '8px',
-                fontSize: '0.82rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
+                fontSize: '0.84rem',
+                fontWeight: 700,
+                textDecoration: 'none'
               }}
             >
-              <Edit3 size={14} /> Edit Profile Info
-            </button>
+              <User size={14} color="#F59E0B" /> My Full Profile
+            </Link>
             <button
               onClick={() => setShowAddStudentModal(true)}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.4rem',
-                background: '#059669',
+                background: 'linear-gradient(135deg, #059669, #047857)',
                 color: '#FFFFFF',
                 border: 'none',
-                padding: '0.45rem 0.95rem',
+                padding: '0.55rem 1.1rem',
                 borderRadius: '8px',
-                fontSize: '0.82rem',
-                fontWeight: 700,
+                fontSize: '0.84rem',
+                fontWeight: 800,
                 cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(5,150,105,0.3)'
+                boxShadow: '0 4px 12px rgba(5,150,105,0.35)'
               }}
             >
-              <Plus size={14} /> Enroll Student
+              <Plus size={15} /> Enroll Student
             </button>
           </div>
         </div>
 
-        {/* 2. TOP METRICS STRIP */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.75rem' }}>
+        {/* 2. TOP METRICS STRIP (4 Clean KPI Cards) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', marginBottom: '1.75rem' }}>
           
           <div 
             onClick={() => setActiveTab('active_students')}
             style={{
               background: activeTab === 'active_students' ? 'rgba(5, 150, 105, 0.15)' : '#1E293B',
               border: `1px solid ${activeTab === 'active_students' ? '#10B981' : '#334155'}`,
-              borderRadius: '12px',
-              padding: '1rem 1.25rem',
+              borderRadius: '14px',
+              padding: '1.15rem 1.35rem',
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-              <span style={{ fontSize: '0.82rem', color: '#94A3B8', fontWeight: 600 }}>Active Live Students</span>
+              <span style={{ fontSize: '0.82rem', color: '#94A3B8', fontWeight: 700 }}>Active Live Students</span>
               <Users size={18} color="#34D399" />
             </div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#34D399' }}>
+            <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#34D399' }}>
               {activeStudents.length} <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#94A3B8' }}>Studying Now</span>
             </div>
           </div>
@@ -931,64 +618,64 @@ export default function TutorDashboard() {
             style={{
               background: activeTab === 'past_students' ? 'rgba(59, 130, 246, 0.15)' : '#1E293B',
               border: `1px solid ${activeTab === 'past_students' ? '#3B82F6' : '#334155'}`,
-              borderRadius: '12px',
-              padding: '1rem 1.25rem',
+              borderRadius: '14px',
+              padding: '1.15rem 1.35rem',
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-              <span style={{ fontSize: '0.82rem', color: '#94A3B8', fontWeight: 600 }}>Past / Completed Students</span>
+              <span style={{ fontSize: '0.82rem', color: '#94A3B8', fontWeight: 700 }}>Past / Completed Students</span>
               <GraduationCap size={18} color="#60A5FA" />
             </div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#60A5FA' }}>
+            <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#60A5FA' }}>
               {pastStudents.length} <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#94A3B8' }}>Graduated</span>
             </div>
           </div>
 
           <div 
-            onClick={() => setActiveTab('reading_tasks')}
+            onClick={() => setActiveTab('exam_duties')}
             style={{
-              background: activeTab === 'reading_tasks' ? 'rgba(245, 158, 11, 0.15)' : '#1E293B',
-              border: `1px solid ${activeTab === 'reading_tasks' ? '#F59E0B' : '#334155'}`,
-              borderRadius: '12px',
-              padding: '1rem 1.25rem',
+              background: activeTab === 'exam_duties' ? 'rgba(245, 158, 11, 0.15)' : '#1E293B',
+              border: `1px solid ${activeTab === 'exam_duties' ? '#F59E0B' : '#334155'}`,
+              borderRadius: '14px',
+              padding: '1.15rem 1.35rem',
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-              <span style={{ fontSize: '0.82rem', color: '#94A3B8', fontWeight: 600 }}>Monthly Reading Tasks</span>
-              <BookOpen size={18} color="#FBBF24" />
+              <span style={{ fontSize: '0.82rem', color: '#F59E0B', fontWeight: 800 }}>Cross-Exam Duties</span>
+              <ShieldAlert size={18} color="#F59E0B" />
             </div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#FBBF24' }}>
-              {readingTasks.length} <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#94A3B8' }}>Report Targets</span>
+            <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#F59E0B' }}>
+              {evaluationDuties.length} <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#EF4444', background: 'rgba(239, 68, 68, 0.15)', padding: '2px 8px', borderRadius: '6px' }}>ACTIVE TODAY</span>
             </div>
           </div>
 
           <div 
-            onClick={() => setActiveTab('tests')}
+            onClick={() => setActiveTab('audit_reports')}
             style={{
-              background: activeTab === 'tests' ? 'rgba(168, 85, 247, 0.15)' : '#1E293B',
-              border: `1px solid ${activeTab === 'tests' ? '#A855F7' : '#334155'}`,
-              borderRadius: '12px',
-              padding: '1rem 1.25rem',
+              background: activeTab === 'audit_reports' ? 'rgba(2, 132, 199, 0.15)' : '#1E293B',
+              border: `1px solid ${activeTab === 'audit_reports' ? '#0284C7' : '#334155'}`,
+              borderRadius: '14px',
+              padding: '1.15rem 1.35rem',
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-              <span style={{ fontSize: '0.82rem', color: '#94A3B8', fontWeight: 600 }}>Conducted Tests (Sept)</span>
-              <ClipboardList size={18} color="#C084FC" />
+              <span style={{ fontSize: '0.82rem', color: '#38BDF8', fontWeight: 800 }}>Official Progress Reports</span>
+              <Award size={18} color="#38BDF8" />
             </div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#C084FC' }}>
-              {testRecords.length} <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#94A3B8' }}>Tests Evaluated</span>
+            <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#38BDF8' }}>
+              {monthlyReportCards.length} <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#94A3B8' }}>Single-Page PDF</span>
             </div>
           </div>
 
         </div>
 
-        {/* 3. NAVIGATION TABS */}
+        {/* 3. CLEAN NAVIGATION TABS */}
         <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid #334155', paddingBottom: '0.75rem', marginBottom: '1.5rem', overflowX: 'auto' }}>
           
           <button
@@ -997,7 +684,7 @@ export default function TutorDashboard() {
               background: activeTab === 'active_students' ? '#059669' : 'transparent',
               color: activeTab === 'active_students' ? '#FFFFFF' : '#94A3B8',
               border: 'none',
-              padding: '0.6rem 1.2rem',
+              padding: '0.65rem 1.3rem',
               borderRadius: '8px',
               fontSize: '0.9rem',
               fontWeight: 700,
@@ -1016,7 +703,7 @@ export default function TutorDashboard() {
               background: activeTab === 'past_students' ? '#2563EB' : 'transparent',
               color: activeTab === 'past_students' ? '#FFFFFF' : '#94A3B8',
               border: 'none',
-              padding: '0.6rem 1.2rem',
+              padding: '0.65rem 1.3rem',
               borderRadius: '8px',
               fontSize: '0.9rem',
               fontWeight: 700,
@@ -1030,69 +717,12 @@ export default function TutorDashboard() {
           </button>
 
           <button
-            onClick={() => setActiveTab('reading_tasks')}
-            style={{
-              background: activeTab === 'reading_tasks' ? '#D97706' : 'transparent',
-              color: activeTab === 'reading_tasks' ? '#FFFFFF' : '#94A3B8',
-              border: 'none',
-              padding: '0.6rem 1.2rem',
-              borderRadius: '8px',
-              fontSize: '0.9rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            <BookOpen size={16} /> Monthly Reading Tasks ({readingTasks.length})
-          </button>
-
-          <button
-            onClick={() => setActiveTab('tests')}
-            style={{
-              background: activeTab === 'tests' ? '#7C3AED' : 'transparent',
-              color: activeTab === 'tests' ? '#FFFFFF' : '#94A3B8',
-              border: 'none',
-              padding: '0.6rem 1.2rem',
-              borderRadius: '8px',
-              fontSize: '0.9rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            <ClipboardList size={16} /> Tests & Conducting Teacher ({testRecords.length})
-          </button>
-
-          <button
-            onClick={() => setActiveTab('reports')}
-            style={{
-              background: activeTab === 'reports' ? '#475569' : 'transparent',
-              color: activeTab === 'reports' ? '#FFFFFF' : '#94A3B8',
-              border: 'none',
-              padding: '0.6rem 1.2rem',
-              borderRadius: '8px',
-              fontSize: '0.9rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            <FileSpreadsheet size={16} /> Basic Reports ({monthlyReports.length})
-          </button>
-
-          <button
             onClick={() => setActiveTab('exam_duties')}
             style={{
               background: activeTab === 'exam_duties' ? 'linear-gradient(135deg, #D97706, #B45309)' : 'rgba(245, 158, 11, 0.1)',
               color: activeTab === 'exam_duties' ? '#FFFFFF' : '#F59E0B',
               border: '1px solid rgba(245, 158, 11, 0.4)',
-              padding: '0.6rem 1.2rem',
+              padding: '0.65rem 1.3rem',
               borderRadius: '8px',
               fontSize: '0.9rem',
               fontWeight: 800,
@@ -1116,7 +746,7 @@ export default function TutorDashboard() {
               background: activeTab === 'audit_reports' ? 'linear-gradient(135deg, #0284C7, #0369A1)' : 'rgba(2, 132, 199, 0.1)',
               color: activeTab === 'audit_reports' ? '#FFFFFF' : '#38BDF8',
               border: '1px solid rgba(2, 132, 199, 0.4)',
-              padding: '0.6rem 1.2rem',
+              padding: '0.65rem 1.3rem',
               borderRadius: '8px',
               fontSize: '0.9rem',
               fontWeight: 800,
@@ -1141,7 +771,7 @@ export default function TutorDashboard() {
         {/* TAB 1: ACTIVE LIVE STUDENTS */}
         {activeTab === 'active_students' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
               <div>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
                   Active Students Currently Enrolled
@@ -1151,44 +781,25 @@ export default function TutorDashboard() {
                 </p>
               </div>
 
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button
-                  onClick={() => setShowAddTaskModal(true)}
-                  style={{
-                    background: '#F59E0B',
-                    color: '#0F172A',
-                    border: 'none',
-                    padding: '0.5rem 0.95rem',
-                    borderRadius: '8px',
-                    fontSize: '0.82rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem'
-                  }}
-                >
-                  <BookOpen size={14} /> + Assign Reading Task
-                </button>
-                <button
-                  onClick={() => setShowAddTestModal(true)}
-                  style={{
-                    background: '#8B5CF6',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    padding: '0.5rem 0.95rem',
-                    borderRadius: '8px',
-                    fontSize: '0.82rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem'
-                  }}
-                >
-                  <ClipboardList size={14} /> + Log Test Score
-                </button>
-              </div>
+              <button
+                onClick={() => setShowAddStudentModal(true)}
+                style={{
+                  background: 'linear-gradient(135deg, #059669, #047857)',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  padding: '0.6rem 1.25rem',
+                  borderRadius: '8px',
+                  fontSize: '0.85rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  boxShadow: '0 4px 12px rgba(5,150,105,0.3)'
+                }}
+              >
+                <Plus size={16} /> + Enroll Student
+              </button>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '1.25rem' }}>
@@ -1241,86 +852,48 @@ export default function TutorDashboard() {
                   </div>
 
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button
-                      onClick={() => {
-                        setNewTaskForm((prev) => ({ ...prev, student_name: student.student_name }));
-                        setShowAddTaskModal(true);
-                      }}
-                      style={{
-                        flex: 1,
-                        background: 'rgba(245, 158, 11, 0.12)',
-                        color: '#FBBF24',
-                        border: '1px solid rgba(245, 158, 11, 0.3)',
-                        padding: '0.45rem',
-                        borderRadius: '6px',
-                        fontSize: '0.78rem',
-                        fontWeight: 700,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      + Reading Task
-                    </button>
-                    <button
-                      onClick={() => {
-                        setNewTestForm((prev) => ({ ...prev, student_name: student.student_name }));
-                        setShowAddTestModal(true);
-                      }}
-                      style={{
-                        flex: 1,
-                        background: 'rgba(168, 85, 247, 0.12)',
-                        color: '#C084FC',
-                        border: '1px solid rgba(168, 85, 247, 0.3)',
-                        padding: '0.45rem',
-                        borderRadius: '6px',
-                        fontSize: '0.78rem',
-                        fontWeight: 700,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      + Log Test
-                    </button>
-                    <button
-                      onClick={() => {
-                        setNewReportForm((prev) => ({
-                          ...prev,
-                          student_name: student.student_name,
-                          student_class: `${student.class_grade} (${student.board})`
-                        }));
-                        setShowReportModal(true);
-                      }}
-                      style={{
-                        flex: 1,
-                        background: 'rgba(16, 185, 129, 0.12)',
-                        color: '#34D399',
-                        border: '1px solid rgba(16, 185, 129, 0.3)',
-                        padding: '0.45rem',
-                        borderRadius: '6px',
-                        fontSize: '0.78rem',
-                        fontWeight: 700,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Report
-                    </button>
                     <Link
                       href={`/profile?studentId=${student.id || 'stud-1'}`}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        background: '#334155',
+                        color: '#F8FAFC',
+                        border: '1px solid #475569',
+                        padding: '0.55rem 1rem',
+                        borderRadius: '8px',
+                        fontSize: '0.82rem',
+                        fontWeight: 700,
+                        textDecoration: 'none'
+                      }}
+                    >
+                      <User size={14} color="#38BDF8" />
+                      <span>View Full Profile</span>
+                    </Link>
+
+                    <a
+                      href={`tel:${student.phone || '+919876543210'}`}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        background: '#334155',
-                        color: '#F8FAFC',
-                        border: '1px solid #475569',
-                        padding: '0.45rem 0.65rem',
-                        borderRadius: '6px',
-                        fontSize: '0.76rem',
+                        gap: '6px',
+                        background: 'rgba(16, 185, 129, 0.15)',
+                        color: '#34D399',
+                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                        padding: '0.55rem 1rem',
+                        borderRadius: '8px',
+                        fontSize: '0.82rem',
                         fontWeight: 700,
                         textDecoration: 'none'
                       }}
-                      title="View Full Student Profile"
                     >
-                      <User size={13} />
-                    </Link>
+                      <Phone size={14} />
+                      <span>Call</span>
+                    </a>
                   </div>
                 </div>
               ))}
@@ -1331,9 +904,9 @@ export default function TutorDashboard() {
         {/* TAB 2: PAST / COMPLETED STUDENTS */}
         {activeTab === 'past_students' && (
           <div>
-            <div style={{ marginBottom: '1rem' }}>
+            <div style={{ marginBottom: '1.25rem' }}>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
-                Past & Graduated Students History
+                Past &amp; Graduated Students History
               </h3>
               <p style={{ fontSize: '0.85rem', color: '#94A3B8', margin: '0.2rem 0 0 0' }}>
                 Verified records of learners who completed their board sessions with {tutorProfile.full_name}.
@@ -1387,266 +960,7 @@ export default function TutorDashboard() {
           </div>
         )}
 
-        {/* TAB 3: MONTHLY READING TASKS */}
-        {activeTab === 'reading_tasks' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
-                  Current Month's Reading & Syllabus Tasks (September 2026)
-                </h3>
-                <p style={{ fontSize: '0.85rem', color: '#94A3B8', margin: '0.2rem 0 0 0' }}>
-                  Chapters and problem sets assigned by tutor on which the upcoming monthly progress card will be generated.
-                </p>
-              </div>
-
-              <button
-                onClick={() => setShowAddTaskModal(true)}
-                style={{
-                  background: '#F59E0B',
-                  color: '#0F172A',
-                  border: 'none',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '8px',
-                  fontSize: '0.85rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem'
-                }}
-              >
-                <Plus size={16} /> Assign New Reading Task
-              </button>
-            </div>
-
-            <div style={{ display: 'grid', gap: '1rem' }}>
-              {readingTasks.map((task) => (
-                <div
-                  key={task.id}
-                  style={{
-                    background: '#1E293B',
-                    border: '1px solid #334155',
-                    borderRadius: '12px',
-                    padding: '1.25rem',
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '1rem'
-                  }}
-                >
-                  <div style={{ flex: '1 1 400px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem' }}>
-                      <span style={{ background: '#0F172A', color: '#FBBF24', fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.6rem', borderRadius: '6px', border: '1px solid rgba(245,158,11,0.3)' }}>
-                        {task.student_name}
-                      </span>
-                      <span style={{ fontSize: '0.8rem', color: '#38BDF8', fontWeight: 600 }}>
-                        {task.subject}
-                      </span>
-                      <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>
-                        📅 Target: {task.target_date || 'End of Month'}
-                      </span>
-                    </div>
-
-                    <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#FFFFFF', margin: '0 0 0.35rem 0' }}>
-                      {task.task_title}
-                    </h4>
-
-                    <div style={{ fontSize: '0.8rem', color: '#94A3B8' }}>
-                      💡 {task.milestone_details || 'Critical syllabus target for monthly report'}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <span style={{
-                      background: task.status === 'completed' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)',
-                      color: task.status === 'completed' ? '#34D399' : '#FBBF24',
-                      fontSize: '0.75rem',
-                      fontWeight: 700,
-                      padding: '0.3rem 0.75rem',
-                      borderRadius: '20px',
-                      border: `1px solid ${task.status === 'completed' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(245, 158, 11, 0.4)'}`
-                    }}>
-                      {task.status === 'completed' ? '✓ Completed' : '⏳ In Progress'}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: MONTHLY TESTS & CONDUCTING TEACHER DETAILS */}
-        {activeTab === 'tests' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
-                  Conducted Tests & Assessments Log
-                </h3>
-                <p style={{ fontSize: '0.85rem', color: '#94A3B8', margin: '0.2rem 0 0 0' }}>
-                  Includes student marks, test dates, and conducting educator credentials saved to Supabase.
-                </p>
-              </div>
-
-              <button
-                onClick={() => setShowAddTestModal(true)}
-                style={{
-                  background: '#8B5CF6',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '8px',
-                  fontSize: '0.85rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem'
-                }}
-              >
-                <Plus size={16} /> Log New Test Assessment
-              </button>
-            </div>
-
-            <div style={{ display: 'grid', gap: '1rem' }}>
-              {testRecords.map((test) => (
-                <div
-                  key={test.id}
-                  style={{
-                    background: '#1E293B',
-                    border: '1px solid #334155',
-                    borderRadius: '12px',
-                    padding: '1.25rem',
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '1rem'
-                  }}
-                >
-                  <div style={{ flex: '1 1 450px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
-                      <span style={{ background: '#0F172A', color: '#C084FC', fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.6rem', borderRadius: '6px', border: '1px solid rgba(168,85,247,0.3)' }}>
-                        {test.student_name}
-                      </span>
-                      <span style={{ fontSize: '0.8rem', color: '#38BDF8', fontWeight: 600 }}>
-                        {test.subject}
-                      </span>
-                      <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>
-                        📅 Date: {test.test_date}
-                      </span>
-                    </div>
-
-                    <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#FFFFFF', margin: '0 0 0.4rem 0' }}>
-                      {test.test_title}
-                    </h4>
-
-                    {/* Conducting Teacher Details */}
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: '#0F172A', padding: '0.3rem 0.75rem', borderRadius: '6px', border: '1px solid #334155', fontSize: '0.78rem', color: '#94A3B8', marginBottom: '0.4rem' }}>
-                      <span>👨‍🏫 Conducted by:</span>
-                      <strong style={{ color: '#FDE68A' }}>{test.conducted_by_tutor_name || tutorProfile.full_name}</strong>
-                      <span>({test.tutor_college_info || tutorProfile.college})</span>
-                    </div>
-
-                    <div style={{ fontSize: '0.8rem', color: '#CBD5E1', fontStyle: 'italic' }}>
-                      "{test.tutor_remarks || 'Consistent academic performance.'}"
-                    </div>
-                  </div>
-
-                  <div style={{ textAlign: 'center', background: '#0F172A', padding: '0.85rem 1.25rem', borderRadius: '10px', border: '1px solid #334155', minWidth: '120px' }}>
-                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#34D399' }}>
-                      {test.marks_obtained} <span style={{ fontSize: '0.85rem', color: '#94A3B8' }}>/ {test.total_marks}</span>
-                    </div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#38BDF8', marginTop: '2px' }}>
-                      {test.percentage ? `${test.percentage}%` : `${Math.round((test.marks_obtained / test.total_marks) * 100)}%`}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 5: MONTHLY REPORTS */}
-        {activeTab === 'reports' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
-                  Verified Monthly Progress Reports
-                </h3>
-                <p style={{ fontSize: '0.85rem', color: '#94A3B8', margin: '0.2rem 0 0 0' }}>
-                  Official parent progress reports synced with Supabase.
-                </p>
-              </div>
-
-              <button
-                onClick={() => setShowReportModal(true)}
-                style={{
-                  background: '#059669',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '8px',
-                  fontSize: '0.85rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem'
-                }}
-              >
-                <Plus size={16} /> Generate Monthly Report
-              </button>
-            </div>
-
-            <div style={{ display: 'grid', gap: '1rem' }}>
-              {monthlyReports.map((report) => (
-                <div
-                  key={report.id}
-                  style={{
-                    background: '#1E293B',
-                    border: '1px solid #334155',
-                    borderRadius: '12px',
-                    padding: '1.25rem'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                    <div>
-                      <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
-                        {report.student_name} — {report.month}
-                      </h4>
-                      <div style={{ fontSize: '0.8rem', color: '#38BDF8' }}>
-                        {report.student_class} • Verified by: <strong style={{ color: '#FDE68A' }}>{report.conducting_tutor_name || tutorProfile.full_name}</strong>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '0.75rem' }}>
-                      <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34D399', fontSize: '0.78rem', fontWeight: 700, padding: '0.3rem 0.75rem', borderRadius: '6px' }}>
-                        Attendance: {report.attendance_percentage}%
-                      </span>
-                      <span style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#60A5FA', fontSize: '0.78rem', fontWeight: 700, padding: '0.3rem 0.75rem', borderRadius: '6px' }}>
-                        Score: {report.marks_percentage}%
-                      </span>
-                    </div>
-                  </div>
-
-                  <div style={{ background: '#0F172A', borderRadius: '8px', padding: '0.85rem', border: '1px solid #334155', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#CBD5E1' }}>
-                    <strong style={{ color: '#F1F5F9' }}>Syllabus Covered: </strong>{report.syllabus_covered}
-                  </div>
-
-                  <div style={{ fontSize: '0.82rem', color: '#94A3B8' }}>
-                    <strong style={{ color: '#E2E8F0' }}>Tutor Remarks: </strong>"{report.tutor_remarks}"
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 6: CROSS-EXAMINATION DUTIES & CENTER ALLOCATIONS */}
+        {/* TAB 3: CROSS-EXAMINATION DUTIES & CENTER ALLOCATIONS */}
         {activeTab === 'exam_duties' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
@@ -1748,24 +1062,25 @@ export default function TutorDashboard() {
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '10px' }}>
                       {(duty.student_names || ['Aaryan Sharma', 'Rohit Kumar']).map((stName: string, idx: number) => {
-                        const sId = duty.student_ids?.[idx] || `std-${idx + 1}`;
+                        const sId = duty.student_ids?.[idx] || `std-${idx}`;
                         const existingRep = monthlyReportCards.find((r) => r.student_name === stName || r.student_id === sId);
-                        
+
                         return (
                           <div
                             key={idx}
                             style={{
-                              padding: '10px 12px',
+                              padding: '10px 14px',
                               background: '#1E293B',
                               borderRadius: '8px',
                               border: '1px solid #334155',
                               display: 'flex',
                               justifyContent: 'space-between',
-                              alignItems: 'center'
+                              alignItems: 'center',
+                              gap: '8px'
                             }}
                           >
                             <div>
-                              <div style={{ fontWeight: 800, color: '#F8FAFC', fontSize: '0.9rem' }}>
+                              <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#FFFFFF' }}>
                                 {stName}
                               </div>
                               <div style={{ fontSize: '0.74rem', color: '#94A3B8' }}>
@@ -1793,31 +1108,6 @@ export default function TutorDashboard() {
                                 <Sparkles size={13} />
                                 <span>{existingRep ? 'Open & Edit PDF Sheet' : 'Live Fill PDF Report Card'}</span>
                               </Link>
-
-                              <button
-                                onClick={() => {
-                                  setSelectedStudentForEval({ id: sId, name: stName, class_grade: 'Class 7th • CBSE/ICSE' });
-                                  setSelectedDutyForEval(duty);
-                                  setShowEditorModal(true);
-                                }}
-                                style={{
-                                  padding: '6px 10px',
-                                  borderRadius: '6px',
-                                  background: '#334155',
-                                  color: '#F8FAFC',
-                                  border: '1px solid #475569',
-                                  fontWeight: 700,
-                                  fontSize: '0.76rem',
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '4px'
-                                }}
-                                title="Quick Dialog View"
-                              >
-                                <Edit3 size={13} />
-                                <span>Quick Form</span>
-                              </button>
                             </div>
                           </div>
                         );
@@ -1834,7 +1124,7 @@ export default function TutorDashboard() {
           </div>
         )}
 
-        {/* TAB 7: OFFICIAL SINGLE-PAGE PROGRESS AUDIT REPORTS */}
+        {/* TAB 4: OFFICIAL SINGLE-PAGE PROGRESS AUDIT REPORTS */}
         {activeTab === 'audit_reports' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
@@ -1984,333 +1274,7 @@ export default function TutorDashboard() {
         />
       )}
 
-      {/* MODAL 1: EDIT TUTOR PROFILE */}
-      {showEditModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-          <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '16px', maxWidth: '580px', width: '100%', padding: '1.75rem', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
-                Edit Tutor Profile Details
-              </h3>
-              <button onClick={() => setShowEditModal(false)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={20} /></button>
-            </div>
-
-            <form onSubmit={handleSaveProfile} style={{ display: 'grid', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Full Name</label>
-                <input
-                  type="text"
-                  value={editForm.full_name}
-                  onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-                  style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                  required
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Institution / College</label>
-                  <input
-                    type="text"
-                    value={editForm.college}
-                    onChange={(e) => setEditForm({ ...editForm, college: e.target.value })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                    required
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Degree & Performance</label>
-                  <input
-                    type="text"
-                    value={editForm.degree_status}
-                    onChange={(e) => setEditForm({ ...editForm, degree_status: e.target.value })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Teaching Medium Comfort</label>
-                  <select
-                    value={editForm.medium_preference}
-                    onChange={(e) => setEditForm({ ...editForm, medium_preference: e.target.value })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                  >
-                    <option value="Hindi medium only">Hindi medium only</option>
-                    <option value="English medium only">English medium only</option>
-                    <option value="Bilingual (Hindi + English)">Bilingual (Hindi + English)</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Teaching Experience</label>
-                  <input
-                    type="text"
-                    value={editForm.experience_years}
-                    onChange={(e) => setEditForm({ ...editForm, experience_years: e.target.value })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Primary Subjects & Classes</label>
-                <input
-                  type="text"
-                  value={editForm.subjects}
-                  onChange={(e) => setEditForm({ ...editForm, subjects: e.target.value })}
-                  style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Teaching Methodology & Bio</label>
-                <textarea
-                  rows={3}
-                  value={editForm.bio_and_custom_notes}
-                  onChange={(e) => setEditForm({ ...editForm, bio_and_custom_notes: e.target.value })}
-                  style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  style={{ background: 'transparent', border: '1px solid #475569', color: '#CBD5E1', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer' }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  style={{ background: '#059669', border: 'none', color: '#FFFFFF', padding: '0.6rem 1.25rem', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}
-                >
-                  {submitting ? 'Saving...' : 'Save Profile Changes'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 2: ASSIGN READING TASK */}
-      {showAddTaskModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-          <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '16px', maxWidth: '520px', width: '100%', padding: '1.75rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
-                  Assign Monthly Reading / Syllabus Task
-                </h3>
-                <p style={{ fontSize: '0.8rem', color: '#94A3B8', margin: '0.2rem 0 0 0' }}>
-                  This task will directly feed into the student's next monthly report card.
-                </p>
-              </div>
-              <button onClick={() => setShowAddTaskModal(false)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={20} /></button>
-            </div>
-
-            <form onSubmit={handleAddReadingTask} style={{ display: 'grid', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Select Student</label>
-                <select
-                  value={newTaskForm.student_name}
-                  onChange={(e) => setNewTaskForm({ ...newTaskForm, student_name: e.target.value })}
-                  style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                >
-                  {activeStudents.map((s) => (
-                    <option key={s.id} value={s.student_name}>{s.student_name} ({s.class_grade})</option>
-                  ))}
-                </select>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Subject</label>
-                  <input
-                    type="text"
-                    value={newTaskForm.subject}
-                    onChange={(e) => setNewTaskForm({ ...newTaskForm, subject: e.target.value })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                    required
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Target Date</label>
-                  <input
-                    type="date"
-                    value={newTaskForm.target_date}
-                    onChange={(e) => setNewTaskForm({ ...newTaskForm, target_date: e.target.value })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Chapter / Reading Task Title</label>
-                <input
-                  type="text"
-                  placeholder="e.g. NCERT Ch-5 Arithmetic Progressions: Ex 5.2 Word Problems"
-                  value={newTaskForm.task_title}
-                  onChange={(e) => setNewTaskForm({ ...newTaskForm, task_title: e.target.value })}
-                  style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Report Weight / Milestone Note</label>
-                <input
-                  type="text"
-                  value={newTaskForm.milestone_details}
-                  onChange={(e) => setNewTaskForm({ ...newTaskForm, milestone_details: e.target.value })}
-                  style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
-                <button type="button" onClick={() => setShowAddTaskModal(false)} style={{ background: 'transparent', border: '1px solid #475569', color: '#CBD5E1', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
-                <button type="submit" disabled={submitting} style={{ background: '#F59E0B', border: 'none', color: '#0F172A', padding: '0.6rem 1.25rem', borderRadius: '8px', fontWeight: 800, cursor: 'pointer' }}>
-                  {submitting ? 'Saving...' : 'Save Task in Supabase'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 3: LOG TEST ASSESSMENT */}
-      {showAddTestModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-          <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '16px', maxWidth: '540px', width: '100%', padding: '1.75rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <div>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
-                  Log Monthly Test Assessment
-                </h3>
-                <p style={{ fontSize: '0.8rem', color: '#94A3B8', margin: '0.2rem 0 0 0' }}>
-                  Record score and conducting teacher details live to Supabase.
-                </p>
-              </div>
-              <button onClick={() => setShowAddTestModal(false)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={20} /></button>
-            </div>
-
-            <form onSubmit={handleAddTest} style={{ display: 'grid', gap: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Select Student</label>
-                  <select
-                    value={newTestForm.student_name}
-                    onChange={(e) => setNewTestForm({ ...newTestForm, student_name: e.target.value })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                  >
-                    {activeStudents.map((s) => (
-                      <option key={s.id} value={s.student_name}>{s.student_name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Subject</label>
-                  <input
-                    type="text"
-                    value={newTestForm.subject}
-                    onChange={(e) => setNewTestForm({ ...newTestForm, subject: e.target.value })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Test Name / Chapter</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Unit Test 3: Trigonometry & Circle Proofs"
-                  value={newTestForm.test_title}
-                  onChange={(e) => setNewTestForm({ ...newTestForm, test_title: e.target.value })}
-                  style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                  required
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Test Date</label>
-                  <input
-                    type="date"
-                    value={newTestForm.test_date}
-                    onChange={(e) => setNewTestForm({ ...newTestForm, test_date: e.target.value })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                    required
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Total Marks</label>
-                  <input
-                    type="number"
-                    value={newTestForm.total_marks}
-                    onChange={(e) => setNewTestForm({ ...newTestForm, total_marks: Number(e.target.value) })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                    required
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Marks Scored</label>
-                  <input
-                    type="number"
-                    value={newTestForm.marks_obtained}
-                    onChange={(e) => setNewTestForm({ ...newTestForm, marks_obtained: Number(e.target.value) })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Conducting Educator</label>
-                  <input
-                    type="text"
-                    value={newTestForm.conducted_by_tutor_name}
-                    onChange={(e) => setNewTestForm({ ...newTestForm, conducted_by_tutor_name: e.target.value })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Educator College</label>
-                  <input
-                    type="text"
-                    value={newTestForm.tutor_college_info}
-                    onChange={(e) => setNewTestForm({ ...newTestForm, tutor_college_info: e.target.value })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Teacher Remarks & Feedback</label>
-                <textarea
-                  rows={2}
-                  value={newTestForm.tutor_remarks}
-                  onChange={(e) => setNewTestForm({ ...newTestForm, tutor_remarks: e.target.value })}
-                  style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
-                <button type="button" onClick={() => setShowAddTestModal(false)} style={{ background: 'transparent', border: '1px solid #475569', color: '#CBD5E1', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
-                <button type="submit" disabled={submitting} style={{ background: '#8B5CF6', border: 'none', color: '#FFFFFF', padding: '0.6rem 1.25rem', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}>
-                  {submitting ? 'Saving...' : 'Save Test Record'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 4: ENROLL NEW STUDENT */}
+      {/* MODAL: ENROLL NEW STUDENT */}
       {showAddStudentModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
           <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '16px', maxWidth: '540px', width: '100%', padding: '1.75rem' }}>
@@ -2329,6 +1293,7 @@ export default function TutorDashboard() {
                     type="text"
                     value={newStudentForm.student_name}
                     onChange={(e) => setNewStudentForm({ ...newStudentForm, student_name: e.target.value })}
+                    placeholder="e.g. Aaryan Sharma"
                     style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
                     required
                   />
@@ -2339,6 +1304,7 @@ export default function TutorDashboard() {
                     type="text"
                     value={newStudentForm.parent_name}
                     onChange={(e) => setNewStudentForm({ ...newStudentForm, parent_name: e.target.value })}
+                    placeholder="e.g. Ramesh Sharma"
                     style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
                   />
                 </div>
@@ -2351,6 +1317,7 @@ export default function TutorDashboard() {
                     type="text"
                     value={newStudentForm.class_grade}
                     onChange={(e) => setNewStudentForm({ ...newStudentForm, class_grade: e.target.value })}
+                    placeholder="e.g. Class 10"
                     style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
                     required
                   />
@@ -2373,6 +1340,7 @@ export default function TutorDashboard() {
                     type="text"
                     value={newStudentForm.medium}
                     onChange={(e) => setNewStudentForm({ ...newStudentForm, medium: e.target.value })}
+                    placeholder="e.g. Hindi / Bilingual"
                     style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
                   />
                 </div>
@@ -2385,6 +1353,7 @@ export default function TutorDashboard() {
                     type="text"
                     value={newStudentForm.subjects}
                     onChange={(e) => setNewStudentForm({ ...newStudentForm, subjects: e.target.value })}
+                    placeholder="e.g. Mathematics, Science"
                     style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
                     required
                   />
@@ -2395,6 +1364,7 @@ export default function TutorDashboard() {
                     type="text"
                     value={newStudentForm.phone}
                     onChange={(e) => setNewStudentForm({ ...newStudentForm, phone: e.target.value })}
+                    placeholder="e.g. +91 98765 43210"
                     style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
                   />
                 </div>
@@ -2402,98 +1372,8 @@ export default function TutorDashboard() {
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
                 <button type="button" onClick={() => setShowAddStudentModal(false)} style={{ background: 'transparent', border: '1px solid #475569', color: '#CBD5E1', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
-                <button type="submit" disabled={submitting} style={{ background: '#059669', border: 'none', color: '#FFFFFF', padding: '0.6rem 1.25rem', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}>
+                <button type="submit" disabled={submitting} style={{ background: 'linear-gradient(135deg, #059669, #047857)', border: 'none', color: '#FFFFFF', padding: '0.6rem 1.25rem', borderRadius: '8px', fontWeight: 800, cursor: 'pointer' }}>
                   {submitting ? 'Enrolling...' : 'Enroll Student'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 5: GENERATE MONTHLY REPORT */}
-      {showReportModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-          <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '16px', maxWidth: '540px', width: '100%', padding: '1.75rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
-                Generate Monthly Progress Report
-              </h3>
-              <button onClick={() => setShowReportModal(false)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={20} /></button>
-            </div>
-
-            <form onSubmit={handleSubmitReport} style={{ display: 'grid', gap: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Student</label>
-                  <select
-                    value={newReportForm.student_name}
-                    onChange={(e) => setNewReportForm({ ...newReportForm, student_name: e.target.value })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                  >
-                    {activeStudents.map((s) => (
-                      <option key={s.id} value={s.student_name}>{s.student_name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Report Month</label>
-                  <input
-                    type="text"
-                    value={newReportForm.month}
-                    onChange={(e) => setNewReportForm({ ...newReportForm, month: e.target.value })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Attendance %</label>
-                  <input
-                    type="number"
-                    value={newReportForm.attendance_percentage}
-                    onChange={(e) => setNewReportForm({ ...newReportForm, attendance_percentage: Number(e.target.value) })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Academic Score %</label>
-                  <input
-                    type="number"
-                    value={newReportForm.marks_percentage}
-                    onChange={(e) => setNewReportForm({ ...newReportForm, marks_percentage: Number(e.target.value) })}
-                    style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Syllabus Chapters Completed</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Quadratic Equations, Light Ray Reflection, Chemical Equations"
-                  value={newReportForm.syllabus_covered}
-                  onChange={(e) => setNewReportForm({ ...newReportForm, syllabus_covered: e.target.value })}
-                  style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', color: '#94A3B8', marginBottom: '0.3rem' }}>Tutor Remarks & Progress Note</label>
-                <textarea
-                  rows={3}
-                  value={newReportForm.tutor_remarks}
-                  onChange={(e) => setNewReportForm({ ...newReportForm, tutor_remarks: e.target.value })}
-                  style={{ width: '100%', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', padding: '0.6rem 0.85rem', color: '#FFFFFF', fontSize: '0.9rem' }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
-                <button type="button" onClick={() => setShowReportModal(false)} style={{ background: 'transparent', border: '1px solid #475569', color: '#CBD5E1', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
-                <button type="submit" disabled={submitting} style={{ background: '#059669', border: 'none', color: '#FFFFFF', padding: '0.6rem 1.25rem', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}>
-                  {submitting ? 'Publishing...' : 'Publish Official Report'}
                 </button>
               </div>
             </form>
