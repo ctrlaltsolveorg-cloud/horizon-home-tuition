@@ -785,7 +785,8 @@ export default function StudentDashboard() {
                     padding: '14px',
                     borderRadius: '12px',
                     background: 'rgba(16, 185, 129, 0.05)',
-                    border: '1px solid rgba(16, 185, 129, 0.2)'
+                    border: '1px solid rgba(16, 185, 129, 0.2)',
+                    marginBottom: '1.25rem'
                   }}>
                     <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#059669', marginBottom: '4px', textTransform: 'uppercase' }}>
                       Teacher's Observation & Remarks
@@ -793,6 +794,48 @@ export default function StudentDashboard() {
                     <p style={{ fontSize: '0.88rem', color: 'var(--text-primary)', margin: 0, lineHeight: '1.5' }}>
                       "{activeReport.tutor_remarks}"
                     </p>
+                  </div>
+
+                  {/* Official Verified Single-Page Audit Card Link */}
+                  <div style={{
+                    padding: '14px 16px',
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(37, 99, 235, 0.08))',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '12px'
+                  }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 800, color: '#F59E0B' }}>
+                        <Award size={16} />
+                        <span>OFFICIAL MONTHLY AUDIT REPORT (SINGLE-PAGE PDF)</span>
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                        Passage reading speed, chapter tests, communication score &amp; intelligence pillars.
+                      </div>
+                    </div>
+                    <Link
+                      href={`/report-card/${activeReport.id || 'sample'}`}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                        color: '#000',
+                        fontWeight: 800,
+                        fontSize: '0.84rem',
+                        textDecoration: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '0 3px 10px rgba(245, 158, 11, 0.25)'
+                      }}
+                    >
+                      <FileText size={15} />
+                      <span>View &amp; Print Official PDF</span>
+                    </Link>
                   </div>
 
                 </div>

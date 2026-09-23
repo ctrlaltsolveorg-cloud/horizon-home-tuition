@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import Link from 'next/link';
+import { supabase, TestCenter, EvaluationDuty, MonthlyReportCard } from '@/lib/supabase';
 import {
   Users,
   UserCheck,
@@ -19,7 +21,12 @@ import {
   Sliders,
   Award,
   Sparkles,
-  FileText
+  FileText,
+  Building2,
+  MapPin,
+  Printer,
+  ShieldAlert,
+  Plus
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
@@ -28,7 +35,11 @@ export default function AdminDashboardPage() {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'enquiries' | 'tutors' | 'assessments' | 'matching' | 'trials' | 'replacements' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'enquiries' | 'tutors' | 'assessments' | 'matching' | 'trials' | 'replacements' | 'settings' | 'center_audits'>('overview');
+  
+  const [testCenters, setTestCenters] = useState<TestCenter[]>([]);
+  const [evaluationDuties, setEvaluationDuties] = useState<EvaluationDuty[]>([]);
+  const [monthlyReportCards, setMonthlyReportCards] = useState<MonthlyReportCard[]>([]);
   
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
@@ -97,6 +108,17 @@ export default function AdminDashboardPage() {
           if (json.configs.admin_email) setConfigEmail(json.configs.admin_email);
         }
       }
+
+      // Fetch Live Supabase Test Centers, Duties & Report Cards
+      const { data: centers } = await supabase.from('test_centers').select('*').order('created_at', { ascending: false });
+      if (centers) setTestCenters(centers);
+
+      const { data: duties } = await supabase.from('evaluation_duties').select('*').order('created_at', { ascending: false });
+      if (duties) setEvaluationDuties(duties);
+
+      const { data: reps } = await supabase.from('monthly_report_cards').select('*').order('created_at', { ascending: false });
+      if (reps) setMonthlyReportCards(reps);
+
     } catch (err) {
       console.error(err);
     } finally {
@@ -320,6 +342,7 @@ export default function AdminDashboardPage() {
               { id: 'overview', label: 'Overview Dashboard' },
               { id: 'enquiries', label: `Parent Enquiries (${data?.enquiries?.length || 0})` },
               { id: 'tutors', label: `Tutor Network (${data?.tutors?.length || 0})` },
+              { id: 'center_audits', label: `Test Centers & Cross-Audits (${monthlyReportCards.length})` },
               { id: 'assessments', label: 'Student Assessments' },
               { id: 'matching', label: 'Tutor Matching' },
               { id: 'trials', label: 'Trial Sessions' },
@@ -733,6 +756,172 @@ export default function AdminDashboardPage() {
                   Save Configuration
                 </button>
               </form>
+            </div>
+          )}
+
+          {/* TAB 9: TEST CENTERS & CROSS-EVALUATION AUDITS */}
+          {activeTab === 'center_audits' && (
+            <div>
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Building2 size={24} color="var(--accent-gold)" /> Monthly Test Centers &amp; Cross-Audits
+                  </h2>
+                  <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', margin: '0.2rem 0 0' }}>
+                    Strict anti-bias evaluation control: Independent cross-tutors assigned to testing hubs with 1-day evaluation windows.
+                  </p>
+                </div>
+              </div>
+
+              {/* Section A: Allocated Test Centers */}
+              <div className="dark-card" style={{ padding: '1.75rem', borderRadius: '18px', marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--accent-gold)', margin: 0 }}>
+                    1. Verified Examination Centers
+                  </h3>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+                  {(testCenters.length > 0 ? testCenters : [
+                    {
+                      id: 'cen-1',
+                      center_name: 'Horizon Central Assessment Hub #1',
+                      center_code: 'CEN-PUR-01',
+                      location_address: 'Line Bazar Road, Near Govt Medical College, Purnia',
+                      coordinator_name: 'Academic Director Piyush',
+                      contact_number: '+91 9162162128',
+                      capacity: 60
+                    }
+                  ]).map((center) => (
+                    <div
+                      key={center.id}
+                      style={{
+                        background: 'var(--bg-input)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '12px',
+                        padding: '1.25rem'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <span style={{ padding: '2px 8px', borderRadius: '6px', background: 'var(--accent-gold)', color: '#000', fontSize: '0.72rem', fontWeight: 900 }}>
+                          {center.center_code}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: '#10B981', fontWeight: 700 }}>
+                          Capacity: {center.capacity || 50} Students
+                        </span>
+                      </div>
+                      <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 6px' }}>
+                        {center.center_name}
+                      </h4>
+                      <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <MapPin size={14} color="#38BDF8" />
+                        <span>{center.location_address}</span>
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)', paddingTop: '6px', marginTop: '6px' }}>
+                        Coordinator: <strong style={{ color: 'var(--text-primary)' }}>{center.coordinator_name}</strong> ({center.contact_number})
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Section B: Master Progress Report Cards List */}
+              <div className="dark-card" style={{ padding: '1.75rem', borderRadius: '18px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--accent-gold)', margin: 0 }}>
+                      2. Official Monthly Progress Report Cards (Single-Page Audits)
+                    </h3>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: '2px 0 0' }}>
+                      All verified reports generated by independent cross-examiners and visible in Student &amp; Parent portals.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="table-responsive">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>STUDENT &amp; CLASS</th>
+                        <th>TEACHING TUTOR</th>
+                        <th>CROSS-EXAMINER &amp; CENTER</th>
+                        <th>MONTH</th>
+                        <th>OVERALL SCORE</th>
+                        <th>AUDIT STATUS</th>
+                        <th>OFFICIAL PDF</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(monthlyReportCards.length > 0 ? monthlyReportCards : [
+                        {
+                          id: 'rep-sample-001',
+                          report_code: 'REP-202609-001',
+                          student_name: 'Aaryan Sharma',
+                          class_grade: 'Class 7th • CBSE',
+                          assigned_tutor_name: 'Harshit Patel',
+                          evaluator_tutor_name: 'Vikash Kumar (Cross-Examiner)',
+                          test_center_name: 'Horizon Central Hub #1',
+                          assessment_month: 'September, 2026',
+                          overall_percentage: 86.5,
+                          grade: 'Grade A+ Outstanding',
+                          status: 'VERIFIED'
+                        }
+                      ]).map((rep) => (
+                        <tr key={rep.id}>
+                          <td>
+                            <strong style={{ color: 'var(--text-primary)', fontSize: '0.92rem' }}>{rep.student_name}</strong>
+                            <div style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>{rep.class_grade}</div>
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{rep.assigned_tutor_name}</div>
+                            <div style={{ fontSize: '0.74rem', color: 'var(--accent-gold)' }}>Regular Faculty (No Edit Access)</div>
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: 700, color: '#38BDF8' }}>{rep.evaluator_tutor_name}</div>
+                            <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>{rep.test_center_name || 'Center #1'}</div>
+                          </td>
+                          <td>
+                            <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{rep.assessment_month}</span>
+                          </td>
+                          <td>
+                            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: '#10B981', fontFamily: 'monospace' }}>
+                              {rep.overall_percentage}%
+                            </div>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{rep.grade}</div>
+                          </td>
+                          <td>
+                            <span className="badge badge-success">
+                              ✓ {rep.status || 'VERIFIED'}
+                            </span>
+                          </td>
+                          <td>
+                            <Link
+                              href={`/report-card/${rep.id || 'sample'}`}
+                              target="_blank"
+                              style={{
+                                padding: '6px 12px',
+                                borderRadius: '6px',
+                                background: 'linear-gradient(135deg, var(--accent-gold), #D97706)',
+                                color: '#000',
+                                fontWeight: 800,
+                                fontSize: '0.78rem',
+                                textDecoration: 'none',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <Printer size={13} />
+                              <span>View / Print PDF</span>
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           )}
 
