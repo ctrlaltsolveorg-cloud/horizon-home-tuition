@@ -1302,6 +1302,25 @@ export default function TutorDashboard() {
                     >
                       Report
                     </button>
+                    <Link
+                      href={`/profile?studentId=${student.id || 'stud-1'}`}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#334155',
+                        color: '#F8FAFC',
+                        border: '1px solid #475569',
+                        padding: '0.45rem 0.65rem',
+                        borderRadius: '6px',
+                        fontSize: '0.76rem',
+                        fontWeight: 700,
+                        textDecoration: 'none'
+                      }}
+                      title="View Full Student Profile"
+                    >
+                      <User size={13} />
+                    </Link>
                   </div>
                 </div>
               ))}

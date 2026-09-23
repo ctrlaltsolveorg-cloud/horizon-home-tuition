@@ -449,7 +449,7 @@ export default function StudentDashboard() {
             gap: '2rem'
           }}>
             
-            {/* Column 1: Assigned Teacher Profile Card */}
+            {/* Column 1: Assigned Teacher Card (Clean & Compact with View Full Profile) */}
             <div>
               <div style={{
                 display: 'flex',
@@ -458,7 +458,7 @@ export default function StudentDashboard() {
                 marginBottom: '1rem'
               }}>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <User size={20} style={{ color: 'var(--primary)' }} /> Assigned Teacher Profile
+                  <User size={20} style={{ color: 'var(--primary)' }} /> Assigned Home Tutor
                 </h2>
                 <span style={{
                   fontSize: '0.75rem',
@@ -471,7 +471,7 @@ export default function StudentDashboard() {
                   alignItems: 'center',
                   gap: '4px'
                 }}>
-                  <ShieldCheck size={14} /> Verified Tutor
+                  <ShieldCheck size={14} /> Verified Faculty
                 </span>
               </div>
 
@@ -480,134 +480,98 @@ export default function StudentDashboard() {
                   background: 'var(--card-bg)',
                   border: '1px solid var(--border-color)',
                   borderRadius: '18px',
-                  padding: '1.8rem',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.04)'
+                  padding: '1.6rem',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.04)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.25rem'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <div style={{
-                      width: '64px',
-                      height: '64px',
+                      width: '58px',
+                      height: '58px',
                       borderRadius: '16px',
                       background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
                       color: '#ffffff',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '1.6rem',
-                      fontWeight: 800
+                      fontSize: '1.5rem',
+                      fontWeight: 800,
+                      flexShrink: 0
                     }}>
                       {tutor.full_name?.charAt(0) || 'H'}
                     </div>
                     <div>
-                      <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px' }}>
+                      <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 3px' }}>
                         {tutor.full_name}
                       </h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#f59e0b', fontWeight: 700 }}>
-                        <Star size={15} fill="#f59e0b" /> {tutor.rating || 4.9} / 5.0 Rating
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem', flexWrap: 'wrap' }}>
+                        <span style={{ color: '#f59e0b', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          <Star size={14} fill="#f59e0b" /> {tutor.rating || 4.9} / 5.0
+                        </span>
+                        <span style={{ color: 'var(--text-secondary)' }}>•</span>
+                        <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{tutor.college || 'PCE Purnia'}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Tutor Profile Specifications in Requested Format */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '1.5rem' }}>
-                    <div style={{
-                      padding: '10px 14px',
-                      background: 'var(--bg-primary)',
-                      borderRadius: '10px',
-                      border: '1px solid var(--border-color)',
-                      fontSize: '0.9rem'
-                    }}>
-                      <strong style={{ color: 'var(--text-secondary)', display: 'block', fontSize: '0.78rem' }}>COLLEGE / INSTITUTION</strong>
-                      <span style={{ fontWeight: 700, color: 'var(--primary)' }}>{tutor.college}</span>
-                    </div>
-
-                    <div style={{
-                      padding: '10px 14px',
-                      background: 'var(--bg-primary)',
-                      borderRadius: '10px',
-                      border: '1px solid var(--border-color)',
-                      fontSize: '0.9rem'
-                    }}>
-                      <strong style={{ color: 'var(--text-secondary)', display: 'block', fontSize: '0.78rem' }}>DEGREE & PERFORMANCE</strong>
-                      <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{tutor.degree_status}</span>
-                    </div>
-
-                    <div style={{
-                      padding: '10px 14px',
-                      background: 'var(--bg-primary)',
-                      borderRadius: '10px',
-                      border: '1px solid var(--border-color)',
-                      fontSize: '0.9rem'
-                    }}>
-                      <strong style={{ color: 'var(--text-secondary)', display: 'block', fontSize: '0.78rem' }}>TEACHING EXPERIENCE</strong>
-                      <span style={{ fontWeight: 700, color: '#10b981' }}>+ {tutor.experience_years}</span>
-                    </div>
-
-                    <div style={{
-                      padding: '10px 14px',
-                      background: 'rgba(37, 99, 235, 0.05)',
-                      borderRadius: '10px',
-                      border: '1px solid rgba(37, 99, 235, 0.15)',
-                      fontSize: '0.9rem'
-                    }}>
-                      <strong style={{ color: 'var(--primary)', display: 'block', fontSize: '0.78rem' }}>MEDIUM & LANGUAGE COMFORT</strong>
-                      <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                        Comfortable with : {tutor.medium_preference} ({tutor.languages})
-                      </span>
-                    </div>
+                  <div style={{
+                    padding: '10px 14px',
+                    background: 'rgba(37, 99, 235, 0.05)',
+                    border: '1px solid rgba(37, 99, 235, 0.12)',
+                    borderRadius: '10px',
+                    fontSize: '0.84rem',
+                    color: 'var(--text-secondary)'
+                  }}>
+                    <strong style={{ color: 'var(--text-primary)', display: 'block', fontSize: '0.76rem', textTransform: 'uppercase', marginBottom: '2px' }}>
+                      Subjects &amp; Focus
+                    </strong>
+                    {Array.isArray(tutor.subjects) ? tutor.subjects.join(', ') : (tutor.subjects || 'Mathematics, Science, Foundation Physics')}
                   </div>
 
-                  {tutor.bio_and_custom_notes && (
-                    <div style={{
-                      fontSize: '0.85rem',
-                      color: 'var(--text-secondary)',
-                      lineHeight: '1.5',
-                      padding: '10px 14px',
-                      background: 'var(--bg-primary)',
-                      borderRadius: '10px',
-                      marginBottom: '1.2rem'
-                    }}>
-                      "{tutor.bio_and_custom_notes}"
-                    </div>
-                  )}
-
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <a
-                      href={`tel:${tutor.phone || '+919876543210'}`}
+                  {/* Clean Action Buttons: View Full Profile & Call */}
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <Link
+                      href={`/profile?tutorId=${tutor.id || 'demo-tutor-1'}`}
                       style={{
                         flex: 1,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '6px',
-                        padding: '10px',
+                        padding: '10px 14px',
                         borderRadius: '10px',
-                        background: 'var(--primary)',
-                        color: '#ffffff',
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                        textDecoration: 'none'
+                        background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                        color: '#000000',
+                        fontSize: '0.84rem',
+                        fontWeight: 800,
+                        textDecoration: 'none',
+                        boxShadow: '0 2px 10px rgba(245, 158, 11, 0.25)'
                       }}
                     >
-                      <Phone size={15} /> Call Tutor
-                    </a>
-                    <Link
-                      href={`/tutor-verify/HZN-1024`}
+                      <User size={15} /> View Full Profile
+                    </Link>
+
+                    <a
+                      href={`tel:${tutor.phone || '+919162162128'}`}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        gap: '6px',
                         padding: '10px 16px',
                         borderRadius: '10px',
+                        background: 'var(--bg-primary)',
                         border: '1px solid var(--border-color)',
                         color: 'var(--text-primary)',
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
+                        fontSize: '0.84rem',
+                        fontWeight: 700,
                         textDecoration: 'none'
                       }}
                     >
-                      Verify ID
-                    </Link>
+                      <Phone size={15} /> Call
+                    </a>
                   </div>
                 </div>
               )}
