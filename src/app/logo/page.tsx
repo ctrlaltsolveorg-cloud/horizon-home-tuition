@@ -23,42 +23,65 @@ import {
   Award,
   Grid
 } from 'lucide-react';
-import HorizonLogoIcon from '@/components/HorizonLogoSvg';
 
 export function HorizonLogoMark({
   size = 120,
   fillColor,
   accentColor,
   glow = false,
-  variant = 'full',
   className = ''
 }: {
   size?: number;
   fillColor?: string;
   accentColor?: string;
   glow?: boolean;
-  variant?: 'primary' | 'monogram' | 'badge' | 'stacked' | 'full';
   className?: string;
 }) {
   const primaryFill = fillColor || '#F59E0B';
-  const lockupVariant = variant === 'monogram' ? 'icon' : variant === 'stacked' ? 'stacked' : 'full';
+  const rightHookFill = accentColor || primaryFill;
+  const height = Math.round(size * 0.86);
 
   return (
-    <HorizonLogoIcon
-      size={size}
-      color={primaryFill}
-      textColor={primaryFill}
-      glow={glow}
-      variant={lockupVariant as any}
-      className={className}
-    />
+    <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} className={className}>
+      {glow && (
+        <div style={{
+          position: 'absolute',
+          inset: '-20%',
+          background: 'radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, rgba(16, 185, 129, 0.15) 50%, transparent 70%)',
+          filter: 'blur(24px)',
+          borderRadius: '50%',
+          pointerEvents: 'none'
+        }} />
+      )}
+      <svg
+        width={size}
+        height={height}
+        viewBox="60 30 870 750"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ overflow: 'visible', display: 'inline-block' }}
+      >
+        {/* Main Body with interlocking 'H' cutout window and central ascension arrow */}
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M 502,51 L 297,394 L 379,396 L 435,488 L 477,411 L 467,324 L 430,314 L 501,201 L 567,317 L 530,323 L 524,404 L 447,526 L 312,525 L 360,433 L 275,431 L 87,758 L 414,746 L 657,326 Z M 220,680 L 264,602 L 401,601 L 360,682 Z"
+          fill={primaryFill}
+        />
+        {/* Right Hook and Base Diagonal Leg */}
+        <path
+          d="M 680,357 L 636,433 L 776,680 L 638,682 L 564,561 L 520,629 L 595,758 L 912,757 Z"
+          fill={rightHookFill}
+        />
+      </svg>
+    </div>
   );
 }
 
 export default function LogoTheoryPage() {
   const [logoVariant, setLogoVariant] = useState<'primary' | 'monogram' | 'badge' | 'stacked'>('primary');
   const [themeMode, setThemeMode] = useState<'dark' | 'light' | 'gold' | 'emerald'>('dark');
-  const [logoSize, setLogoSize] = useState<number>(180);
+  const [logoSize, setLogoSize] = useState<number>(200);
   const [glowEnabled, setGlowEnabled] = useState<boolean>(true);
   const [animationMode, setAnimationMode] = useState<'shimmer' | 'float' | 'pulse' | 'none'>('shimmer');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -72,22 +95,12 @@ export default function LogoTheoryPage() {
   // Generate Exact SVG Code string for export
   const getRawSvg = () => {
     const fill = themeMode === 'light' ? '#0F172A' : themeMode === 'gold' ? '#F59E0B' : themeMode === 'emerald' ? '#10B981' : '#FFFFFF';
-    const gold = '#F59E0B';
-    if (logoVariant === 'monogram') {
-      return `<svg width="${logoSize}" height="${Math.round(logoSize * 0.92)}" viewBox="0 0 160 148" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Outer Chevron & Base -->
-  <path d="M 80,6 L 10,126 L 110,126 L 110,114 L 26,114 L 80,22 L 138,72 L 148,72 Z" fill="${gold}" />
-  <!-- Inner Chevron & Base -->
-  <path d="M 80,34 L 38,106 L 110,106 L 110,96 L 49,96 L 80,44 L 122,72 L 130,72 Z" fill="${gold}" />
-</svg>`;
-    }
-    return `<svg width="${Math.round(logoSize * 4.1)}" height="${logoSize}" viewBox="0 0 380 92" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Outer Chevron & Base -->
-  <path d="M 52,6 L 8,82 L 96,82 L 96,73 L 22,73 L 52,19 L 126,50 L 136,50 Z" fill="${gold}" />
-  <!-- Inner Chevron & Base -->
-  <path d="M 52,26 L 28,68 L 96,68 L 96,61 L 36,61 L 52,34 L 114,50 L 121,50 Z" fill="${gold}" />
-  <!-- Wordmark HORIZON -->
-  <text x="100" y="77" fill="${fill}" font-family="Outfit, Inter, sans-serif" font-size="56" font-weight="900" letter-spacing="0.06em">HORIZON</text>
+    const accent = themeMode === 'gold' ? '#FBBF24' : themeMode === 'emerald' ? '#34D399' : '#F59E0B';
+    return `<svg width="${logoSize}" height="${Math.round(logoSize * 0.86)}" viewBox="60 30 870 750" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Exact Interlocking 'H' + Central Ascension Arrow + Cutout Window -->
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M 502,51 L 297,394 L 379,396 L 435,488 L 477,411 L 467,324 L 430,314 L 501,201 L 567,317 L 530,323 L 524,404 L 447,526 L 312,525 L 360,433 L 275,431 L 87,758 L 414,746 L 657,326 Z M 220,680 L 264,602 L 401,601 L 360,682 Z" fill="${fill}" />
+  <!-- Right Hook & Diagonal Leg Contour -->
+  <path d="M 680,357 L 636,433 L 776,680 L 638,682 L 564,561 L 520,629 L 595,758 L 912,757 Z" fill="${accent}" />
 </svg>`;
   };
 
@@ -303,14 +316,53 @@ export default function LogoTheoryPage() {
               animation: animationMode === 'float' ? 'floatLogo 4s ease-in-out infinite' : 'none'
             }}>
 
-              {/* RENDER THE ACCURATE VECTOR ICON / UNIFIED LOCKUP */}
+              {/* RENDER THE ACCURATE VECTOR ICON */}
               <HorizonLogoMark
-                size={logoVariant === 'monogram' ? 160 : 180}
+                size={140}
                 fillColor={activeFill}
                 accentColor={activeArrow}
-                variant={logoVariant}
                 glow={glowEnabled && animationMode === 'shimmer'}
               />
+
+              {/* TYPOGRAPHY LOCKUP */}
+              {logoVariant !== 'monogram' && (
+                <div style={{ textAlign: logoVariant === 'stacked' ? 'center' : 'left' }}>
+                  <div style={{
+                    fontFamily: 'var(--font-heading)',
+                    fontSize: '2.5rem',
+                    fontWeight: 900,
+                    letterSpacing: '0.12em',
+                    color: themeMode === 'light' ? '#0F172A' : '#FFFFFF',
+                    lineHeight: 1
+                  }}>
+                    HORIZON
+                  </div>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: logoVariant === 'stacked' ? 'center' : 'flex-start',
+                    gap: '0.5rem',
+                    marginTop: '0.45rem'
+                  }}>
+                    <span style={{
+                      background: themeMode === 'emerald' ? 'rgba(52, 211, 153, 0.2)' : 'var(--accent-gold-light)',
+                      color: themeMode === 'emerald' ? '#34D399' : 'var(--accent-gold)',
+                      fontSize: '0.65rem',
+                      fontWeight: 800,
+                      padding: '0.18rem 0.6rem',
+                      borderRadius: '12px',
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                      border: '1px solid rgba(245, 158, 11, 0.3)'
+                    }}>
+                      MANAGED
+                    </span>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '0.04em' }}>
+                      Home Tuition Platform
+                    </span>
+                  </div>
+                </div>
+              )}
 
             </div>
 
@@ -531,7 +583,7 @@ export default function LogoTheoryPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.75rem' }}>
             
-            {/* Card 1: Double Chevron Convergence */}
+            {/* Card 1: The 'H' Foundation */}
             <div style={{
               background: 'var(--bg-card)',
               border: '1px solid var(--border-color)',
@@ -554,14 +606,14 @@ export default function LogoTheoryPage() {
                 <Layers size={26} />
               </div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.65rem', color: 'var(--text-primary)' }}>
-                1. Double Chevron (Duality of Growth)
+                1. The Interlocking ‘H’ (Horizon)
               </h3>
               <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>
-                Two concentric, parallel ascending beams symbolize the synchronized journey of the <strong>Mentor & Student</strong>, working together in harmonious academic ascent.
+                The left diagonal beam weaves with the lower window to form an architectural <strong>‘H’</strong>. It represents the foundational academic bedrock (Classes 5 to 12) built through verified home tutoring.
               </p>
             </div>
 
-            {/* Card 2: Grounded Horizontal Foundation */}
+            {/* Card 2: The Upward Ascension Vector */}
             <div style={{
               background: 'var(--bg-card)',
               border: '1px solid var(--border-color)',
@@ -584,14 +636,14 @@ export default function LogoTheoryPage() {
                 <TrendingUp size={26} />
               </div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.65rem', color: 'var(--text-primary)' }}>
-                2. Extended Horizontal Base (Stability)
+                2. The Ascension Arrow (Growth)
               </h3>
               <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>
-                The strong horizontal baseline grounds the structure on the left, anchoring the foundational fundamentals before launching into higher academic percentiles.
+                Emerging from the center is a vertical arrow pointing directly toward the peak. It embodies continuous score elevation, goal orientation, and rapid academic acceleration.
               </p>
             </div>
 
-            {/* Card 3: Delta Pyramid Apex */}
+            {/* Card 3: The Delta Pyramid Apex */}
             <div style={{
               background: 'var(--bg-card)',
               border: '1px solid var(--border-color)',
@@ -614,14 +666,14 @@ export default function LogoTheoryPage() {
                 <Compass size={26} />
               </div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.65rem', color: 'var(--text-primary)' }}>
-                3. The 60° Delta Apex (Peak Velocity)
+                3. The Delta Triangle (Peak Merit)
               </h3>
               <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>
-                Engineered with precise equilateral angles, the sharp apex points straight toward top tier academic achievement and board exam distinction.
+                The equilateral triangle is the most geometrically stable polygon in physics. It symbolizes maximum stability, structural discipline, and reaching the top percentile in board exams.
               </p>
             </div>
 
-            {/* Card 4: Integrated HORIZON Wordmark */}
+            {/* Card 4: The Closed Loop Synergy */}
             <div style={{
               background: 'var(--bg-card)',
               border: '1px solid var(--border-color)',
@@ -644,10 +696,10 @@ export default function LogoTheoryPage() {
                 <ShieldCheck size={26} />
               </div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.65rem', color: 'var(--text-primary)' }}>
-                4. Integrated Horizon Wordmark
+                4. The Interlocking Synergy (Trust)
               </h3>
               <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>
-                Nestled comfortably within the right aperture of the delta, the bold uppercase wordmark completes the brand identity with timeless confidence and architectural poise.
+                The right hook closes the perimeter to represent the 3-way partnership: <strong>Student + Educator + Parent</strong>, fortified by Horizon’s verified academic oversight.
               </p>
             </div>
 
