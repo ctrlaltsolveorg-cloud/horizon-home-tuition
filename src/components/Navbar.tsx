@@ -484,21 +484,6 @@ export default function Navbar() {
             </Link>
           )}
 
-          {/* Primary CTA */}
-          <Link
-            href="/book-assessment"
-            className="btn btn-gold desktop-only"
-            style={{
-              padding: '0.5rem 1.15rem',
-              fontSize: '0.85rem',
-              borderRadius: '24px',
-              fontWeight: 700,
-              whiteSpace: 'nowrap'
-            }}
-          >
-            {t.bookAssessmentCTA}
-          </Link>
-
           {/* Mobile Menu Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -613,12 +598,12 @@ export default function Navbar() {
           )}
 
           <Link
-            href="/book-assessment"
+            href="/become-a-tutor"
             onClick={() => setMobileMenuOpen(false)}
             className="btn btn-gold"
             style={{ width: '100%', padding: '0.75rem', fontSize: '0.95rem', borderRadius: '24px', textAlign: 'center', marginTop: '0.5rem' }}
           >
-            {t.bookAssessmentCTA}
+            {t.becomeTutorCTA}
           </Link>
         </div>
       )}

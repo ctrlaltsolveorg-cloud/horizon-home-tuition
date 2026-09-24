@@ -137,15 +137,11 @@ export default function HomePage() {
                 gap: '0.75rem',
                 marginBottom: '2.25rem'
               }}>
-                {/* Temporarily hidden per user request — easily restorable */}
-                {/*
-                <Link href="/book-assessment" className="btn btn-gold" style={{ fontSize: 'clamp(0.88rem, 2.5vw, 1rem)', padding: '0.8rem 1.6rem', borderRadius: '30px' }}>
-                  {t.bookAssessmentCTA} <ArrowRight size={17} />
+                <Link href="/become-a-tutor" className="btn btn-gold" style={{ fontSize: 'clamp(0.9rem, 2.5vw, 1.02rem)', padding: '0.85rem 1.8rem', borderRadius: '30px' }}>
+                  {t.becomeTutorCTA} <ArrowRight size={17} />
                 </Link>
-                */}
-
-                <Link href="/become-a-tutor" className="btn btn-secondary" style={{ fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)', padding: '0.75rem 1.35rem', borderRadius: '30px' }}>
-                  {t.becomeTutorCTA}
+                <Link href="/contact" className="btn btn-secondary" style={{ fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)', padding: '0.85rem 1.6rem', borderRadius: '30px' }}>
+                  {t.navContact}
                 </Link>
               </div>
 
@@ -514,9 +510,12 @@ export default function HomePage() {
           <p style={{ fontSize: '1.15rem', color: 'var(--text-secondary)', marginBottom: '2.25rem', lineHeight: 1.65 }}>
             Tell us what your child needs. Horizon will conduct an academic assessment and match the right verified tutor.
           </p>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <Link href="/book-assessment" className="btn btn-gold" style={{ fontSize: '1.1rem', padding: '1.1rem 2.6rem', borderRadius: '30px' }}>
-              {t.bookAssessmentCTA}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <Link href="/become-a-tutor" className="btn btn-gold" style={{ fontSize: '1.05rem', padding: '1rem 2.2rem', borderRadius: '30px' }}>
+              {t.becomeTutorCTA} <ArrowRight size={18} />
+            </Link>
+            <Link href="/contact" className="btn btn-secondary" style={{ fontSize: '1.05rem', padding: '1rem 2rem', borderRadius: '30px' }}>
+              {t.navContact}
             </Link>
           </div>
         </div>
