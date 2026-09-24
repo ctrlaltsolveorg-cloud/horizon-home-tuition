@@ -334,61 +334,79 @@ export default function StudentDashboard() {
               background: 'var(--card-bg)',
               border: '1px solid var(--border-color)',
               borderRadius: '16px',
-              padding: '1.4rem',
+              overflow: 'hidden',
               boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'space-between'
+              minHeight: '180px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '0.8rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                  <div style={{
-                    width: '38px',
-                    height: '38px',
-                    borderRadius: '10px',
-                    background: 'rgba(37, 99, 235, 0.1)',
-                    color: 'var(--primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
-                  }}>
-                    <Calendar size={20} />
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      1. Enquiry Date (पूछताछ तिथि)
-                    </div>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      {formatDate(enquiry?.enquiry_date)}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Clean photo thumbnail preview */}
+              {/* Picture Banner - Crisp, Large & Clearly Visible */}
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                height: '118px',
+                background: '#0d1520',
+                overflow: 'hidden'
+              }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/enquiry_banner.png"
+                  alt="Enquiry Consultation"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: 'center',
+                    display: 'block'
+                  }}
+                />
                 <div style={{
-                  width: '60px',
-                  height: '42px',
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                  border: '1px solid var(--border-color)',
-                  flexShrink: 0,
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
-                  background: '#0d1520'
+                  position: 'absolute',
+                  top: '8px',
+                  right: '8px',
+                  background: 'rgba(0, 0, 0, 0.75)',
+                  backdropFilter: 'blur(8px)',
+                  color: '#60a5fa',
+                  border: '1px solid rgba(96, 165, 250, 0.3)',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700
                 }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/enquiry_banner.png"
-                    alt="Enquiry Consultation"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
+                  {enquiry?.class_level || 'Class 9'} ({enquiry?.board || 'CBSE'})
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Status:</span>
-                <span style={{ fontWeight: 700, color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>
-                  Submitted • {enquiry?.class_level || 'Class 9'} ({enquiry?.board || 'CBSE'})
-                </span>
+
+              {/* Bottom Clean Info Section */}
+              <div style={{
+                padding: '0.9rem 1.1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                flexGrow: 1,
+                background: 'var(--card-bg)'
+              }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: 'rgba(37, 99, 235, 0.1)',
+                  color: 'var(--primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <Calendar size={18} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                    1. Enquiry Date (पूछताछ तिथि)
+                  </div>
+                  <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
+                    {formatDate(enquiry?.enquiry_date)}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -397,32 +415,38 @@ export default function StudentDashboard() {
               background: 'var(--card-bg)',
               border: '1px solid var(--border-color)',
               borderRadius: '16px',
-              padding: '1.4rem',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.03)'
+              padding: '1.2rem 1.4rem',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              minHeight: '180px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.8rem' }}>
-                <div style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '10px',
-                  background: 'rgba(16, 185, 129, 0.1)',
-                  color: '#10b981',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <Clock size={20} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase' }}>
-                    2. Diagnostic Test Schedule
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.8rem' }}>
+                  <div style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '10px',
+                    background: 'rgba(16, 185, 129, 0.1)',
+                    color: '#10b981',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <Clock size={20} />
                   </div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    {formatDate(enquiry?.test_scheduled_date)}
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase' }}>
+                      2. Diagnostic Test Schedule
+                    </div>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      {formatDate(enquiry?.test_scheduled_date)}
+                    </div>
                   </div>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>Test Status:</span>
                 <span style={{ fontWeight: 700, color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>
                   {enquiry?.test_status || 'Completed'} (Score: {enquiry?.test_score || '88%'})
@@ -435,32 +459,38 @@ export default function StudentDashboard() {
               background: 'var(--card-bg)',
               border: '1px solid var(--border-color)',
               borderRadius: '16px',
-              padding: '1.4rem',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.03)'
+              padding: '1.2rem 1.4rem',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              minHeight: '180px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.8rem' }}>
-                <div style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '10px',
-                  background: 'rgba(124, 58, 237, 0.1)',
-                  color: '#7c3aed',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <CreditCard size={20} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase' }}>
-                    3. Fee Payment Status (फीस विवरण)
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.8rem' }}>
+                  <div style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '10px',
+                    background: 'rgba(124, 58, 237, 0.1)',
+                    color: '#7c3aed',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <CreditCard size={20} />
                   </div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    Paid on {formatDate(enquiry?.fee_paid_date)}
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase' }}>
+                      3. Fee Payment Status (फीस विवरण)
+                    </div>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      Paid on {formatDate(enquiry?.fee_paid_date)}
+                    </div>
                   </div>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>Amount: ₹{enquiry?.fee_amount || 4500} / mo</span>
                 <span style={{ fontWeight: 700, color: '#059669', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>
                   Receipt #HZN-9412
