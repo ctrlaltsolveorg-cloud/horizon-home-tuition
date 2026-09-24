@@ -26,16 +26,10 @@ export default function HomePage() {
       <Navbar />
 
       {/* SECTION 1 — HERO SECTION */}
-      <section style={{
-        background: 'radial-gradient(circle at 75% 30%, rgba(245, 158, 11, 0.14) 0%, rgba(15, 23, 42, 0) 55%), radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.12) 0%, rgba(0,0,0,0) 60%), var(--bg-main)',
-        color: 'var(--text-primary)',
-        paddingTop: '4rem',
-        paddingBottom: '5.5rem',
-        position: 'relative',
-        overflow: 'hidden',
-        borderBottom: '1px solid var(--border-color)',
-        transition: 'background 0.3s ease'
-      }}>
+      <section className="hero-section">
+        {/* Mobile Ambient Image Background Layer */}
+        <div className="hero-mobile-bg-layer" />
+
         {/* Subtle Ambient Pattern */}
         <div style={{
           position: 'absolute',
@@ -175,8 +169,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* HERO RIGHT: 3D ORGANIC PORTAL CUTOUT WINDOW */}
-            <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', maxWidth: '100%' }}>
+            {/* HERO RIGHT: 3D ORGANIC PORTAL CUTOUT WINDOW (Desktop Only) */}
+            <div className="hero-desktop-portal" style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', maxWidth: '100%' }}>
               <div style={{
                 position: 'relative',
                 width: '100%',
