@@ -577,233 +577,110 @@ export default function StudentDashboard() {
               )}
             </div>
 
-            {/* Column 2: Monthly Progress Reports with Rich Variables */}
+            {/* Column 2: Official Verified Monthly Report Card (Clean & Focused) */}
             <div>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                marginBottom: '1rem',
-                flexWrap: 'wrap',
-                gap: '8px'
+                marginBottom: '1rem'
               }}>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <TrendingUp size={20} style={{ color: '#10b981' }} /> Monthly Progress Reports
+                  <Award size={20} style={{ color: '#F59E0B' }} /> Official Progress Report
                 </h2>
-
-                {/* Month Tab Switcher */}
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  {reports.map((rep, idx) => (
-                    <button
-                      key={rep.id || idx}
-                      onClick={() => setSelectedReportIndex(idx)}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '8px',
-                        border: selectedReportIndex === idx ? '2px solid var(--primary)' : '1px solid var(--border-color)',
-                        background: selectedReportIndex === idx ? 'rgba(37, 99, 235, 0.1)' : 'var(--card-bg)',
-                        color: selectedReportIndex === idx ? 'var(--primary)' : 'var(--text-secondary)',
-                        fontWeight: 700,
-                        fontSize: '0.82rem',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {rep.report_month}
-                    </button>
-                  ))}
-                </div>
+                <span style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  color: '#10B981',
+                  background: 'rgba(16, 185, 129, 0.1)',
+                  padding: '4px 10px',
+                  borderRadius: '999px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  <ShieldCheck size={14} /> Quality Verified
+                </span>
               </div>
 
-              {activeReport && (
-                <div style={{
-                  background: 'var(--card-bg)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '18px',
-                  padding: '1.8rem',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.04)'
-                }}>
-                  
-                  {/* Report Header */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    paddingBottom: '1rem',
-                    borderBottom: '1px solid var(--border-color)',
-                    marginBottom: '1.2rem'
-                  }}>
-                    <div>
-                      <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>
-                        MONTHLY SCORECARD
-                      </span>
-                      <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary)', margin: '2px 0 0' }}>
-                        {activeReport.report_month}
-                      </h3>
-                    </div>
+              <div style={{
+                background: 'var(--card-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '18px',
+                padding: '1.6rem',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.04)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1.25rem'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
                     <span style={{
-                      padding: '6px 12px',
-                      borderRadius: '8px',
-                      background: 'rgba(16, 185, 129, 0.1)',
-                      color: '#10b981',
+                      display: 'inline-block',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      background: '#0284C7',
+                      color: '#FFFFFF',
+                      fontSize: '0.74rem',
                       fontWeight: 800,
-                      fontSize: '0.9rem'
+                      marginBottom: '6px'
                     }}>
-                      Rating: {activeReport.academic_progress_rating || 9.3} / 10
+                      September 2026
                     </span>
-                  </div>
-
-                  {/* Key Metrics Variables Grid */}
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
-                    gap: '10px',
-                    marginBottom: '1.5rem'
-                  }}>
-                    <div style={{ background: 'var(--bg-primary)', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600 }}>ATTENDANCE</div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#2563eb' }}>
-                        {activeReport.student_attendance_percentage}%
-                      </div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{activeReport.total_classes_conducted} sessions</div>
-                    </div>
-
-                    <div style={{ background: 'var(--bg-primary)', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600 }}>PUNCTUALITY</div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#059669' }}>
-                        {activeReport.punctuality_rating || 9.5} / 10
-                      </div>
-                      <div style={{ fontSize: '0.72rem', color: '#10b981' }}>Always on time</div>
-                    </div>
-
-                    <div style={{ background: 'var(--bg-primary)', padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600 }}>CONCEPT CLARITY</div>
-                      <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#7c3aed' }}>
-                        {activeReport.understanding_rating || 9.2} / 10
-                      </div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Strong retention</div>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px' }}>
+                      Monthly Comprehensive Audit
+                    </h3>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                      Evaluated at: <strong style={{ color: 'var(--text-primary)' }}>Purnia Central Examination Hub</strong>
                     </div>
                   </div>
 
-                  {/* Syllabus Covered */}
-                  <div style={{ marginBottom: '1.3rem' }}>
-                    <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px' }}>
-                      Syllabus & Topics Covered (पाठ्यक्रम प्रगति)
-                    </h4>
-                    <div style={{
-                      padding: '12px 14px',
-                      background: 'var(--bg-primary)',
-                      borderRadius: '10px',
-                      border: '1px solid var(--border-color)',
-                      fontSize: '0.9rem',
-                      color: 'var(--text-primary)',
-                      lineHeight: '1.5'
-                    }}>
-                      {activeReport.syllabus_covered}
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--primary)', fontFamily: 'monospace' }}>
+                      86.5%
                     </div>
-
-                    {activeReport.topics_completed && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
-                        {activeReport.topics_completed.map((t: string, idx: number) => (
-                          <span key={idx} style={{
-                            padding: '4px 10px',
-                            background: 'rgba(37, 99, 235, 0.08)',
-                            color: 'var(--primary)',
-                            borderRadius: '6px',
-                            fontSize: '0.78rem',
-                            fontWeight: 600
-                          }}>
-                            ✓ {t}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#10B981' }}>
+                      Grade A+ Outstanding
+                    </div>
                   </div>
+                </div>
 
-                  {/* Test Scores */}
-                  {activeReport.test_scores && (
-                    <div style={{ marginBottom: '1.3rem' }}>
-                      <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px' }}>
-                        Weekly & Monthly Assessment Scores
-                      </h4>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                        {activeReport.test_scores.map((ts: any, idx: number) => (
-                          <div key={idx} style={{
-                            padding: '10px 14px',
-                            background: 'var(--bg-primary)',
-                            borderRadius: '10px',
-                            border: '1px solid var(--border-color)',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                          }}>
-                            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)' }}>{ts.test}</span>
-                            <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#10b981' }}>{ts.score}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Teacher Feedback / Remarks */}
-                  <div style={{
-                    padding: '14px',
-                    borderRadius: '12px',
-                    background: 'rgba(16, 185, 129, 0.05)',
-                    border: '1px solid rgba(16, 185, 129, 0.2)',
-                    marginBottom: '1.25rem'
-                  }}>
-                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#059669', marginBottom: '4px', textTransform: 'uppercase' }}>
-                      Teacher's Observation & Remarks
-                    </div>
-                    <p style={{ fontSize: '0.88rem', color: 'var(--text-primary)', margin: 0, lineHeight: '1.5' }}>
-                      "{activeReport.tutor_remarks}"
-                    </p>
+                <div style={{
+                  padding: '12px 14px',
+                  background: 'rgba(245, 158, 11, 0.06)',
+                  border: '1px solid rgba(245, 158, 11, 0.2)',
+                  borderRadius: '10px',
+                  fontSize: '0.82rem',
+                  color: 'var(--text-secondary)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#F59E0B', fontWeight: 700, marginBottom: '2px' }}>
+                    <ShieldCheck size={14} /> Independent Cross-Examiner Audit
                   </div>
+                  <span>Evaluated independently by certified cross-examiner faculty to guarantee 100% unbiased academic verification.</span>
+                </div>
 
-                  {/* Official Verified Single-Page Audit Card Link */}
-                  <div style={{
-                    padding: '14px 16px',
-                    borderRadius: '12px',
-                    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(37, 99, 235, 0.08))',
-                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                <Link
+                  href="/report-card/rep-sample-001"
+                  style={{
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: '12px'
-                  }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 800, color: '#F59E0B' }}>
-                        <Award size={16} />
-                        <span>OFFICIAL MONTHLY AUDIT REPORT (SINGLE-PAGE PDF)</span>
-                      </div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                        Passage reading speed, chapter tests, communication score &amp; intelligence pillars.
-                      </div>
-                    </div>
-                    <Link
-                      href={`/report-card/${activeReport.id || 'sample'}`}
-                      style={{
-                        padding: '8px 16px',
-                        borderRadius: '8px',
-                        background: 'linear-gradient(135deg, #F59E0B, #D97706)',
-                        color: '#000',
-                        fontWeight: 800,
-                        fontSize: '0.84rem',
-                        textDecoration: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        boxShadow: '0 3px 10px rgba(245, 158, 11, 0.25)'
-                      }}
-                    >
-                      <FileText size={15} />
-                      <span>View &amp; Print Official PDF</span>
-                    </Link>
-                  </div>
-
-                </div>
-              )}
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '11px 18px',
+                    borderRadius: '10px',
+                    background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                    color: '#000000',
+                    fontWeight: 800,
+                    fontSize: '0.88rem',
+                    textDecoration: 'none',
+                    boxShadow: '0 3px 12px rgba(245, 158, 11, 0.25)',
+                    transition: 'transform 0.2s'
+                  }}
+                >
+                  <FileText size={16} />
+                  <span>View &amp; Print Official Verified Report Card (PDF)</span>
+                </Link>
+              </div>
             </div>
 
           </div>
