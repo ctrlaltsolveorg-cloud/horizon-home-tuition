@@ -267,7 +267,7 @@ export default function ReportCardInteractiveEditor({
 
   return (
     <div className="report-editor-container">
-      {/* Top Floating Control Bar (Hidden in Print) */}
+      {/* Top Floating Control Bar (Hidden in Print) - Clean & Minimal */}
       <header className="no-print editor-toolbar">
         <div className="toolbar-left">
           <Link href={backUrl} className="tool-btn tool-btn-secondary">
@@ -276,31 +276,11 @@ export default function ReportCardInteractiveEditor({
           </Link>
           <div className="duty-badge">
             <ShieldCheck size={16} color="#F59E0B" />
-            <span>LIVE DIRECT-ON-PAGE FILLABLE REPORT CARD</span>
+            <span>Official Report Card (Live Evaluation)</span>
           </div>
         </div>
 
         <div className="toolbar-right">
-          <button
-            type="button"
-            onClick={() => setIsPreviewMode(!isPreviewMode)}
-            className={`tool-btn ${isPreviewMode ? 'tool-btn-active' : 'tool-btn-secondary'}`}
-            title="Toggle between Interactive Fill Form and Clean Print Preview"
-          >
-            {isPreviewMode ? <Edit3 size={16} /> : <Eye size={16} />}
-            <span>{isPreviewMode ? 'Edit Live Mode' : 'Clean Preview'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleResetToDefault}
-            className="tool-btn tool-btn-secondary"
-            title="Reset baseline values"
-          >
-            <RotateCcw size={15} />
-            <span>Fill Baseline</span>
-          </button>
-
           <button
             type="button"
             onClick={handlePrint}
@@ -331,16 +311,6 @@ export default function ReportCardInteractiveEditor({
         }}>
           {saveMessage.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
           <span>{saveMessage.text}</span>
-        </div>
-      )}
-
-      {/* Helpful Examiner Quick Instructions */}
-      {!isPreviewMode && (
-        <div className="no-print examiner-hint-bar">
-          <div className="hint-pill">
-            <Sparkles size={14} color="#F59E0B" />
-            <span><b>Direct In-Place Evaluation:</b> Type or click directly into the report card below as you conduct each oral &amp; written test. Everything is auto-calculated live!</span>
-          </div>
         </div>
       )}
 
