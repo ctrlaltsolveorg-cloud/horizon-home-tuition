@@ -1,12 +1,29 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
-import { Menu, X, Sun, Moon, Home, PhoneCall, Headphones, Phone, LogOut, LayoutDashboard, User } from 'lucide-react';
+import {
+  Menu,
+  X,
+  Sun,
+  Moon,
+  Home,
+  PhoneCall,
+  Headphones,
+  Phone,
+  LogOut,
+  LayoutDashboard,
+  User,
+  Users,
+  Award,
+  ChevronDown,
+  ShieldCheck,
+  FileText
+} from 'lucide-react';
 
 export default function Navbar() {
   const { lang, setLang, t } = useLanguage();
@@ -14,6 +31,18 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setUserDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const isActive = (path: string) => pathname === path;
 
@@ -201,70 +230,236 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Portal Login / Authenticated User Dashboard Badge - Desktop Only */}
+          {/* USER PROFILE AVATAR CIRCLE & DROPDOWN */}
           {user ? (
-            <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Link
-                href={user.role === 'teacher' ? '/tutor-dashboard' : user.role === 'admin' ? '/admin' : '/student-dashboard'}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  padding: '0.38rem 0.75rem',
-                  borderRadius: '20px',
-                  background: 'rgba(37, 99, 235, 0.1)',
-                  border: '1px solid rgba(37, 99, 235, 0.3)',
-                  color: 'var(--primary)',
-                  fontSize: '0.80rem',
-                  fontWeight: 700,
-                  textDecoration: 'none',
-                  whiteSpace: 'nowrap'
-                }}
-                title={`Logged in as ${user.name}`}
-              >
-                <LayoutDashboard size={13} />
-                <span>{user.name.split(' ')[0]}</span>
-              </Link>
-              <Link
-                href="/profile"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '0.38rem 0.6rem',
-                  borderRadius: '20px',
-                  background: 'var(--bg-input)',
-                  border: '1px solid var(--border-color)',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.78rem',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  gap: '4px'
-                }}
-                title="Manage Profile"
-              >
-                <User size={13} />
-                <span>Profile</span>
-              </Link>
+            <div ref={dropdownRef} style={{ position: 'relative' }}>
               <button
                 type="button"
-                onClick={() => logout()}
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                 style={{
-                  display: 'inline-flex',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: userDropdownOpen ? 'var(--bg-card-hover)' : 'var(--bg-input)',
+                  border: userDropdownOpen ? '1px solid #F59E0B' : '1px solid var(--border-color)',
+                  padding: '3px 8px 3px 3px',
+                  borderRadius: '24px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: 'var(--shadow-sm)'
+                }}
+                aria-label="User profile menu"
+                aria-expanded={userDropdownOpen}
+              >
+                {/* Profile Circle with User Initial */}
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  background: user.role === 'teacher' 
+                    ? 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' 
+                    : user.role === 'admin'
+                    ? 'linear-gradient(135deg, #EF4444 0%, #B91C1C 100%)'
+                    : 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                  color: '#FFFFFF',
+                  display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: '30px',
-                  height: '30px',
-                  borderRadius: '50%',
-                  background: 'var(--bg-input)',
-                  border: '1px solid var(--border-color)',
-                  color: 'var(--text-secondary)',
-                  cursor: 'pointer'
-                }}
-                title="Logout"
-              >
-                <LogOut size={13} />
+                  fontWeight: 800,
+                  fontSize: '0.88rem',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                  flexShrink: 0
+                }}>
+                  {user.name ? user.name.trim().charAt(0).toUpperCase() : 'U'}
+                </div>
+
+                <span className="desktop-only" style={{
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  color: 'var(--text-primary)',
+                  maxWidth: '90px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {user.name.split(' ')[0]}
+                </span>
+
+                <ChevronDown
+                  size={14}
+                  color="var(--text-secondary)"
+                  style={{
+                    transform: userDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s',
+                    flexShrink: 0
+                  }}
+                />
               </button>
+
+              {/* DROPDOWN POPUP MENU */}
+              {userDropdownOpen && (
+                <div style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 8px)',
+                  right: 0,
+                  width: '230px',
+                  background: 'var(--bg-card)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '16px',
+                  boxShadow: '0 12px 36px rgba(0, 0, 0, 0.25)',
+                  zIndex: 200,
+                  padding: '6px'
+                }}>
+                  {/* User Card Header */}
+                  <div style={{
+                    padding: '10px 12px',
+                    borderBottom: '1px solid var(--border-color)',
+                    marginBottom: '4px'
+                  }}>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {user.name}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px' }}>
+                      <span style={{
+                        fontSize: '0.68rem',
+                        fontWeight: 700,
+                        padding: '1px 6px',
+                        borderRadius: '10px',
+                        background: user.role === 'teacher' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                        color: user.role === 'teacher' ? '#F59E0B' : '#3B82F6',
+                        textTransform: 'uppercase'
+                      }}>
+                        {user.role === 'teacher' ? 'Certified Tutor' : user.role === 'admin' ? 'Admin' : 'Student'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Option 1: Dashboard */}
+                  <Link
+                    href={user.role === 'teacher' ? '/tutor-dashboard' : user.role === 'admin' ? '/admin' : '/student-dashboard'}
+                    onClick={() => setUserDropdownOpen(false)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '9px 12px',
+                      borderRadius: '10px',
+                      fontSize: '0.84rem',
+                      fontWeight: 600,
+                      color: 'var(--text-primary)',
+                      textDecoration: 'none',
+                      transition: 'background 0.15s'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-card-hover)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <LayoutDashboard size={16} color="#3B82F6" />
+                    <span>My Dashboard</span>
+                  </Link>
+
+                  {/* Option 2: Students / Classes */}
+                  <Link
+                    href={user.role === 'teacher' ? '/tutor-dashboard' : '/student-dashboard'}
+                    onClick={() => setUserDropdownOpen(false)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '9px 12px',
+                      borderRadius: '10px',
+                      fontSize: '0.84rem',
+                      fontWeight: 600,
+                      color: 'var(--text-primary)',
+                      textDecoration: 'none',
+                      transition: 'background 0.15s'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-card-hover)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <Users size={16} color="#10B981" />
+                    <span>My Students</span>
+                  </Link>
+
+                  {/* Option 3: Manage Profile */}
+                  <Link
+                    href="/profile"
+                    onClick={() => setUserDropdownOpen(false)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '9px 12px',
+                      borderRadius: '10px',
+                      fontSize: '0.84rem',
+                      fontWeight: 600,
+                      color: 'var(--text-primary)',
+                      textDecoration: 'none',
+                      transition: 'background 0.15s'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-card-hover)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <User size={16} color="#F59E0B" />
+                    <span>Manage Profile</span>
+                  </Link>
+
+                  {/* Option 4: Reports */}
+                  <Link
+                    href="/report-card"
+                    onClick={() => setUserDropdownOpen(false)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '9px 12px',
+                      borderRadius: '10px',
+                      fontSize: '0.84rem',
+                      fontWeight: 600,
+                      color: 'var(--text-primary)',
+                      textDecoration: 'none',
+                      transition: 'background 0.15s'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-card-hover)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <Award size={16} color="#06B6D4" />
+                    <span>Progress Reports</span>
+                  </Link>
+
+                  <div style={{ height: '1px', background: 'var(--border-color)', margin: '4px 0' }} />
+
+                  {/* Option 5: Logout */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserDropdownOpen(false);
+                      logout();
+                    }}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '9px 12px',
+                      borderRadius: '10px',
+                      fontSize: '0.84rem',
+                      fontWeight: 700,
+                      color: '#EF4444',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'background 0.15s'
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <LogOut size={16} color="#EF4444" />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <Link
