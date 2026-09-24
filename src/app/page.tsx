@@ -49,6 +49,25 @@ export default function HomePage() {
           }}>
             {/* HERO LEFT */}
             <div>
+              {/* Badge Pill */}
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                background: 'var(--accent-gold-light)',
+                border: '1px solid rgba(245, 158, 11, 0.35)',
+                padding: '0.4rem 0.9rem',
+                borderRadius: '30px',
+                marginBottom: '1.25rem',
+                backdropFilter: 'blur(12px)',
+                maxWidth: '100%',
+                flexWrap: 'wrap'
+              }}>
+                <Sparkles size={15} color="#F59E0B" />
+                <span style={{ fontSize: 'clamp(0.68rem, 2.5vw, 0.8rem)', fontWeight: 700, color: 'var(--accent-gold)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  MANAGED HOME TUITION • CLASSES 5–12
+                </span>
+              </div>
 
               {/* Headline */}
               <h1 style={{
