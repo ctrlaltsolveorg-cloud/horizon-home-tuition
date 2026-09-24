@@ -571,42 +571,103 @@ export default function StudentDashboard() {
               background: 'var(--card-bg)',
               border: '1px solid var(--border-color)',
               borderRadius: '16px',
-              padding: '1.2rem 1.4rem',
+              overflow: 'hidden',
               boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'space-between',
               minHeight: '180px'
             }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.8rem' }}>
+              {/* Picture Banner - Payment Portal & Receipt Status */}
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                height: '118px',
+                background: '#0d1520',
+                overflow: 'hidden'
+              }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/fee_payment_banner.png"
+                  alt="Fee Payment Portal"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: 'center',
+                    display: 'block'
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: '8px',
+                  right: '8px',
+                  background: 'rgba(0, 0, 0, 0.75)',
+                  backdropFilter: 'blur(8px)',
+                  color: '#a855f7',
+                  border: '1px solid rgba(168, 85, 247, 0.3)',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700
+                }}>
+                  {enquiry?.fee_status === 'PAID' ? 'Status: PAID' : 'Fee Portal'}
+                </div>
+              </div>
+
+              {/* Bottom Clean Info Section */}
+              <div style={{
+                padding: '0.9rem 1.1rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+                flexGrow: 1,
+                background: 'var(--card-bg)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div style={{
-                    width: '38px',
-                    height: '38px',
+                    width: '36px',
+                    height: '36px',
                     borderRadius: '10px',
                     background: 'rgba(124, 58, 237, 0.1)',
                     color: '#7c3aed',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    flexShrink: 0
                   }}>
-                    <CreditCard size={20} />
+                    <CreditCard size={18} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase' }}>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
                       3. Fee Payment Status (फीस विवरण)
                     </div>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
                       Paid on {formatDate(enquiry?.fee_paid_date)}
                     </div>
                   </div>
                 </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Amount: ₹{enquiry?.fee_amount || 4500} / mo</span>
-                <span style={{ fontWeight: 700, color: '#059669', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>
-                  Receipt #HZN-9412
-                </span>
+
+                {/* Amount & Receipt Pill */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingTop: '0.4rem',
+                  borderTop: '1px solid var(--border-color)',
+                  fontSize: '0.78rem'
+                }}>
+                  <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Amount: ₹{enquiry?.fee_amount || 4500} / mo</span>
+                  <span style={{
+                    fontWeight: 700,
+                    color: '#059669',
+                    background: 'rgba(16, 185, 129, 0.12)',
+                    border: '1px solid rgba(16, 185, 129, 0.25)',
+                    padding: '2px 8px',
+                    borderRadius: '6px'
+                  }}>
+                    Receipt #HZN-9412
+                  </span>
+                </div>
               </div>
             </div>
           </div>
