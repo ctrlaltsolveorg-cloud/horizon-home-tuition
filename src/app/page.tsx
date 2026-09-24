@@ -49,8 +49,8 @@ export default function HomePage() {
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: '3.5rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 290px), 1fr))',
+            gap: 'clamp(2rem, 5vw, 3.5rem)',
             alignItems: 'center'
           }}>
             {/* HERO LEFT */}
@@ -59,16 +59,18 @@ export default function HomePage() {
               <div style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.65rem',
+                gap: '0.5rem',
                 background: 'var(--accent-gold-light)',
                 border: '1px solid rgba(245, 158, 11, 0.35)',
-                padding: '0.45rem 1.1rem',
+                padding: '0.4rem 0.9rem',
                 borderRadius: '30px',
-                marginBottom: '1.5rem',
-                backdropFilter: 'blur(12px)'
+                marginBottom: '1.25rem',
+                backdropFilter: 'blur(12px)',
+                maxWidth: '100%',
+                flexWrap: 'wrap'
               }}>
-                <Sparkles size={16} color="#F59E0B" />
-                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-gold)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                <Sparkles size={15} color="#F59E0B" />
+                <span style={{ fontSize: 'clamp(0.68rem, 2.5vw, 0.8rem)', fontWeight: 700, color: 'var(--accent-gold)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
                   MANAGED HOME TUITION • CLASSES 5–12
                 </span>
               </div>
@@ -76,10 +78,10 @@ export default function HomePage() {
               {/* Headline */}
               <h1 style={{
                 fontFamily: 'var(--font-heading)',
-                fontSize: 'clamp(2.5rem, 4.8vw, 4rem)',
+                fontSize: 'clamp(2rem, 4.8vw, 4rem)',
                 fontWeight: 900,
-                lineHeight: 1.1,
-                marginBottom: '1.25rem',
+                lineHeight: 1.15,
+                marginBottom: '1.15rem',
                 letterSpacing: '-0.02em',
                 color: 'var(--text-primary)'
               }}>
@@ -98,11 +100,11 @@ export default function HomePage() {
               </h1>
 
               <p style={{
-                fontSize: 'clamp(1.05rem, 1.6vw, 1.2rem)',
+                fontSize: 'clamp(0.95rem, 1.6vw, 1.15rem)',
                 color: 'var(--text-secondary)',
-                marginBottom: '2rem',
+                marginBottom: '1.75rem',
                 fontWeight: 400,
-                lineHeight: 1.7,
+                lineHeight: 1.65,
                 maxWidth: '600px'
               }}>
                 Horizon matches and manages background-verified expert tutors for Classes 5–12 across CBSE, ICSE, and State Boards — with academic assessments and free tutor replacement guarantee.
@@ -112,18 +114,18 @@ export default function HomePage() {
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.65rem',
-                marginBottom: '2.25rem',
+                gap: '0.5rem',
+                marginBottom: '2rem',
                 flexWrap: 'wrap'
               }}>
-                <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>BOARDS:</span>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>BOARDS:</span>
                 {['CBSE', 'ICSE', 'STATE BOARD'].map((board, idx) => (
                   <span key={idx} style={{
                     background: 'var(--bg-card)',
                     border: '1px solid var(--border-color)',
-                    padding: '0.3rem 0.85rem',
+                    padding: '0.25rem 0.75rem',
                     borderRadius: '20px',
-                    fontSize: '0.8rem',
+                    fontSize: '0.75rem',
                     fontWeight: 700,
                     color: 'var(--text-primary)',
                     boxShadow: 'var(--shadow-sm)'
@@ -138,14 +140,14 @@ export default function HomePage() {
                 display: 'flex',
                 flexWrap: 'wrap',
                 alignItems: 'center',
-                gap: '1rem',
-                marginBottom: '2.5rem'
+                gap: '0.75rem',
+                marginBottom: '2.25rem'
               }}>
-                <Link href="/book-assessment" className="btn btn-gold" style={{ fontSize: '1.02rem', padding: '1rem 2.2rem', borderRadius: '30px' }}>
-                  {t.bookAssessmentCTA} <ArrowRight size={18} />
+                <Link href="/book-assessment" className="btn btn-gold" style={{ fontSize: 'clamp(0.88rem, 2.5vw, 1rem)', padding: '0.8rem 1.6rem', borderRadius: '30px' }}>
+                  {t.bookAssessmentCTA} <ArrowRight size={17} />
                 </Link>
 
-                <Link href="/become-a-tutor" className="btn btn-secondary" style={{ fontSize: '0.95rem', padding: '0.95rem 1.65rem', borderRadius: '30px' }}>
+                <Link href="/become-a-tutor" className="btn btn-secondary" style={{ fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)', padding: '0.75rem 1.35rem', borderRadius: '30px' }}>
                   {t.becomeTutorCTA}
                 </Link>
               </div>
@@ -154,35 +156,36 @@ export default function HomePage() {
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '1.25rem',
-                paddingTop: '1.75rem',
+                gap: '0.75rem',
+                paddingTop: '1.5rem',
                 borderTop: '1px solid var(--border-color)'
               }}>
                 <div>
-                  <div style={{ fontSize: '1.65rem', fontWeight: 900, color: 'var(--text-primary)' }}>100%</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Verified Tutors</div>
+                  <div style={{ fontSize: 'clamp(1.25rem, 3.5vw, 1.65rem)', fontWeight: 900, color: 'var(--text-primary)' }}>100%</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Verified Tutors</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '1.65rem', fontWeight: 900, color: 'var(--accent-gold)' }}>4.9 ★</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Parent Rating</div>
+                  <div style={{ fontSize: 'clamp(1.25rem, 3.5vw, 1.65rem)', fontWeight: 900, color: 'var(--accent-gold)' }}>4.9 ★</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Parent Rating</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '1.65rem', fontWeight: 900, color: 'var(--accent-green)' }}>&lt; 24 Hrs</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Tutor Match Time</div>
+                  <div style={{ fontSize: 'clamp(1.25rem, 3.5vw, 1.65rem)', fontWeight: 900, color: 'var(--accent-green)' }}>&lt; 24 Hrs</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Tutor Match</div>
                 </div>
               </div>
             </div>
 
             {/* HERO RIGHT: 3D ORGANIC PORTAL CUTOUT WINDOW */}
-            <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', maxWidth: '100%' }}>
               <div style={{
                 position: 'relative',
                 width: '100%',
-                maxWidth: '460px',
-                height: '440px',
+                maxWidth: '440px',
+                height: 'clamp(300px, 50vw, 420px)',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                boxSizing: 'border-box'
               }}>
 
                 {/* BACKING BLOB 1 (Navy Accent) */}
@@ -255,22 +258,23 @@ export default function HomePage() {
                 <div style={{
                   position: 'absolute',
                   top: '0px',
-                  left: '-10px',
+                  left: '0px',
                   background: 'var(--pill-bg)',
                   backdropFilter: 'blur(16px)',
                   color: 'var(--pill-text)',
                   fontWeight: 800,
-                  fontSize: '0.8rem',
-                  padding: '0.45rem 0.95rem',
+                  fontSize: 'clamp(0.7rem, 2vw, 0.8rem)',
+                  padding: '0.35rem 0.75rem',
                   borderRadius: '30px',
                   border: '1px solid var(--pill-border)',
                   boxShadow: 'var(--shadow-md)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.4rem',
-                  zIndex: 10
+                  gap: '0.35rem',
+                  zIndex: 10,
+                  maxWidth: '85%'
                 }}>
-                  <Star size={14} fill="#F59E0B" color="#F59E0B" />
+                  <Star size={13} fill="#F59E0B" color="#F59E0B" />
                   <span>4.9 ★ Parent Rating</span>
                 </div>
 
@@ -278,57 +282,59 @@ export default function HomePage() {
                 <div style={{
                   position: 'absolute',
                   top: '16px',
-                  right: '-10px',
+                  right: '0px',
                   background: 'var(--bg-card)',
                   border: '1.5px solid var(--accent-gold)',
                   color: 'var(--accent-gold)',
                   fontWeight: 700,
-                  fontSize: '0.78rem',
-                  padding: '0.42rem 0.85rem',
+                  fontSize: 'clamp(0.68rem, 2vw, 0.76rem)',
+                  padding: '0.35rem 0.7rem',
                   borderRadius: '30px',
                   boxShadow: 'var(--shadow-sm)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.4rem',
-                  zIndex: 10
+                  gap: '0.35rem',
+                  zIndex: 10,
+                  maxWidth: '85%'
                 }}>
-                  <BarChart3 size={14} color="#F59E0B" /> Monthly Progress Reports
+                  <BarChart3 size={13} color="#F59E0B" /> Verified Reports
                 </div>
 
                 {/* Badge 3: Bottom Right Glass Card */}
                 <div style={{
                   position: 'absolute',
-                  bottom: '10px',
-                  right: '-10px',
+                  bottom: '8px',
+                  right: '0px',
                   background: 'var(--pill-bg)',
                   backdropFilter: 'blur(16px)',
                   color: 'var(--pill-text)',
-                  padding: '0.55rem 1rem',
-                  borderRadius: '20px',
+                  padding: '0.45rem 0.85rem',
+                  borderRadius: '16px',
                   border: '1px solid var(--pill-border)',
                   boxShadow: 'var(--shadow-md)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.55rem',
-                  zIndex: 10
+                  gap: '0.45rem',
+                  zIndex: 10,
+                  maxWidth: '90%'
                 }}>
                   <div style={{
                     background: '#10B981',
-                    width: '30px',
-                    height: '30px',
+                    width: '26px',
+                    height: '26px',
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0
                   }}>
-                    <RefreshCw size={16} color="#FFFFFF" />
+                    <RefreshCw size={14} color="#FFFFFF" />
                   </div>
                   <div>
-                    <div style={{ fontWeight: 800, fontSize: '0.82rem', color: 'var(--pill-text)' }}>
+                    <div style={{ fontWeight: 800, fontSize: 'clamp(0.72rem, 2vw, 0.8rem)', color: 'var(--pill-text)' }}>
                       Free Tutor Replacement
                     </div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
                       100% Parent Satisfaction
                     </div>
                   </div>
