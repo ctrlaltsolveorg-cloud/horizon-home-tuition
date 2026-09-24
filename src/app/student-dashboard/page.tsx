@@ -40,6 +40,40 @@ export default function StudentDashboard() {
   const [reports, setReports] = useState<any[]>([]);
   const [selectedReportIndex, setSelectedReportIndex] = useState(0);
 
+  // Live countdown state for Diagnostic Assessment
+  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number; isPast: boolean }>({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+    isPast: false
+  });
+
+  // Dynamic Countdown Timer Effect
+  useEffect(() => {
+    if (!enquiry?.test_scheduled_date) return;
+
+    const updateCountdown = () => {
+      const targetTime = new Date(enquiry.test_scheduled_date).getTime();
+      const now = new Date().getTime();
+      const diff = targetTime - now;
+
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isPast: true });
+      } else {
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        setTimeLeft({ days, hours, minutes, seconds, isPast: false });
+      }
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [enquiry?.test_scheduled_date]);
+
   // Redirect if not logged in or wrong role
   useEffect(() => {
     if (!authLoading && !user) {
@@ -117,8 +151,8 @@ export default function StudentDashboard() {
             school_medium: 'Hindi Medium',
             address: 'Line Bazar, Near Medical College, Purnia',
             enquiry_date: '2026-08-20T10:30:00Z',
-            test_scheduled_date: '2026-08-23T16:00:00Z',
-            test_status: 'Completed (Passed)',
+            test_scheduled_date: new Date(Date.now() + 2 * 86400000 + 5 * 3600000 + 24 * 60000).toISOString(),
+            test_status: 'Scheduled',
             test_score: '88%',
             test_remarks: 'Demonstrated high aptitude in arithmetic & science concepts; recommended weekly mock tests.',
             fee_status: 'PAID',
@@ -415,42 +449,120 @@ export default function StudentDashboard() {
               background: 'var(--card-bg)',
               border: '1px solid var(--border-color)',
               borderRadius: '16px',
-              padding: '1.2rem 1.4rem',
+              overflow: 'hidden',
               boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'space-between',
               minHeight: '180px'
             }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.8rem' }}>
+              {/* Picture Banner - Diagnostic Test & Live Scoring */}
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                height: '118px',
+                background: '#0d1520',
+                overflow: 'hidden'
+              }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/diagnostic_test_banner.png"
+                  alt="Diagnostic Test Assessment"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: 'center',
+                    display: 'block'
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  top: '8px',
+                  right: '8px',
+                  background: 'rgba(0, 0, 0, 0.75)',
+                  backdropFilter: 'blur(8px)',
+                  color: '#34d399',
+                  border: '1px solid rgba(52, 211, 153, 0.3)',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  fontSize: '0.72rem',
+                  fontWeight: 700
+                }}>
+                  {enquiry?.test_status || 'Diagnostic Assessment'}
+                </div>
+              </div>
+
+              {/* Bottom Clean Info Section */}
+              <div style={{
+                padding: '0.9rem 1.1rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+                flexGrow: 1,
+                background: 'var(--card-bg)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div style={{
-                    width: '38px',
-                    height: '38px',
+                    width: '36px',
+                    height: '36px',
                     borderRadius: '10px',
                     background: 'rgba(16, 185, 129, 0.1)',
                     color: '#10b981',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    flexShrink: 0
                   }}>
-                    <Clock size={20} />
+                    <Clock size={18} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase' }}>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
                       2. Diagnostic Test Schedule
                     </div>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
                       {formatDate(enquiry?.test_scheduled_date)}
                     </div>
                   </div>
                 </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Test Status:</span>
-                <span style={{ fontWeight: 700, color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>
-                  {enquiry?.test_status || 'Completed'} (Score: {enquiry?.test_score || '88%'})
-                </span>
+
+                {/* Dynamic Countdown Display */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingTop: '0.4rem',
+                  borderTop: '1px solid var(--border-color)',
+                  fontSize: '0.78rem'
+                }}>
+                  <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Countdown:</span>
+                  {!timeLeft.isPast ? (
+                    <span style={{
+                      fontWeight: 800,
+                      fontVariantNumeric: 'tabular-nums',
+                      color: '#F59E0B',
+                      background: 'rgba(245, 158, 11, 0.12)',
+                      border: '1px solid rgba(245, 158, 11, 0.3)',
+                      padding: '2px 8px',
+                      borderRadius: '6px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      ⏱️ {String(timeLeft.days).padStart(2, '0')}d {String(timeLeft.hours).padStart(2, '0')}h {String(timeLeft.minutes).padStart(2, '0')}m {String(timeLeft.seconds).padStart(2, '0')}s
+                    </span>
+                  ) : (
+                    <span style={{
+                      fontWeight: 700,
+                      color: '#10b981',
+                      background: 'rgba(16, 185, 129, 0.12)',
+                      border: '1px solid rgba(16, 185, 129, 0.25)',
+                      padding: '2px 8px',
+                      borderRadius: '6px'
+                    }}>
+                      ✅ {enquiry?.test_status || 'Completed'} (Score: {enquiry?.test_score || '88%'})
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
