@@ -328,8 +328,8 @@ export default function LoginPage() {
           {/* Main Grid: Authentication Area & Quick Demo Access */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-            gap: '2.2rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
+            gap: '2rem',
             alignItems: 'start'
           }}>
 

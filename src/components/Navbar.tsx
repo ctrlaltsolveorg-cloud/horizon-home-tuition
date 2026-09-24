@@ -30,19 +30,21 @@ export default function Navbar() {
     }}>
       <div style={{
         width: '100%',
-        padding: '0 2rem',
+        maxWidth: '100vw',
+        padding: '0 clamp(0.75rem, 2.5vw, 2rem)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        height: '70px'
+        height: '64px',
+        boxSizing: 'border-box'
       }}>
         {/* BRAND LOGO */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
           <span style={{
             fontFamily: 'var(--font-heading)',
-            fontSize: '1.65rem',
+            fontSize: 'clamp(1.25rem, 4vw, 1.65rem)',
             fontWeight: 800,
-            letterSpacing: '0.08em',
+            letterSpacing: '0.06em',
             color: 'var(--text-primary)'
           }}>
             HORIZON
@@ -51,11 +53,11 @@ export default function Navbar() {
             background: 'var(--accent-gold-light)',
             border: '1px solid rgba(245, 158, 11, 0.3)',
             color: 'var(--accent-gold)',
-            fontSize: '0.65rem',
+            fontSize: '0.62rem',
             fontWeight: 700,
-            padding: '0.15rem 0.5rem',
+            padding: '0.12rem 0.45rem',
             borderRadius: '20px',
-            letterSpacing: '0.08em',
+            letterSpacing: '0.06em',
             textTransform: 'uppercase'
           }}>
             MANAGED
@@ -135,7 +137,7 @@ export default function Navbar() {
         </nav>
 
         {/* RIGHT ACTIONS — Theme Switcher, Language Switcher & Primary CTA */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', whiteSpace: 'nowrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
           
           {/* THEME TOGGLE BUTTON */}
           <button
@@ -145,8 +147,8 @@ export default function Navbar() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '36px',
-              height: '36px',
+              width: '32px',
+              height: '32px',
               borderRadius: '50%',
               background: 'var(--bg-input)',
               border: '1px solid var(--border-color)',
@@ -156,7 +158,7 @@ export default function Navbar() {
               transition: 'all 0.2s'
             }}
           >
-            {theme === 'dark' ? <Sun size={17} color="#FBBF24" /> : <Moon size={17} color="#3B82F6" />}
+            {theme === 'dark' ? <Sun size={15} color="#FBBF24" /> : <Moon size={15} color="#3B82F6" />}
           </button>
 
           {/* Language Switcher */}
@@ -170,8 +172,8 @@ export default function Navbar() {
             <button
               onClick={() => setLang('en')}
               style={{
-                padding: '0.28rem 0.55rem',
-                fontSize: '0.78rem',
+                padding: '0.22rem 0.45rem',
+                fontSize: '0.72rem',
                 fontWeight: lang === 'en' ? 700 : 500,
                 background: lang === 'en' ? 'var(--text-primary)' : 'transparent',
                 color: lang === 'en' ? 'var(--bg-main)' : 'var(--text-secondary)',
@@ -185,8 +187,8 @@ export default function Navbar() {
             <button
               onClick={() => setLang('hi')}
               style={{
-                padding: '0.28rem 0.55rem',
-                fontSize: '0.78rem',
+                padding: '0.22rem 0.45rem',
+                fontSize: '0.72rem',
                 fontWeight: lang === 'hi' ? 700 : 500,
                 background: lang === 'hi' ? '#F59E0B' : 'transparent',
                 color: lang === 'hi' ? '#0B0C0E' : 'var(--text-secondary)',
@@ -199,28 +201,28 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Portal Login / Authenticated User Dashboard Badge */}
+          {/* Portal Login / Authenticated User Dashboard Badge - Desktop Only */}
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Link
                 href={user.role === 'teacher' ? '/tutor-dashboard' : user.role === 'admin' ? '/admin' : '/student-dashboard'}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  padding: '0.42rem 0.85rem',
+                  gap: '5px',
+                  padding: '0.38rem 0.75rem',
                   borderRadius: '20px',
                   background: 'rgba(37, 99, 235, 0.1)',
                   border: '1px solid rgba(37, 99, 235, 0.3)',
                   color: 'var(--primary)',
-                  fontSize: '0.82rem',
+                  fontSize: '0.80rem',
                   fontWeight: 700,
                   textDecoration: 'none',
                   whiteSpace: 'nowrap'
                 }}
                 title={`Logged in as ${user.name}`}
               >
-                <LayoutDashboard size={14} />
+                <LayoutDashboard size={13} />
                 <span>{user.name.split(' ')[0]}</span>
               </Link>
               <Link
@@ -229,12 +231,12 @@ export default function Navbar() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '0.42rem 0.65rem',
+                  padding: '0.38rem 0.6rem',
                   borderRadius: '20px',
                   background: 'var(--bg-input)',
                   border: '1px solid var(--border-color)',
                   color: 'var(--text-primary)',
-                  fontSize: '0.8rem',
+                  fontSize: '0.78rem',
                   fontWeight: 600,
                   textDecoration: 'none',
                   gap: '4px'
@@ -251,8 +253,8 @@ export default function Navbar() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: '32px',
-                  height: '32px',
+                  width: '30px',
+                  height: '30px',
                   borderRadius: '50%',
                   background: 'var(--bg-input)',
                   border: '1px solid var(--border-color)',
@@ -261,22 +263,23 @@ export default function Navbar() {
                 }}
                 title="Logout"
               >
-                <LogOut size={14} />
+                <LogOut size={13} />
               </button>
             </div>
           ) : (
             <Link
               href="/login"
+              className="desktop-only"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '0.45rem 0.9rem',
+                gap: '5px',
+                padding: '0.4rem 0.8rem',
                 borderRadius: '20px',
                 background: 'rgba(37, 99, 235, 0.08)',
                 border: '1px solid rgba(37, 99, 235, 0.25)',
                 color: 'var(--primary)',
-                fontSize: '0.82rem',
+                fontSize: '0.80rem',
                 fontWeight: 700,
                 textDecoration: 'none',
                 whiteSpace: 'nowrap'
@@ -291,8 +294,8 @@ export default function Navbar() {
             href="/book-assessment"
             className="btn btn-gold desktop-only"
             style={{
-              padding: '0.55rem 1.25rem',
-              fontSize: '0.88rem',
+              padding: '0.5rem 1.15rem',
+              fontSize: '0.85rem',
               borderRadius: '24px',
               fontWeight: 700,
               whiteSpace: 'nowrap'
@@ -311,10 +314,11 @@ export default function Navbar() {
               color: 'var(--text-primary)',
               cursor: 'pointer',
               display: 'none',
-              padding: '0.2rem'
+              padding: '0.2rem',
+              marginLeft: '0.2rem'
             }}
           >
-            {mobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>

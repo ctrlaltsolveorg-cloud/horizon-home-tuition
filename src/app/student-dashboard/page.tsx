@@ -325,8 +325,8 @@ export default function StudentDashboard() {
           {/* Key Timeline Indicators: Enquiry, Test, Fee */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '1.2rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
+            gap: '1rem',
             marginBottom: '2rem'
           }}>
             {/* Card 1: Kab Enquiry Ki Thi */}
@@ -445,8 +445,8 @@ export default function StudentDashboard() {
           {/* Grid Layout: Assigned Teacher (Left) + Monthly Reports (Right) */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-            gap: '2rem'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
+            gap: '1.5rem'
           }}>
             
             {/* Column 1: Assigned Teacher Card (Clean & Compact with View Full Profile) */}
