@@ -329,14 +329,14 @@ export default function StudentDashboard() {
             gap: '1rem',
             marginBottom: '2rem'
           }}>
-            {/* Card 1: Kab Enquiry Ki Thi (With enquiry_banner.png Background) */}
+            {/* Card 1: Kab Enquiry Ki Thi (With Clean enquiry_banner.png Background) */}
             <div style={{
               position: 'relative',
               borderRadius: '16px',
-              border: '1px solid rgba(59, 130, 246, 0.35)',
+              border: '1px solid var(--border-color)',
               overflow: 'hidden',
-              boxShadow: '0 6px 20px rgba(0,0,0,0.12)',
-              backgroundImage: `linear-gradient(to right, rgba(15, 23, 42, 0.90) 0%, rgba(15, 23, 42, 0.80) 50%, rgba(15, 23, 42, 0.88) 100%), url('/enquiry_banner.png')`,
+              boxShadow: 'var(--shadow-sm)',
+              backgroundImage: `url('/enquiry_banner.png')`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               padding: '1.4rem'
@@ -346,9 +346,10 @@ export default function StudentDashboard() {
                   width: '38px',
                   height: '38px',
                   borderRadius: '10px',
-                  background: 'rgba(59, 130, 246, 0.25)',
-                  color: '#60A5FA',
-                  border: '1px solid rgba(96, 165, 250, 0.3)',
+                  background: 'rgba(0, 0, 0, 0.45)',
+                  backdropFilter: 'blur(8px)',
+                  color: '#FFFFFF',
+                  border: '1px solid rgba(255, 255, 255, 0.25)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -357,16 +358,16 @@ export default function StudentDashboard() {
                   <Calendar size={20} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.78rem', color: '#93C5FD', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <div style={{ fontSize: '0.78rem', color: '#FFFFFF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>
                     1. Enquiry Date (पूछताछ तिथि)
                   </div>
-                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#FFFFFF', marginTop: '2px' }}>
+                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#FFFFFF', marginTop: '2px', textShadow: '0 2px 5px rgba(0,0,0,0.9)' }}>
                     {formatDate(enquiry?.enquiry_date)}
                   </div>
                 </div>
               </div>
-              <p style={{ fontSize: '0.82rem', color: '#E2E8F0', margin: 0, position: 'relative', zIndex: 2, lineHeight: 1.5, fontWeight: 500 }}>
-                Enquiry was submitted online for <strong style={{ color: '#FDE68A' }}>{enquiry?.class_level} ({enquiry?.board})</strong> home tuition.
+              <p style={{ fontSize: '0.82rem', color: '#FFFFFF', margin: 0, position: 'relative', zIndex: 2, lineHeight: 1.5, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}>
+                Enquiry was submitted online for <strong style={{ color: '#FDE68A', textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}>{enquiry?.class_level} ({enquiry?.board})</strong> home tuition.
               </p>
             </div>
 
