@@ -137,9 +137,12 @@ export default function HomePage() {
                 gap: '0.75rem',
                 marginBottom: '2.25rem'
               }}>
+                {/* Temporarily hidden per user request — easily restorable */}
+                {/*
                 <Link href="/book-assessment" className="btn btn-gold" style={{ fontSize: 'clamp(0.88rem, 2.5vw, 1rem)', padding: '0.8rem 1.6rem', borderRadius: '30px' }}>
                   {t.bookAssessmentCTA} <ArrowRight size={17} />
                 </Link>
+                */}
 
                 <Link href="/become-a-tutor" className="btn btn-secondary" style={{ fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)', padding: '0.75rem 1.35rem', borderRadius: '30px' }}>
                   {t.becomeTutorCTA}
