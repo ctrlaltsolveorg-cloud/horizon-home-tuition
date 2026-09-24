@@ -329,46 +329,67 @@ export default function StudentDashboard() {
             gap: '1rem',
             marginBottom: '2rem'
           }}>
-            {/* Card 1: Kab Enquiry Ki Thi (With Clean enquiry_banner.png Background) */}
+            {/* Card 1: Kab Enquiry Ki Thi */}
             <div style={{
-              position: 'relative',
-              borderRadius: '16px',
+              background: 'var(--card-bg)',
               border: '1px solid var(--border-color)',
-              overflow: 'hidden',
-              boxShadow: 'var(--shadow-sm)',
-              backgroundImage: `url('/enquiry_banner.png')`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              padding: '1.4rem'
+              borderRadius: '16px',
+              padding: '1.4rem',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.8rem', position: 'relative', zIndex: 2 }}>
-                <div style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '10px',
-                  background: 'rgba(0, 0, 0, 0.45)',
-                  backdropFilter: 'blur(8px)',
-                  color: '#FFFFFF',
-                  border: '1px solid rgba(255, 255, 255, 0.25)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <Calendar size={20} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '0.8rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                  <div style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '10px',
+                    background: 'rgba(37, 99, 235, 0.1)',
+                    color: 'var(--primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <Calendar size={20} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      1. Enquiry Date (पूछताछ तिथि)
+                    </div>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      {formatDate(enquiry?.enquiry_date)}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <div style={{ fontSize: '0.78rem', color: '#FFFFFF', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>
-                    1. Enquiry Date (पूछताछ तिथि)
-                  </div>
-                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#FFFFFF', marginTop: '2px', textShadow: '0 2px 5px rgba(0,0,0,0.9)' }}>
-                    {formatDate(enquiry?.enquiry_date)}
-                  </div>
+
+                {/* Clean photo thumbnail preview */}
+                <div style={{
+                  width: '60px',
+                  height: '42px',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  border: '1px solid var(--border-color)',
+                  flexShrink: 0,
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                  background: '#0d1520'
+                }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/enquiry_banner.png"
+                    alt="Enquiry Consultation"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
                 </div>
               </div>
-              <p style={{ fontSize: '0.82rem', color: '#FFFFFF', margin: 0, position: 'relative', zIndex: 2, lineHeight: 1.5, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}>
-                Enquiry was submitted online for <strong style={{ color: '#FDE68A', textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}>{enquiry?.class_level} ({enquiry?.board})</strong> home tuition.
-              </p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.82rem' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Status:</span>
+                <span style={{ fontWeight: 700, color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>
+                  Submitted • {enquiry?.class_level || 'Class 9'} ({enquiry?.board || 'CBSE'})
+                </span>
+              </div>
             </div>
 
             {/* Card 2: Kab Test Schedule Kiya Gaya Tha */}
