@@ -356,6 +356,7 @@ export default function ReportCardInteractiveEditor({
           subtitleSize="0.68rem"
           reportTitle="MONTHLY PROGRESS REPORT"
           reportSubtitle="Single-Page Comprehensive Audit"
+          dark={true}
         />
 
         {/* STUDENT & ASSESSMENT META GRID */}
@@ -1400,42 +1401,43 @@ export default function ReportCardInteractiveEditor({
           font-size: 0.78rem;
         }
 
-        /* EXACT A4 PAPER */
+        /* EXACT A4 REPORT CARD SHEET - SLEEK LUXURY DARK THEME */
         .report-card-paper {
           width: 100%;
-          max-width: 920px;
-          background: #FFFFFF;
-          color: #0F172A;
-          padding: 26px 32px 20px;
-          border-radius: 4px;
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.55);
+          max-width: 940px;
+          background: #111827;
+          color: #F8FAFC;
+          padding: 26px 32px 22px;
+          border-radius: 12px;
+          border: 1px solid #334155;
+          box-shadow: 0 16px 50px rgba(0, 0, 0, 0.65), 0 0 35px rgba(245, 158, 11, 0.06);
           box-sizing: border-box;
-          line-height: 1.22;
+          line-height: 1.25;
         }
 
-        /* Live Inputs Styling */
+        /* Live Inputs Styling in Dark Theme */
         .live-input {
           width: 100%;
-          background: #F1F5F9;
-          border: 1px solid #CBD5E1;
-          border-radius: 3px;
-          padding: 3px 6px;
-          font-size: 0.82rem;
-          color: #0F172A;
+          background: #0F172A;
+          border: 1px solid #334155;
+          border-radius: 6px;
+          padding: 5px 8px;
+          font-size: 0.84rem;
+          color: #FFFFFF;
           font-weight: 600;
           outline: none;
           box-sizing: border-box;
-          transition: border-color 0.2s, background 0.2s;
+          transition: all 0.2s;
         }
         .live-input::placeholder {
-          color: #475569 !important;
-          opacity: 0.9 !important;
-          font-weight: 500 !important;
+          color: #64748B !important;
+          opacity: 0.8 !important;
+          font-weight: 400 !important;
         }
         .live-input:focus {
-          border-color: #0284C7;
-          background: #FFFFFF;
-          box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+          border-color: #F59E0B;
+          background: #0B0F19;
+          box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
         }
 
         .live-input-bold {
@@ -1444,41 +1446,41 @@ export default function ReportCardInteractiveEditor({
 
         .live-table-input {
           width: 100%;
-          background: #F8FAFC;
-          border: 1px solid #E2E8F0;
-          border-radius: 3px;
-          padding: 3px 6px;
-          font-size: 0.73rem;
-          color: #1E293B;
+          background: #0F172A;
+          border: 1px solid #334155;
+          border-radius: 4px;
+          padding: 4px 7px;
+          font-size: 0.76rem;
+          color: #F8FAFC;
           font-weight: 600;
           outline: none;
           box-sizing: border-box;
           transition: all 0.15s;
         }
         .live-table-input::placeholder {
-          color: #475569 !important;
-          opacity: 0.9 !important;
-          font-weight: 500 !important;
+          color: #64748B !important;
+          opacity: 0.8 !important;
+          font-weight: 400 !important;
         }
         .live-table-input:hover {
-          border-color: #94A3B8;
-          background: #FFFFFF;
+          border-color: #475569;
+          background: #141B2D;
         }
         .live-table-input:focus {
-          border-color: #0284C7;
-          background: #FFFFFF;
-          box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+          border-color: #38BDF8;
+          background: #0B0F19;
+          box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
         }
 
         .live-table-score-input {
           width: 100%;
           max-width: 95px;
-          background: #F8FAFC;
-          border: 1px solid #E2E8F0;
-          border-radius: 3px;
-          padding: 2.5px 5px;
-          font-size: 0.76rem;
-          color: #0F172A;
+          background: #0F172A;
+          border: 1px solid #334155;
+          border-radius: 4px;
+          padding: 4px 6px;
+          font-size: 0.78rem;
+          color: #38BDF8;
           font-weight: 800;
           text-align: right;
           font-family: 'Inter', monospace;
@@ -1487,109 +1489,109 @@ export default function ReportCardInteractiveEditor({
           transition: all 0.15s;
         }
         .live-table-score-input::placeholder {
-          color: #475569 !important;
-          opacity: 0.9 !important;
-          font-weight: 500 !important;
+          color: #64748B !important;
+          opacity: 0.8 !important;
+          font-weight: 400 !important;
         }
         .live-table-score-input:hover {
-          border-color: #94A3B8;
-          background: #FFFFFF;
+          border-color: #475569;
         }
         .live-table-score-input:focus {
-          border-color: #0284C7;
-          background: #FFFFFF;
+          border-color: #38BDF8;
+          background: #0B0F19;
+          box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
         }
 
         .live-pillar-score-input {
           width: 90px;
-          background: #F8FAFC;
-          border: 1px solid #CBD5E1;
-          border-radius: 3px;
-          padding: 2.5px 5px;
-          font-size: 0.74rem;
-          color: #0284C7;
+          background: #0F172A;
+          border: 1px solid #334155;
+          border-radius: 4px;
+          padding: 3px 6px;
+          font-size: 0.76rem;
+          color: #F59E0B;
           font-weight: 800;
           text-align: right;
           font-family: 'Inter', monospace;
           outline: none;
         }
         .live-pillar-score-input::placeholder {
-          color: #475569 !important;
-          opacity: 0.9 !important;
-          font-weight: 500 !important;
+          color: #64748B !important;
+          opacity: 0.8 !important;
+          font-weight: 400 !important;
         }
 
         .live-textarea {
           width: 100%;
-          background: #F8FAFC;
-          border: 1px solid #CBD5E1;
-          border-radius: 3px;
-          padding: 4px 6px;
-          font-size: 0.68rem;
-          color: #1E293B;
+          background: #0F172A;
+          border: 1px solid #334155;
+          border-radius: 4px;
+          padding: 5px 8px;
+          font-size: 0.72rem;
+          color: #F1F5F9;
           outline: none;
           resize: vertical;
           box-sizing: border-box;
         }
         .live-textarea::placeholder {
-          color: #475569 !important;
-          opacity: 0.9 !important;
-          font-weight: 500 !important;
+          color: #64748B !important;
+          opacity: 0.8 !important;
+          font-weight: 400 !important;
         }
         .live-textarea:focus {
-          border-color: #0284C7;
-          background: #FFFFFF;
+          border-color: #38BDF8;
+          background: #0B0F19;
         }
 
         .live-summary-input {
-          background: #F8FAFC;
-          border: 1px solid #CBD5E1;
-          border-radius: 3px;
-          padding: 3px 6px;
-          font-size: 0.73rem;
-          font-weight: 600;
-          color: #0F172A;
+          background: #0F172A;
+          border: 1px solid #334155;
+          border-radius: 4px;
+          padding: 4px 8px;
+          font-size: 0.76rem;
+          font-weight: 700;
+          color: #FDE68A;
           outline: none;
-          width: 180px;
+          width: 190px;
         }
         .live-summary-input::placeholder {
-          color: #475569 !important;
-          opacity: 0.9 !important;
-          font-weight: 500 !important;
+          color: #64748B !important;
+          opacity: 0.8 !important;
+          font-weight: 400 !important;
         }
 
         /* Meta Grid */
         .report-meta-grid {
           display: grid;
           grid-template-columns: 1.3fr 1fr 1fr 1.3fr;
-          border: 1px solid #CBD5E1;
-          border-radius: 4px;
-          margin: 12px 0 10px;
-          background: #F8FAFC;
+          border: 1px solid #334155;
+          border-radius: 8px;
+          margin: 14px 0 12px;
+          background: #0F172A;
         }
 
         .report-meta-box {
-          padding: 5px 8px;
-          border-right: 1px solid #CBD5E1;
+          padding: 8px 10px;
+          border-right: 1px solid #334155;
         }
         .report-meta-box:last-child {
           border-right: none;
         }
 
         .report-meta-label {
-          font-size: 0.63rem;
+          font-size: 0.65rem;
           font-weight: 800;
-          color: #475569;
-          letter-spacing: 0.04em;
+          color: #94A3B8;
+          letter-spacing: 0.05em;
           text-transform: uppercase;
           display: block;
-          margin-bottom: 2px;
+          margin-bottom: 4px;
         }
 
         .report-meta-value {
-          font-size: 0.86rem;
+          font-size: 0.88rem;
           font-weight: 800;
-          color: #0F172A;
+          color: #FFFFFF;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -1597,27 +1599,30 @@ export default function ReportCardInteractiveEditor({
 
         /* Section Containers */
         .report-section {
-          margin-bottom: 10px;
+          margin-bottom: 12px;
         }
 
         .report-section-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          background: #0F172A;
+          background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
           color: #FFFFFF;
-          padding: 4.5px 8px;
-          border-radius: 3px 3px 0 0;
+          padding: 6px 10px;
+          border-radius: 6px 6px 0 0;
+          border: 1px solid #334155;
+          border-bottom: none;
         }
 
         .section-title {
-          font-size: 0.72rem;
+          font-size: 0.74rem;
           font-weight: 900;
-          letter-spacing: 0.03em;
+          letter-spacing: 0.04em;
+          color: #F59E0B;
         }
 
         .section-subtitle {
-          font-size: 0.63rem;
+          font-size: 0.65rem;
           color: #94A3B8;
           font-weight: 600;
         }
@@ -1626,64 +1631,64 @@ export default function ReportCardInteractiveEditor({
         .report-table {
           width: 100%;
           border-collapse: collapse;
-          border: 1px solid #CBD5E1;
-          border-top: none;
-          font-size: 0.74rem;
+          border: 1px solid #334155;
+          font-size: 0.76rem;
         }
 
         .report-table th {
-          background: #F1F5F9;
-          color: #334155;
+          background: #0F172A;
+          color: #94A3B8;
           font-weight: 800;
-          font-size: 0.65rem;
+          font-size: 0.68rem;
           text-transform: uppercase;
-          letter-spacing: 0.03em;
-          padding: 4px 6px;
-          border: 1px solid #CBD5E1;
+          letter-spacing: 0.04em;
+          padding: 6px 8px;
+          border: 1px solid #334155;
           text-align: left;
         }
 
         .report-table td {
-          padding: 3.5px 6px;
-          border: 1px solid #E2E8F0;
+          padding: 5px 8px;
+          border: 1px solid #334155;
           vertical-align: middle;
+          background: #111827;
         }
 
         .table-primary-text {
           font-weight: 800;
-          color: #0284C7;
-          font-size: 0.75rem;
+          color: #38BDF8;
+          font-size: 0.78rem;
         }
 
         .table-secondary-text {
-          font-size: 0.62rem;
-          color: #64748B;
+          font-size: 0.65rem;
+          color: #94A3B8;
         }
 
         .table-text-cell {
-          font-size: 0.72rem;
-          color: #334155;
+          font-size: 0.76rem;
+          color: #E2E8F0;
         }
 
         .table-score-cell {
-          font-size: 0.76rem;
+          font-size: 0.78rem;
           font-weight: 800;
-          color: #0F172A;
+          color: #38BDF8;
           font-family: 'Inter', monospace;
         }
 
         .subject-cell {
           font-weight: 800;
-          color: #0F172A;
-          background: #F8FAFC;
-          border-right: 1px solid #CBD5E1;
-          font-size: 0.76rem;
+          color: #FFFFFF;
+          background: #0F172A;
+          border-right: 1px solid #334155;
+          font-size: 0.78rem;
         }
 
         .chapter-cell {
-          color: #1E293B;
+          color: #F1F5F9;
           font-weight: 600;
-          font-size: 0.72rem;
+          font-size: 0.74rem;
         }
 
         .status-cell {
@@ -1692,12 +1697,12 @@ export default function ReportCardInteractiveEditor({
 
         .status-pill {
           display: inline-block;
-          padding: 2px 7px;
-          border-radius: 4px;
-          font-size: 0.66rem;
+          padding: 3px 9px;
+          border-radius: 6px;
+          font-size: 0.68rem;
           font-weight: 800;
           text-transform: uppercase;
-          letter-spacing: 0.02em;
+          letter-spacing: 0.03em;
           border: 1px solid transparent;
         }
 
@@ -1707,26 +1712,25 @@ export default function ReportCardInteractiveEditor({
         }
         .clickable-pill:hover {
           transform: scale(1.05);
-          box-shadow: 0 1px 4px rgba(0,0,0,0.15);
         }
 
         .status-cleared {
-          background: #DCFCE7;
-          color: #15803D;
-          border-color: #86EFAC;
+          background: rgba(16, 185, 129, 0.2);
+          color: #34D399;
+          border-color: rgba(52, 211, 153, 0.4);
         }
         .status-revision {
-          background: #FEF3C7;
-          color: #B45309;
-          border-color: #FDE68A;
+          background: rgba(245, 158, 11, 0.2);
+          color: #FBBF24;
+          border-color: rgba(251, 191, 36, 0.4);
         }
 
         .highlight-green {
-          color: #16A34A;
+          color: #34D399;
           font-weight: 800;
         }
         .highlight-purple {
-          color: #9333EA;
+          color: #C084FC;
           font-weight: 800;
         }
         .font-bold {
@@ -1734,97 +1738,99 @@ export default function ReportCardInteractiveEditor({
         }
 
         .table-obs-cell {
-          font-size: 0.70rem;
-          color: #475569;
-          line-height: 1.2;
+          font-size: 0.72rem;
+          color: #CBD5E1;
+          line-height: 1.25;
         }
 
         /* Pillars Grid */
         .pillars-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 5px;
-          border: 1px solid #CBD5E1;
+          gap: 6px;
+          border: 1px solid #334155;
           border-top: none;
-          padding: 5px;
-          background: #FFFFFF;
+          padding: 6px;
+          background: #0F172A;
         }
 
         .pillar-card {
-          border: 1px solid #E2E8F0;
-          border-radius: 3px;
-          padding: 4px 6px;
-          background: #FAFAFA;
+          border: 1px solid #334155;
+          border-radius: 6px;
+          padding: 6px 8px;
+          background: #1E293B;
         }
 
         .pillar-card-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 2px;
+          margin-bottom: 3px;
         }
 
         .pillar-title {
-          font-size: 0.71rem;
+          font-size: 0.74rem;
           font-weight: 800;
-          color: #0284C7;
+          color: #38BDF8;
         }
 
         .pillar-score {
-          font-size: 0.72rem;
+          font-size: 0.74rem;
           font-weight: 800;
-          color: #0284C7;
+          color: #F59E0B;
           font-family: 'Inter', monospace;
         }
 
         .pillar-body {
-          font-size: 0.66rem;
-          color: #475569;
-          line-height: 1.2;
+          font-size: 0.68rem;
+          color: #CBD5E1;
+          line-height: 1.25;
         }
 
         /* Summary Bar */
         .report-summary-bar {
-          margin: 8px 0;
-          padding: 5px 10px;
-          background: #F8FAFC;
-          border-left: 4px solid #0284C7;
-          border-radius: 2px;
+          margin: 10px 0;
+          padding: 7px 12px;
+          background: #0F172A;
+          border-left: 4px solid #F59E0B;
+          border: 1px solid #334155;
+          border-left-width: 4px;
+          border-radius: 6px;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          font-size: 0.73rem;
+          font-size: 0.76rem;
         }
 
         .summary-left {
           display: flex;
           align-items: center;
-          gap: 5px;
+          gap: 6px;
         }
 
         .summary-label {
           font-weight: 800;
-          color: #0F172A;
+          color: #FFFFFF;
         }
 
         .summary-highlight {
           font-weight: 800;
-          color: #0284C7;
+          color: #38BDF8;
         }
 
         .summary-divider {
-          color: #94A3B8;
+          color: #64748B;
           font-weight: bold;
         }
 
         .summary-target {
-          color: #1E293B;
+          color: #FDE68A;
           font-weight: 700;
         }
 
         .summary-right {
           font-weight: 700;
-          color: #475569;
+          color: #94A3B8;
         }
 
         /* Signatures */
@@ -1832,8 +1838,8 @@ export default function ReportCardInteractiveEditor({
           display: grid;
           grid-template-columns: 1fr 1fr 1fr;
           gap: 20px;
-          margin-top: 14px;
-          padding-top: 8px;
+          margin-top: 16px;
+          padding-top: 10px;
         }
 
         .sig-block {
@@ -1844,19 +1850,19 @@ export default function ReportCardInteractiveEditor({
           width: 100%;
           height: 1px;
           background: #475569;
-          margin-bottom: 5px;
+          margin-bottom: 6px;
         }
 
         .sig-title {
-          font-size: 0.67rem;
+          font-size: 0.70rem;
           font-weight: 900;
-          color: #0F172A;
+          color: #FFFFFF;
           letter-spacing: 0.03em;
         }
 
         .sig-subtitle {
-          font-size: 0.60rem;
-          color: #64748B;
+          font-size: 0.63rem;
+          color: #94A3B8;
           font-weight: 600;
         }
 
@@ -1865,11 +1871,11 @@ export default function ReportCardInteractiveEditor({
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-top: 10px;
-          padding-top: 5px;
-          border-top: 1px solid #E2E8F0;
-          font-size: 0.60rem;
-          color: #64748B;
+          margin-top: 12px;
+          padding-top: 6px;
+          border-top: 1px solid #334155;
+          font-size: 0.64rem;
+          color: #94A3B8;
           font-weight: 600;
         }
 

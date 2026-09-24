@@ -10,6 +10,7 @@ interface HorizonBrandHeaderProps {
   reportTitle?: string;
   reportSubtitle?: string;
   compact?: boolean;
+  dark?: boolean;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -21,9 +22,12 @@ export default function HorizonBrandHeader({
   reportTitle = 'MONTHLY PROGRESS REPORT',
   reportSubtitle = 'Single-Page Comprehensive Audit',
   compact = false,
+  dark = false,
   className = '',
   style = {}
 }: HorizonBrandHeaderProps) {
+  const isDark = dark;
+
   return (
     <div
       className={`horizon-brand-header ${className}`}
@@ -33,14 +37,14 @@ export default function HorizonBrandHeader({
         justifyContent: 'space-between',
         width: '100%',
         paddingBottom: compact ? '0.75rem' : '1.25rem',
-        borderBottom: '2px solid #0F172A',
+        borderBottom: isDark ? '2px solid rgba(245, 158, 11, 0.35)' : '2px solid #0F172A',
         ...style
       }}
     >
       {/* Left: Dynamic Logo & Brand Name */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         <div style={{ flexShrink: 0 }}>
-          <HorizonLogoIcon size={logoSize} color="#F59E0B" accentColor="#3B82F6" glow={false} />
+          <HorizonLogoIcon size={logoSize} color="#F59E0B" accentColor="#3B82F6" glow={isDark} />
         </div>
         <div>
           <h1
@@ -49,7 +53,7 @@ export default function HorizonBrandHeader({
               fontSize: titleSize,
               fontWeight: 900,
               letterSpacing: '0.04em',
-              color: '#0F172A',
+              color: isDark ? '#FFFFFF' : '#0F172A',
               fontFamily: "'Inter', 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif",
               lineHeight: 1.1
             }}
@@ -62,7 +66,7 @@ export default function HorizonBrandHeader({
               fontSize: subtitleSize,
               fontWeight: 800,
               letterSpacing: '0.06em',
-              color: '#0284C7',
+              color: isDark ? '#38BDF8' : '#0284C7',
               textTransform: 'uppercase',
               fontFamily: "'Inter', sans-serif"
             }}
@@ -80,7 +84,7 @@ export default function HorizonBrandHeader({
               fontSize: '1.05rem',
               fontWeight: 900,
               letterSpacing: '0.05em',
-              color: '#0F172A',
+              color: isDark ? '#FFFFFF' : '#0F172A',
               textTransform: 'uppercase',
               fontFamily: "'Inter', sans-serif"
             }}
@@ -92,7 +96,7 @@ export default function HorizonBrandHeader({
               style={{
                 fontSize: '0.78rem',
                 fontWeight: 700,
-                color: '#0284C7',
+                color: isDark ? '#F59E0B' : '#0284C7',
                 marginTop: '2px'
               }}
             >
