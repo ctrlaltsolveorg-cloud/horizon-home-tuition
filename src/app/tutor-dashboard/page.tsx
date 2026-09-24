@@ -490,126 +490,127 @@ export default function TutorDashboard() {
         )}
 
         {/* 1. TUTOR PROFILE HEADER CARD */}
-        <div style={{
+        <div className="tutor-header-box" style={{
           background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
           border: '1px solid #334155',
           borderRadius: '16px',
-          padding: '1.75rem',
-          marginBottom: '1.75rem',
+          padding: '1.5rem',
+          marginBottom: '1.5rem',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '1.25rem',
+          gap: '1rem',
           boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
             <div style={{
-              width: '70px',
-              height: '70px',
+              width: '56px',
+              height: '56px',
               borderRadius: '50%',
               background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
               color: '#0F172A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '1.8rem',
+              fontSize: '1.5rem',
               fontWeight: 800,
-              boxShadow: '0 4px 15px rgba(245,158,11,0.3)'
+              boxShadow: '0 4px 15px rgba(245,158,11,0.3)',
+              flexShrink: 0
             }}>
               {tutorProfile.full_name?.charAt(0) || 'P'}
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.55rem)', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
                   {tutorProfile.full_name}
                 </h1>
                 <span style={{
                   background: 'rgba(16, 185, 129, 0.15)',
                   color: '#10B981',
                   border: '1px solid rgba(16, 185, 129, 0.3)',
-                  padding: '0.2rem 0.65rem',
+                  padding: '0.15rem 0.55rem',
                   borderRadius: '20px',
-                  fontSize: '0.75rem',
+                  fontSize: '0.72rem',
                   fontWeight: 700,
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.3rem'
                 }}>
-                  <ShieldCheck size={13} /> Verified Horizon Tutor
+                  <ShieldCheck size={12} /> Verified Tutor
                 </span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.35rem', color: '#94A3B8', fontSize: '0.88rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginTop: '0.25rem', color: '#94A3B8', fontSize: '0.80rem', flexWrap: 'wrap' }}>
                 <span style={{ color: '#38BDF8', fontWeight: 700 }}>🏛️ {tutorProfile.college}</span>
                 <span>•</span>
                 <span>🎓 {tutorProfile.degree_status}</span>
                 <span>•</span>
-                <span style={{ color: '#F59E0B', fontWeight: 700 }}>⭐ {tutorProfile.rating || 5.0} Rating</span>
+                <span style={{ color: '#F59E0B', fontWeight: 700 }}>⭐ {tutorProfile.rating || 5.0}</span>
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
             <Link
               href="/profile"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.4rem',
+                gap: '0.35rem',
                 background: '#1E293B',
                 color: '#E2E8F0',
                 border: '1px solid #475569',
-                padding: '0.55rem 1rem',
+                padding: '0.5rem 0.85rem',
                 borderRadius: '8px',
-                fontSize: '0.84rem',
+                fontSize: '0.80rem',
                 fontWeight: 700,
                 textDecoration: 'none'
               }}
             >
-              <User size={14} color="#F59E0B" /> My Full Profile
+              <User size={13} color="#F59E0B" /> My Profile
             </Link>
             <button
               onClick={() => setShowAddStudentModal(true)}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.4rem',
+                gap: '0.35rem',
                 background: 'linear-gradient(135deg, #059669, #047857)',
                 color: '#FFFFFF',
                 border: 'none',
-                padding: '0.55rem 1.1rem',
+                padding: '0.5rem 0.95rem',
                 borderRadius: '8px',
-                fontSize: '0.84rem',
+                fontSize: '0.80rem',
                 fontWeight: 800,
                 cursor: 'pointer',
                 boxShadow: '0 4px 12px rgba(5,150,105,0.35)'
               }}
             >
-              <Plus size={15} /> Enroll Student
+              <Plus size={14} /> Enroll Student
             </button>
           </div>
         </div>
 
         {/* 2. TOP METRICS STRIP (4 Clean KPI Cards) */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', marginBottom: '1.75rem' }}>
+        <div className="tutor-metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.85rem', marginBottom: '1.5rem' }}>
           
           <div 
             onClick={() => setActiveTab('active_students')}
             style={{
               background: activeTab === 'active_students' ? 'rgba(5, 150, 105, 0.15)' : '#1E293B',
               border: `1px solid ${activeTab === 'active_students' ? '#10B981' : '#334155'}`,
-              borderRadius: '14px',
-              padding: '1.15rem 1.35rem',
+              borderRadius: '12px',
+              padding: '1rem 1.15rem',
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-              <span style={{ fontSize: '0.82rem', color: '#94A3B8', fontWeight: 700 }}>Active Live Students</span>
-              <Users size={18} color="#34D399" />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+              <span style={{ fontSize: '0.78rem', color: '#94A3B8', fontWeight: 700 }}>Active Students</span>
+              <Users size={16} color="#34D399" />
             </div>
-            <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#34D399' }}>
-              {activeStudents.length} <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#94A3B8' }}>Studying Now</span>
+            <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#34D399' }}>
+              {activeStudents.length} <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#94A3B8' }}>Live</span>
             </div>
           </div>
 
@@ -618,18 +619,18 @@ export default function TutorDashboard() {
             style={{
               background: activeTab === 'past_students' ? 'rgba(59, 130, 246, 0.15)' : '#1E293B',
               border: `1px solid ${activeTab === 'past_students' ? '#3B82F6' : '#334155'}`,
-              borderRadius: '14px',
-              padding: '1.15rem 1.35rem',
+              borderRadius: '12px',
+              padding: '1rem 1.15rem',
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-              <span style={{ fontSize: '0.82rem', color: '#94A3B8', fontWeight: 700 }}>Past / Completed Students</span>
-              <GraduationCap size={18} color="#60A5FA" />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+              <span style={{ fontSize: '0.78rem', color: '#94A3B8', fontWeight: 700 }}>Past Students</span>
+              <GraduationCap size={16} color="#60A5FA" />
             </div>
-            <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#60A5FA' }}>
-              {pastStudents.length} <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#94A3B8' }}>Graduated</span>
+            <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#60A5FA' }}>
+              {pastStudents.length} <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#94A3B8' }}>Graduated</span>
             </div>
           </div>
 
@@ -638,18 +639,18 @@ export default function TutorDashboard() {
             style={{
               background: activeTab === 'exam_duties' ? 'rgba(245, 158, 11, 0.15)' : '#1E293B',
               border: `1px solid ${activeTab === 'exam_duties' ? '#F59E0B' : '#334155'}`,
-              borderRadius: '14px',
-              padding: '1.15rem 1.35rem',
+              borderRadius: '12px',
+              padding: '1rem 1.15rem',
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-              <span style={{ fontSize: '0.82rem', color: '#F59E0B', fontWeight: 800 }}>Cross-Exam Duties</span>
-              <ShieldAlert size={18} color="#F59E0B" />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+              <span style={{ fontSize: '0.78rem', color: '#F59E0B', fontWeight: 800 }}>Cross-Exam Duties</span>
+              <ShieldAlert size={16} color="#F59E0B" />
             </div>
-            <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#F59E0B' }}>
-              {evaluationDuties.length} <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#EF4444', background: 'rgba(239, 68, 68, 0.15)', padding: '2px 8px', borderRadius: '6px' }}>ACTIVE TODAY</span>
+            <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#F59E0B' }}>
+              {evaluationDuties.length} <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#EF4444', background: 'rgba(239, 68, 68, 0.15)', padding: '2px 6px', borderRadius: '4px' }}>TODAY</span>
             </div>
           </div>
 
@@ -658,25 +659,25 @@ export default function TutorDashboard() {
             style={{
               background: activeTab === 'audit_reports' ? 'rgba(2, 132, 199, 0.15)' : '#1E293B',
               border: `1px solid ${activeTab === 'audit_reports' ? '#0284C7' : '#334155'}`,
-              borderRadius: '14px',
-              padding: '1.15rem 1.35rem',
+              borderRadius: '12px',
+              padding: '1rem 1.15rem',
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-              <span style={{ fontSize: '0.82rem', color: '#38BDF8', fontWeight: 800 }}>Official Progress Reports</span>
-              <Award size={18} color="#38BDF8" />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+              <span style={{ fontSize: '0.78rem', color: '#38BDF8', fontWeight: 800 }}>Reports (PDF)</span>
+              <Award size={16} color="#38BDF8" />
             </div>
-            <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#38BDF8' }}>
-              {monthlyReportCards.length} <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#94A3B8' }}>Single-Page PDF</span>
+            <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#38BDF8' }}>
+              {monthlyReportCards.length} <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#94A3B8' }}>Verified</span>
             </div>
           </div>
 
         </div>
 
         {/* 3. CLEAN NAVIGATION TABS */}
-        <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid #334155', paddingBottom: '0.75rem', marginBottom: '1.5rem', overflowX: 'auto' }}>
+        <div className="tutor-tabs-bar" style={{ display: 'flex', gap: '0.4rem', borderBottom: '1px solid #334155', paddingBottom: '0.65rem', marginBottom: '1.25rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           
           <button
             onClick={() => setActiveTab('active_students')}
@@ -1382,6 +1383,19 @@ export default function TutorDashboard() {
       )}
 
       <Footer />
+
+      <style jsx>{`
+        @media screen and (max-width: 640px) {
+          .tutor-metrics-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 0.65rem !important;
+          }
+
+          .tutor-header-box {
+            padding: 1rem !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

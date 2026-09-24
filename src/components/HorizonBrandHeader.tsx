@@ -36,13 +36,15 @@ export default function HorizonBrandHeader({
         alignItems: 'center',
         justifyContent: 'space-between',
         width: '100%',
-        paddingBottom: compact ? '0.75rem' : '1.25rem',
+        paddingBottom: compact ? '0.5rem' : '0.85rem',
         borderBottom: isDark ? '2px solid rgba(245, 158, 11, 0.35)' : '2px solid #0F172A',
+        flexWrap: 'wrap',
+        gap: '0.65rem',
         ...style
       }}
     >
       {/* Left: Dynamic Logo & Brand Name */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <div style={{ flexShrink: 0 }}>
           <HorizonLogoIcon size={logoSize} color="#F59E0B" accentColor="#3B82F6" glow={isDark} />
         </div>
@@ -50,22 +52,22 @@ export default function HorizonBrandHeader({
           <h1
             style={{
               margin: 0,
-              fontSize: titleSize,
+              fontSize: `clamp(1.1rem, 3.5vw, ${titleSize})`,
               fontWeight: 900,
               letterSpacing: '0.04em',
               color: isDark ? '#FFFFFF' : '#0F172A',
               fontFamily: "'Inter', 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif",
-              lineHeight: 1.1
+              lineHeight: 1.15
             }}
           >
             HORIZON HOME TUITION
           </h1>
           <div
             style={{
-              marginTop: '4px',
-              fontSize: subtitleSize,
+              marginTop: '3px',
+              fontSize: `clamp(0.55rem, 1.8vw, ${subtitleSize})`,
               fontWeight: 800,
-              letterSpacing: '0.06em',
+              letterSpacing: '0.05em',
               color: isDark ? '#38BDF8' : '#0284C7',
               textTransform: 'uppercase',
               fontFamily: "'Inter', sans-serif"
@@ -81,9 +83,9 @@ export default function HorizonBrandHeader({
         <div style={{ textAlign: 'right' }}>
           <div
             style={{
-              fontSize: '1.05rem',
+              fontSize: 'clamp(0.82rem, 2.5vw, 1.02rem)',
               fontWeight: 900,
-              letterSpacing: '0.05em',
+              letterSpacing: '0.04em',
               color: isDark ? '#FFFFFF' : '#0F172A',
               textTransform: 'uppercase',
               fontFamily: "'Inter', sans-serif"
@@ -94,10 +96,10 @@ export default function HorizonBrandHeader({
           {reportSubtitle && (
             <div
               style={{
-                fontSize: '0.78rem',
+                fontSize: 'clamp(0.62rem, 1.8vw, 0.76rem)',
                 fontWeight: 700,
                 color: isDark ? '#F59E0B' : '#0284C7',
-                marginTop: '2px'
+                marginTop: '1px'
               }}
             >
               {reportSubtitle}

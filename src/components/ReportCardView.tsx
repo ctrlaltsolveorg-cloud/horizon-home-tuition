@@ -758,6 +758,58 @@ export default function ReportCardView({
           font-weight: 600;
         }
 
+        /* Mobile Media Queries */
+        @media screen and (max-width: 768px) {
+          .report-card-container {
+            padding: 0.65rem 0.4rem 2.5rem;
+          }
+
+          .report-card-actions {
+            flex-wrap: wrap;
+            gap: 8px;
+          }
+
+          .report-card-paper {
+            padding: 16px 12px 14px;
+            border-radius: 8px;
+          }
+
+          .report-meta-grid {
+            grid-template-columns: 1fr 1fr;
+          }
+
+          .report-table {
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          .pillars-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .report-signatures {
+            gap: 10px;
+          }
+        }
+
+        @media screen and (max-width: 480px) {
+          .report-meta-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .report-meta-box {
+            border-right: none;
+            border-bottom: 1px solid #CBD5E1;
+          }
+
+          .report-summary-bar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+          }
+        }
+
         /* Print Media Styles */
         @media print {
           @page {

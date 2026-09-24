@@ -688,6 +688,14 @@ export default function StudentDashboard() {
         </div>
       </main>
       <Footer />
+
+      <style jsx>{`
+        @media screen and (max-width: 640px) {
+          main {
+            padding: 1rem 0.5rem 4rem !important;
+          }
+        }
+      `}</style>
     </>
   );
 }

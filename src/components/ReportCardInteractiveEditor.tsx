@@ -1849,18 +1849,74 @@ export default function ReportCardInteractiveEditor({
           font-weight: 600;
         }
 
-        .spin {
-          animation: spin 1s linear infinite;
+        /* =================== MOBILE RESPONSIVE STYLES =================== */
+        @media screen and (max-width: 768px) {
+          .report-editor-container {
+            padding: 0.65rem 0.4rem 3rem;
+          }
+          
+          .editor-toolbar {
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 8px 10px;
+          }
+
+          .duty-badge span {
+            font-size: 0.70rem;
+          }
+
+          .report-card-paper {
+            padding: 16px 12px 14px;
+            border-radius: 8px;
+          }
+
+          .report-meta-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+          }
+
+          .report-meta-box {
+            padding: 5px 6px;
+          }
+
+          .report-table {
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          .pillars-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .report-signatures {
+            gap: 10px;
+          }
         }
 
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
+        @media screen and (max-width: 480px) {
+          .report-meta-grid {
+            grid-template-columns: 1fr;
+          }
+          
+          .report-meta-box {
+            border-right: none;
+            border-bottom: 1px solid #334155;
+          }
+          .report-meta-box:last-child {
+            border-bottom: none;
+          }
 
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-4px); }
-          to { opacity: 1; transform: translateY(0); }
+          .report-summary-bar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+          }
+
+          .tool-btn {
+            padding: 6px 10px;
+            font-size: 0.78rem;
+          }
         }
 
         /* =================== A4 PRINT STYLES =================== */
