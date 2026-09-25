@@ -165,7 +165,7 @@ export default function TutorCardPage() {
                         MANAGED HOME TUITION
                       </div>
                       <div style={{ fontSize: '0.65rem', color: '#94A3B8', borderTop: '1px solid #334155', paddingTop: '0.75rem' }}>
-                        📊 Monthly Assessment | 🔄 Free Tutor Replacement
+                        Monthly Assessment | Free Tutor Replacement
                       </div>
                     </>
                   )}

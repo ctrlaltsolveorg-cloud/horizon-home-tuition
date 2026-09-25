@@ -106,9 +106,9 @@ export default function Footer() {
             <li><Link href="/become-a-tutor" style={{ color: 'var(--text-secondary)' }}>{t.becomeTutorCTA}</Link></li>
             <li><Link href="/how-it-works" style={{ color: 'var(--text-secondary)' }}>{t.navHowItWorks}</Link></li>
             <li><Link href="/tutor-card" style={{ color: 'var(--text-secondary)' }}>Tutor ID Card & T-Shirt Concept</Link></li>
-            <li><Link href="/logo" style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>✨ Logo Design & Brand Theory</Link></li>
-            <li><Link href="/flyer" style={{ color: 'var(--primary-blue)' }}>📄 Print Parent Marketing Flyer</Link></li>
-            <li><Link href="/admin" style={{ color: 'var(--accent-gold)' }}>🔒 Admin Portal</Link></li>
+            <li><Link href="/logo" style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>Logo Design & Brand Theory</Link></li>
+            <li><Link href="/flyer" style={{ color: 'var(--primary-blue)' }}>Print Parent Marketing Flyer</Link></li>
+            <li><Link href="/admin" style={{ color: 'var(--accent-gold)' }}>Admin Portal</Link></li>
           </ul>
         </div>
 

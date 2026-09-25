@@ -129,7 +129,7 @@ export default function ReportCardMainPage() {
                 boxShadow: '0 4px 15px rgba(245, 158, 11, 0.35)'
               }}
             >
-              <span>✏️ Live Direct-Fill Report Card</span>
+              <span>Live Direct-Fill Report Card</span>
             </Link>
           </div>
         </div>

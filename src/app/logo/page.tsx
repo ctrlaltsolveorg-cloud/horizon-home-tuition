@@ -461,10 +461,10 @@ export default function LogoTheoryPage() {
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
                 {[
-                  { id: 'dark', label: '🌌 Obsidian Dark' },
-                  { id: 'light', label: '☀️ Pure White' },
-                  { id: 'gold', label: '👑 Luxury Gold' },
-                  { id: 'emerald', label: '🌿 Emerald Rich' }
+                  { id: 'dark', label: 'Obsidian Dark' },
+                  { id: 'light', label: 'Pure White' },
+                  { id: 'gold', label: 'Luxury Gold' },
+                  { id: 'emerald', label: 'Emerald Rich' }
                 ].map((t) => (
                   <button
                     key={t.id}
@@ -509,10 +509,10 @@ export default function LogoTheoryPage() {
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
                 {[
-                  { id: 'shimmer', label: '✨ Shimmer' },
-                  { id: 'float', label: '🌊 Floating' },
-                  { id: 'pulse', label: '💫 Pulse Aura' },
-                  { id: 'none', label: '⏹ Static' }
+                  { id: 'shimmer', label: 'Shimmer' },
+                  { id: 'float', label: 'Floating' },
+                  { id: 'pulse', label: 'Pulse Aura' },
+                  { id: 'none', label: 'Static' }
                 ].map((a) => (
                   <button
                     key={a.id}
@@ -763,7 +763,7 @@ export default function LogoTheoryPage() {
             
             <div style={{ background: 'var(--bg-card)', padding: '1.25rem 1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
               <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.3rem' }}>
-                📐 60° Delta Trajectory
+                60° Delta Trajectory
               </h4>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
                 The side strokes follow precise 60-degree angles corresponding to an equilateral triangle, creating optical equilibrium.
@@ -772,7 +772,7 @@ export default function LogoTheoryPage() {
 
             <div style={{ background: 'var(--bg-card)', padding: '1.25rem 1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
               <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.3rem' }}>
-                🛡️ Channel Negative Space
+                Channel Negative Space
               </h4>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
                 Uniform 8px negative space channels separate the 'H' stroke, the arrow head, and the right leg, guaranteeing maximum legibility even down to favicon resolutions.
@@ -781,7 +781,7 @@ export default function LogoTheoryPage() {
 
             <div style={{ background: 'var(--bg-card)', padding: '1.25rem 1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
               <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.3rem' }}>
-                🔤 Outfit Geometric Wordmark
+                Outfit Geometric Wordmark
               </h4>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
                 The accompanying typography uses <strong>Outfit</strong> with wide <code>letter-spacing: 0.12em</code>, pairing bold presence with modern technological precision.

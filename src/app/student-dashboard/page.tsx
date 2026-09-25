@@ -548,7 +548,7 @@ export default function StudentDashboard() {
                       alignItems: 'center',
                       gap: '4px'
                     }}>
-                      ⏱️ {String(timeLeft.days).padStart(2, '0')}d {String(timeLeft.hours).padStart(2, '0')}h {String(timeLeft.minutes).padStart(2, '0')}m {String(timeLeft.seconds).padStart(2, '0')}s
+                      {String(timeLeft.days).padStart(2, '0')}d {String(timeLeft.hours).padStart(2, '0')}h {String(timeLeft.minutes).padStart(2, '0')}m {String(timeLeft.seconds).padStart(2, '0')}s
                     </span>
                   ) : (
                     <span style={{
@@ -559,7 +559,7 @@ export default function StudentDashboard() {
                       padding: '2px 8px',
                       borderRadius: '6px'
                     }}>
-                      ✅ {enquiry?.test_status || 'Completed'} (Score: {enquiry?.test_score || '88%'})
+                      {enquiry?.test_status || 'Completed'} (Score: {enquiry?.test_score || '88%'})
                     </span>
                   )}
                 </div>

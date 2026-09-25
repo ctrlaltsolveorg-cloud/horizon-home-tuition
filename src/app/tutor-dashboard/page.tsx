@@ -541,11 +541,11 @@ export default function TutorDashboard() {
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginTop: '0.25rem', color: '#94A3B8', fontSize: '0.80rem', flexWrap: 'wrap' }}>
-                <span style={{ color: '#38BDF8', fontWeight: 700 }}>🏛️ {tutorProfile.college}</span>
+                <span style={{ color: '#38BDF8', fontWeight: 700 }}>{tutorProfile.college}</span>
                 <span>•</span>
-                <span>🎓 {tutorProfile.degree_status}</span>
+                <span>{tutorProfile.degree_status}</span>
                 <span>•</span>
-                <span style={{ color: '#F59E0B', fontWeight: 700 }}>⭐ {tutorProfile.rating || 5.0}</span>
+                <span style={{ color: '#F59E0B', fontWeight: 700 }}>Rating: {tutorProfile.rating || 5.0} / 5.0</span>
               </div>
             </div>
           </div>
@@ -1163,7 +1163,7 @@ export default function TutorDashboard() {
                 }}
               >
                 <Sparkles size={16} />
-                <span>➕ Live Fill Report Card (PDF Sheet)</span>
+                <span>Live Fill Report Card (PDF Sheet)</span>
               </Link>
             </div>
 

@@ -532,7 +532,7 @@ export default function Navbar() {
             <PhoneCall size={17} color="var(--accent-gold)" /> {t.navContact}
           </Link>
           <Link href="/admin" onClick={() => setMobileMenuOpen(false)} style={{ color: '#F59E0B', fontSize: '1rem', textDecoration: 'none' }}>
-            🔒 {t.navAdmin}
+            {t.navAdmin}
           </Link>
 
           {/* Mobile Auth Status */}

@@ -314,7 +314,7 @@ export default function ReportCardEditorModal({
                   cursor: 'pointer'
                 }}
               >
-                {showPrevReport ? 'Hide Prev Report' : '👁️ View Old Report'}
+                {showPrevReport ? 'Hide Prev Report' : 'View Old Report'}
               </button>
             )}
             <button
