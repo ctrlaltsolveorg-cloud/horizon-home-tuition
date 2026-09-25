@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS public.monthly_report_cards (
   -- Summary & Quality Audit
   overall_percentage NUMERIC DEFAULT 86.5,
   grade TEXT DEFAULT 'Grade A+ Outstanding',
-  next_month_target TEXT DEFAULT 'Chapters 3 & 4 of all subjects',
+  next_month_target TEXT DEFAULT 'Next two chapters in all subjects',
   focus_recommendation TEXT DEFAULT 'Daily 15m English book reading at home',
   coordinator_name TEXT DEFAULT 'Horizon Academic Quality Cell',
   status TEXT DEFAULT 'VERIFIED', -- DRAFT, SUBMITTED, VERIFIED, LOCKED
@@ -304,7 +304,7 @@ VALUES (
   'Clean margin maintenance; neat step-by-step working. Science diagram labeling can improve.',
   86.5,
   'Grade A+ Outstanding',
-  'Chapters 3 & 4 of all subjects',
+  'Next two chapters in all subjects',
   'Daily 15m English book reading at home',
   'VERIFIED'
 )

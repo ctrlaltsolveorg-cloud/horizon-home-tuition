@@ -23,6 +23,13 @@ export default function ReportCardView({
     window.print();
   };
 
+  const getStatusClass = (status?: string) => {
+    const s = (status || '').toLowerCase();
+    if (s === 'revision') return 'status-revision';
+    if (s === 'incomplete') return 'status-incomplete';
+    return 'status-cleared';
+  };
+
   return (
     <div className="report-card-container">
       {/* Top Action Bar (Hidden in Print) */}
@@ -157,8 +164,8 @@ export default function ReportCardView({
                 <td className="chapter-cell">{report.math_ch1_name || 'Ch 1: Integers, Number Line & Rules'}</td>
                 <td className="table-score-cell">{report.math_ch1_marks || '9.50 / 10.00'}</td>
                 <td className="status-cell">
-                  <span className={`status-pill ${report.math_ch1_status === 'Revision' ? 'status-revision' : 'status-cleared'}`}>
-                    {report.math_ch1_status || 'Cleared'}
+                  <span className={`status-pill ${getStatusClass(report.math_ch1_status)}`}>
+                    {report.math_ch1_status || 'CLEARED'}
                   </span>
                 </td>
               </tr>
@@ -166,8 +173,8 @@ export default function ReportCardView({
                 <td className="chapter-cell">{report.math_ch2_name || 'Ch 2: Fractions, Decimals & Problem Sums'}</td>
                 <td className="table-score-cell">{report.math_ch2_marks || '8.50 / 10.00'}</td>
                 <td className="status-cell">
-                  <span className={`status-pill ${report.math_ch2_status === 'Revision' ? 'status-revision' : 'status-cleared'}`}>
-                    {report.math_ch2_status || 'Cleared'}
+                  <span className={`status-pill ${getStatusClass(report.math_ch2_status)}`}>
+                    {report.math_ch2_status || 'CLEARED'}
                   </span>
                 </td>
               </tr>
@@ -178,8 +185,8 @@ export default function ReportCardView({
                 <td className="chapter-cell">{report.science_ch1_name || 'Ch 1: Nutrition in Plants (Modes & Photosynthesis)'}</td>
                 <td className="table-score-cell">{report.science_ch1_marks || '9.00 / 10.00'}</td>
                 <td className="status-cell">
-                  <span className={`status-pill ${report.science_ch1_status === 'Revision' ? 'status-revision' : 'status-cleared'}`}>
-                    {report.science_ch1_status || 'Cleared'}
+                  <span className={`status-pill ${getStatusClass(report.science_ch1_status)}`}>
+                    {report.science_ch1_status || 'CLEARED'}
                   </span>
                 </td>
               </tr>
@@ -187,8 +194,8 @@ export default function ReportCardView({
                 <td className="chapter-cell">{report.science_ch2_name || 'Ch 2: Nutrition in Animals (Digestive Organs)'}</td>
                 <td className="table-score-cell">{report.science_ch2_marks || '7.50 / 10.00'}</td>
                 <td className="status-cell">
-                  <span className={`status-pill ${report.science_ch2_status === 'Revision' ? 'status-revision' : 'status-cleared'}`}>
-                    {report.science_ch2_status || 'Revision'}
+                  <span className={`status-pill ${getStatusClass(report.science_ch2_status)}`}>
+                    {report.science_ch2_status || 'REVISION'}
                   </span>
                 </td>
               </tr>
@@ -199,8 +206,8 @@ export default function ReportCardView({
                 <td className="chapter-cell">{report.sst_ch1_name || 'Ch 1: Tracing Changes Through a Thousand Years'}</td>
                 <td className="table-score-cell">{report.sst_ch1_marks || '8.50 / 10.00'}</td>
                 <td className="status-cell">
-                  <span className={`status-pill ${report.sst_ch1_status === 'Revision' ? 'status-revision' : 'status-cleared'}`}>
-                    {report.sst_ch1_status || 'Cleared'}
+                  <span className={`status-pill ${getStatusClass(report.sst_ch1_status)}`}>
+                    {report.sst_ch1_status || 'CLEARED'}
                   </span>
                 </td>
               </tr>
@@ -208,8 +215,8 @@ export default function ReportCardView({
                 <td className="chapter-cell">{report.sst_ch2_name || 'Ch 2: Our Environment & Earth Interior Layers'}</td>
                 <td className="table-score-cell">{report.sst_ch2_marks || '8.00 / 10.00'}</td>
                 <td className="status-cell">
-                  <span className={`status-pill ${report.sst_ch2_status === 'Revision' ? 'status-revision' : 'status-cleared'}`}>
-                    {report.sst_ch2_status || 'Cleared'}
+                  <span className={`status-pill ${getStatusClass(report.sst_ch2_status)}`}>
+                    {report.sst_ch2_status || 'CLEARED'}
                   </span>
                 </td>
               </tr>
@@ -220,8 +227,8 @@ export default function ReportCardView({
                 <td className="chapter-cell">{report.lang_eng_name || 'English (Ch 1-2): Three Questions & The Squirrel'}</td>
                 <td className="table-score-cell">{report.lang_eng_marks || '9.00 / 10.00'}</td>
                 <td className="status-cell">
-                  <span className={`status-pill ${report.lang_eng_status === 'Revision' ? 'status-revision' : 'status-cleared'}`}>
-                    {report.lang_eng_status || 'Cleared'}
+                  <span className={`status-pill ${getStatusClass(report.lang_eng_status)}`}>
+                    {report.lang_eng_status || 'CLEARED'}
                   </span>
                 </td>
               </tr>
@@ -229,8 +236,8 @@ export default function ReportCardView({
                 <td className="chapter-cell">{report.lang_hindi_name || 'Hindi (Ch 1-2): हम पंछी उन्मुक्त गगन के & दादी माँ'}</td>
                 <td className="table-score-cell">{report.lang_hindi_marks || '8.50 / 10.00'}</td>
                 <td className="status-cell">
-                  <span className={`status-pill ${report.lang_hindi_status === 'Revision' ? 'status-revision' : 'status-cleared'}`}>
-                    {report.lang_hindi_status || 'Cleared'}
+                  <span className={`status-pill ${getStatusClass(report.lang_hindi_status)}`}>
+                    {report.lang_hindi_status || 'CLEARED'}
                   </span>
                 </td>
               </tr>
@@ -346,7 +353,7 @@ export default function ReportCardView({
             <span className="summary-label">Overall Performance:</span>
             <span className="summary-highlight">{report.overall_percentage?.toFixed(1) || '86.5'}% ({report.grade || 'Grade A+ Outstanding'})</span>
             <span className="summary-divider">•</span>
-            <span className="summary-target">Next Month Target: {report.next_month_target || 'Chapters 3 & 4 of all subjects'}</span>
+            <span className="summary-target">Next Month Target: {report.next_month_target || 'Next two chapters in all subjects'}</span>
           </div>
           <div className="summary-right">
             <span className="summary-focus">Focus: {report.focus_recommendation || 'Daily 15m English book reading at home'}</span>
@@ -603,6 +610,10 @@ export default function ReportCardView({
         .status-revision {
           background: #FEF3C7;
           color: #B45309;
+        }
+        .status-incomplete {
+          background: #FEE2E2;
+          color: #DC2626;
         }
 
         .highlight-green {

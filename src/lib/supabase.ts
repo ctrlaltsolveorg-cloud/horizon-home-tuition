@@ -258,7 +258,7 @@ export interface MonthlyReportCard {
   // Summary & Feedback Footer
   overall_percentage: number; // e.g. 86.5
   grade: string;              // e.g. 'Grade A+ Outstanding'
-  next_month_target: string;  // e.g. 'Chapters 3 & 4 of all subjects'
+  next_month_target: string;  // e.g. 'Next two chapters in all subjects'
   focus_recommendation: string;// e.g. 'Daily 15m English book reading at home'
   
   coordinator_name?: string;

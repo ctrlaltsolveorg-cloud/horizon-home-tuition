@@ -327,7 +327,7 @@ export default function TutorDashboard() {
             neatness_obs: 'Clean margin maintenance; neat step-by-step working. Science diagram labeling can improve.',
             overall_percentage: 86.5,
             grade: 'Grade A+ Outstanding',
-            next_month_target: 'Chapters 3 & 4 of all subjects',
+            next_month_target: 'Next two chapters in all subjects',
             focus_recommendation: 'Daily 15m English book reading at home',
             status: 'VERIFIED'
           }
