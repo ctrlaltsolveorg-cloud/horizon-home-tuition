@@ -259,19 +259,19 @@ export default function StudentDashboard() {
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           
-          {/* Top Banner / Welcome (Landing Page Luxury Aesthetic) */}
+          {/* Top Banner / Welcome with Assigned Home Tutor integrated on the right */}
           <div style={{
-            background: 'linear-gradient(135deg, rgba(20, 22, 27, 0.96) 0%, rgba(26, 29, 36, 0.92) 100%)',
+            background: 'linear-gradient(135deg, rgba(20, 22, 27, 0.98) 0%, rgba(26, 29, 36, 0.95) 100%)',
             border: '1px solid rgba(245, 158, 11, 0.3)',
             borderRadius: '20px',
-            padding: '2.2rem 2.4rem',
+            padding: '2rem 2.2rem',
             color: 'var(--text-primary)',
             marginBottom: '2rem',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: '1.5rem',
+            gap: '1.75rem',
             boxShadow: '0 12px 35px rgba(0, 0, 0, 0.45), 0 0 40px rgba(245, 158, 11, 0.05)',
             position: 'relative',
             overflow: 'hidden'
@@ -286,7 +286,8 @@ export default function StudentDashboard() {
               pointerEvents: 'none'
             }} />
 
-            <div style={{ position: 'relative', zIndex: 2 }}>
+            {/* Left Column: Welcome & Student Profile Details */}
+            <div style={{ position: 'relative', zIndex: 2, flex: '1 1 340px' }}>
               <div style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -314,46 +315,175 @@ export default function StudentDashboard() {
               }}>
                 Welcome, {enquiry?.student_name || 'Student'}!
               </h1>
-              <p style={{ margin: '8px 0 0', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+              <p style={{ margin: '8px 0 1rem', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
                 Parent: <strong style={{ color: 'var(--text-primary)' }}>{enquiry?.parent_name || 'Parent'}</strong> • {enquiry?.class_level} ({enquiry?.board} - {enquiry?.school_medium})
               </p>
-            </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative', zIndex: 2 }}>
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.06)',
-                border: '1px solid var(--border-highlight)',
-                padding: '10px 18px',
-                borderRadius: '12px',
-                backdropFilter: 'blur(8px)',
-                textAlign: 'right'
-              }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Fee Status</div>
-                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--accent-green)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <CheckCircle2 size={16} /> {enquiry?.fee_status || 'PAID'} (₹{enquiry?.fee_amount || 4500})
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={logout}
-                style={{
-                  display: 'flex',
+              {/* Quick Status Pill & Logout */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <div style={{
+                  display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
-                  padding: '10px 14px',
-                  borderRadius: '10px',
-                  background: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid rgba(239, 68, 68, 0.25)',
-                  color: '#F87171',
-                  fontWeight: 600,
-                  fontSize: '0.85rem',
-                  cursor: 'pointer'
-                }}
-                title="Logout"
-              >
-                <LogOut size={16} /> Logout
-              </button>
+                  background: 'rgba(16, 185, 129, 0.1)',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  padding: '5px 12px',
+                  borderRadius: '8px',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  color: '#10B981'
+                }}>
+                  <CheckCircle2 size={15} /> Fee: {enquiry?.fee_status || 'PAID'} (₹{enquiry?.fee_amount || 4500})
+                </div>
+
+                <button
+                  type="button"
+                  onClick={logout}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '5px 12px',
+                    borderRadius: '8px',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.25)',
+                    color: '#F87171',
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    cursor: 'pointer'
+                  }}
+                  title="Logout"
+                >
+                  <LogOut size={14} /> Logout
+                </button>
+              </div>
             </div>
+
+            {/* Right Column: ASSIGNED HOME TUTOR BOX */}
+            {tutor && (
+              <div style={{
+                position: 'relative',
+                zIndex: 2,
+                flex: '1 1 380px',
+                maxWidth: '440px',
+                background: 'rgba(15, 23, 42, 0.85)',
+                border: '1px solid rgba(59, 130, 246, 0.35)',
+                borderRadius: '16px',
+                padding: '1.2rem 1.4rem',
+                backdropFilter: 'blur(12px)',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.85rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '0.5rem' }}>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <User size={15} style={{ color: 'var(--primary)' }} /> Assigned Home Tutor
+                  </div>
+                  <span style={{
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    color: '#10b981',
+                    background: 'rgba(16, 185, 129, 0.12)',
+                    padding: '2px 8px',
+                    borderRadius: '999px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    <ShieldCheck size={12} /> Verified Faculty
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '46px',
+                    height: '46px',
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.25rem',
+                    fontWeight: 800,
+                    flexShrink: 0,
+                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
+                  }}>
+                    {tutor.full_name?.charAt(0) || 'H'}
+                  </div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {tutor.full_name}
+                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                      <span style={{ color: '#f59e0b', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <Star size={13} fill="#f59e0b" /> {tutor.rating || 4.9} / 5.0
+                      </span>
+                      <span>•</span>
+                      <span style={{ color: '#38bdf8', fontWeight: 700 }}>{tutor.college || 'PCE Purnia'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{
+                  padding: '6px 10px',
+                  background: 'rgba(37, 99, 235, 0.08)',
+                  border: '1px solid rgba(37, 99, 235, 0.15)',
+                  borderRadius: '8px',
+                  fontSize: '0.78rem',
+                  color: 'var(--text-secondary)',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}>
+                  <strong style={{ color: 'var(--text-primary)' }}>Subjects: </strong>
+                  {Array.isArray(tutor.subjects) ? tutor.subjects.join(', ') : (tutor.subjects || 'Mathematics, Science, Foundation Physics')}
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Link
+                    href={`/profile?tutorId=${tutor.id || 'demo-tutor-1'}`}
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '5px',
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                      color: '#000000',
+                      fontSize: '0.8rem',
+                      fontWeight: 800,
+                      textDecoration: 'none',
+                      boxShadow: '0 2px 8px rgba(245, 158, 11, 0.25)'
+                    }}
+                  >
+                    <User size={13} /> View Full Profile
+                  </Link>
+                  <a
+                    href={`tel:${tutor.phone || '+919162162128'}`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '5px',
+                      padding: '8px 14px',
+                      borderRadius: '8px',
+                      background: 'var(--bg-primary)',
+                      border: '1px solid var(--border-color)',
+                      color: 'var(--text-primary)',
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      textDecoration: 'none'
+                    }}
+                  >
+                    <Phone size={13} /> Call
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Key Timeline Indicators: Enquiry, Test, Fee */}
@@ -672,249 +802,114 @@ export default function StudentDashboard() {
             </div>
           </div>
 
-          {/* Grid Layout: Assigned Teacher (Left) + Monthly Reports (Right) */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
-            gap: '1.5rem'
-          }}>
-            
-            {/* Column 1: Assigned Teacher Card (Clean & Compact with View Full Profile) */}
-            <div>
-              <div style={{
+          {/* Official Progress Report Section (Horizon Monthly Assessment) */}
+          <div style={{ marginTop: '1rem' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '1rem',
+              flexWrap: 'wrap',
+              gap: '10px'
+            }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Award size={20} style={{ color: '#F59E0B' }} /> Official Progress Report
+              </h2>
+              <span style={{
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: '#10B981',
+                background: 'rgba(16, 185, 129, 0.1)',
+                border: '1px solid rgba(16, 185, 129, 0.25)',
+                padding: '4px 10px',
+                borderRadius: '999px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '1rem'
+                gap: '4px'
               }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <User size={20} style={{ color: 'var(--primary)' }} /> Assigned Home Tutor
-                </h2>
-                <span style={{
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  color: '#10b981',
-                  background: 'rgba(16, 185, 129, 0.1)',
-                  padding: '4px 10px',
-                  borderRadius: '999px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}>
-                  <ShieldCheck size={14} /> Verified Faculty
-                </span>
-              </div>
-
-              {tutor && (
-                <div style={{
-                  background: 'var(--card-bg)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '18px',
-                  padding: '1.6rem',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.04)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1.25rem'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    <div style={{
-                      width: '58px',
-                      height: '58px',
-                      borderRadius: '16px',
-                      background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
-                      color: '#ffffff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '1.5rem',
-                      fontWeight: 800,
-                      flexShrink: 0
-                    }}>
-                      {tutor.full_name?.charAt(0) || 'H'}
-                    </div>
-                    <div>
-                      <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 3px' }}>
-                        {tutor.full_name}
-                      </h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem', flexWrap: 'wrap' }}>
-                        <span style={{ color: '#f59e0b', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
-                          <Star size={14} fill="#f59e0b" /> {tutor.rating || 4.9} / 5.0
-                        </span>
-                        <span style={{ color: 'var(--text-secondary)' }}>•</span>
-                        <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{tutor.college || 'PCE Purnia'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{
-                    padding: '10px 14px',
-                    background: 'rgba(37, 99, 235, 0.05)',
-                    border: '1px solid rgba(37, 99, 235, 0.12)',
-                    borderRadius: '10px',
-                    fontSize: '0.84rem',
-                    color: 'var(--text-secondary)'
-                  }}>
-                    <strong style={{ color: 'var(--text-primary)', display: 'block', fontSize: '0.76rem', textTransform: 'uppercase', marginBottom: '2px' }}>
-                      Subjects &amp; Focus
-                    </strong>
-                    {Array.isArray(tutor.subjects) ? tutor.subjects.join(', ') : (tutor.subjects || 'Mathematics, Science, Foundation Physics')}
-                  </div>
-
-                  {/* Clean Action Buttons: View Full Profile & Call */}
-                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                    <Link
-                      href={`/profile?tutorId=${tutor.id || 'demo-tutor-1'}`}
-                      style={{
-                        flex: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        padding: '10px 14px',
-                        borderRadius: '10px',
-                        background: 'linear-gradient(135deg, #F59E0B, #D97706)',
-                        color: '#000000',
-                        fontSize: '0.84rem',
-                        fontWeight: 800,
-                        textDecoration: 'none',
-                        boxShadow: '0 2px 10px rgba(245, 158, 11, 0.25)'
-                      }}
-                    >
-                      <User size={15} /> View Full Profile
-                    </Link>
-
-                    <a
-                      href={`tel:${tutor.phone || '+919162162128'}`}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        padding: '10px 16px',
-                        borderRadius: '10px',
-                        background: 'var(--bg-primary)',
-                        border: '1px solid var(--border-color)',
-                        color: 'var(--text-primary)',
-                        fontSize: '0.84rem',
-                        fontWeight: 700,
-                        textDecoration: 'none'
-                      }}
-                    >
-                      <Phone size={15} /> Call
-                    </a>
-                  </div>
-                </div>
-              )}
+                <ShieldCheck size={14} /> Quality Verified
+              </span>
             </div>
 
-            {/* Column 2: Official Verified Monthly Report Card (Clean & Focused) */}
-            <div>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '1rem'
-              }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Award size={20} style={{ color: '#F59E0B' }} /> Official Progress Report
-                </h2>
-                <span style={{
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  color: '#10B981',
-                  background: 'rgba(16, 185, 129, 0.1)',
-                  padding: '4px 10px',
-                  borderRadius: '999px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}>
-                  <ShieldCheck size={14} /> Quality Verified
-                </span>
-              </div>
-
-              <div style={{
-                background: 'var(--card-bg)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '18px',
-                padding: '1.6rem',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.04)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1.25rem'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px' }}>
-                  <div>
-                    <span style={{
-                      display: 'inline-block',
-                      padding: '3px 8px',
-                      borderRadius: '6px',
-                      background: '#0284C7',
-                      color: '#FFFFFF',
-                      fontSize: '0.74rem',
-                      fontWeight: 800,
-                      marginBottom: '6px'
-                    }}>
-                      September 2026
-                    </span>
-                    <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px' }}>
-                      Horizon Monthly Assessment
-                    </h3>
-                    <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                      Conducted by: <strong style={{ color: 'var(--text-primary)' }}>Horizon Academic Assessment Cell</strong>
-                    </div>
-                  </div>
-
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--primary)', fontFamily: 'monospace' }}>
-                      86.5%
-                    </div>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#10B981' }}>
-                      Grade A+ Outstanding
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{
-                  padding: '12px 14px',
-                  background: 'rgba(245, 158, 11, 0.06)',
-                  border: '1px solid rgba(245, 158, 11, 0.2)',
-                  borderRadius: '10px',
-                  fontSize: '0.82rem',
-                  color: 'var(--text-secondary)'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#F59E0B', fontWeight: 700, marginBottom: '2px' }}>
-                    <ShieldCheck size={14} /> Independent Cross-Examiner Audit
-                  </div>
-                  <span>Evaluated independently by certified cross-examiner faculty to guarantee 100% unbiased academic verification.</span>
-                </div>
-
-                <Link
-                  href="/report-card/rep-sample-001"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    padding: '11px 18px',
-                    borderRadius: '10px',
-                    background: 'linear-gradient(135deg, #F59E0B, #D97706)',
-                    color: '#000000',
+            <div style={{
+              background: 'var(--card-bg)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '18px',
+              padding: '1.8rem 2rem',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.04)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1.25rem'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <span style={{
+                    display: 'inline-block',
+                    padding: '3px 8px',
+                    borderRadius: '6px',
+                    background: '#0284C7',
+                    color: '#FFFFFF',
+                    fontSize: '0.74rem',
                     fontWeight: 800,
-                    fontSize: '0.88rem',
-                    textDecoration: 'none',
-                    boxShadow: '0 3px 12px rgba(245, 158, 11, 0.25)',
-                    transition: 'transform 0.2s'
-                  }}
-                >
-                  <FileText size={16} />
-                  <span>View &amp; Print Official Verified Report Card (PDF)</span>
-                </Link>
+                    marginBottom: '6px'
+                  }}>
+                    September 2026
+                  </span>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px' }}>
+                    Horizon Monthly Assessment
+                  </h3>
+                  <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+                    Conducted by: <strong style={{ color: 'var(--text-primary)' }}>Horizon Academic Assessment Cell</strong>
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '1.65rem', fontWeight: 900, color: 'var(--primary)', fontFamily: 'monospace' }}>
+                    86.5%
+                  </div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#10B981' }}>
+                    Grade A+ Outstanding
+                  </div>
+                </div>
               </div>
+
+              <div style={{
+                padding: '12px 14px',
+                background: 'rgba(245, 158, 11, 0.06)',
+                border: '1px solid rgba(245, 158, 11, 0.2)',
+                borderRadius: '10px',
+                fontSize: '0.84rem',
+                color: 'var(--text-secondary)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#F59E0B', fontWeight: 700, marginBottom: '2px' }}>
+                  <ShieldCheck size={14} /> Independent Cross-Examiner Audit
+                </div>
+                <span>Evaluated independently by certified cross-examiner faculty to guarantee 100% unbiased academic verification.</span>
+              </div>
+
+              <Link
+                href="/report-card/rep-sample-001"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  padding: '12px 18px',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                  color: '#000000',
+                  fontWeight: 800,
+                  fontSize: '0.9rem',
+                  textDecoration: 'none',
+                  boxShadow: '0 3px 12px rgba(245, 158, 11, 0.25)',
+                  transition: 'transform 0.2s'
+                }}
+              >
+                <FileText size={16} />
+                <span>View &amp; Print Official Verified Report Card (PDF)</span>
+              </Link>
             </div>
-
           </div>
-
         </div>
       </main>
       <Footer />
