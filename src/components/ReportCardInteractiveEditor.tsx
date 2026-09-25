@@ -653,188 +653,190 @@ export default function ReportCardInteractiveEditor({
             <span className="section-subtitle">Evaluating Reading Pace (WPM) &amp; 5 Direct Comprehension Questions</span>
           </div>
 
-          <table className="report-table">
-            <thead>
-              <tr>
-                <th style={{ width: '24%' }}>LANGUAGE MEDIUM</th>
-                <th style={{ width: '26%' }}>PASSAGE LENGTH &amp; TIME</th>
-                <th style={{ width: '20%' }}>SPEED (WPM)</th>
-                <th style={{ width: '18%' }}>5 COMPREHENSION QS</th>
-                <th style={{ width: '12%', textAlign: 'right' }}>FLUENCY (/10)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* Hindi Row */}
-              <tr>
-                <td>
-                  <div className="table-primary-text">Hindi Passage Reading</div>
-                  <div className="table-secondary-text">(शुद्धता एवं स्पष्ट उच्चारण)</div>
-                </td>
-                <td>
-                  {isPreviewMode ? (
-                    <span className="table-text-cell">{formData.hindi_passage_length_time}</span>
-                  ) : (
-                    <div className="locked-passage-wrap">
-                      <span className="locked-sep">300 Words •</span>
-                      <input
-                        type="text"
-                        className="live-time-input"
-                        value={parsePassageTime(formData.hindi_passage_length_time)}
-                        onChange={(e) => handlePassageTimeChange('hindi_passage_length_time', e.target.value)}
-                        placeholder="1m 25s"
-                      />
-                    </div>
-                  )}
-                </td>
-                <td>
-                  {isPreviewMode ? (
-                    <span className="table-text-cell font-bold">{formData.hindi_speed_wpm}</span>
-                  ) : (
-                    <div className="locked-wpm-wrap">
-                      <input
-                        type="number"
-                        min="0"
-                        max="300"
-                        className="live-wpm-num-input"
-                        value={parseWpmNumber(formData.hindi_speed_wpm) || ''}
-                        onChange={(e) => handleWpmChange('hindi_speed_wpm', e.target.value)}
-                        placeholder="113"
-                      />
-                      <span className="locked-wpm-category">
-                        WPM {computeWpmCategory(parseWpmNumber(formData.hindi_speed_wpm))}
-                      </span>
-                    </div>
-                  )}
-                </td>
-                <td>
-                  {isPreviewMode ? (
-                    <span className="table-text-cell highlight-green">{formData.hindi_comprehension_qs}</span>
-                  ) : (
-                    <div className="locked-comp-wrap">
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="5"
-                        className="live-comp-num-input"
-                        value={parseCompCorrect(formData.hindi_comprehension_qs)}
-                        onChange={(e) => handleCompScoreChange('hindi_comprehension_qs', e.target.value)}
-                        placeholder="04.00"
-                      />
-                      <span className="locked-comp-denom">/ 05.00 Correct</span>
-                      <span className="locked-comp-error">
-                        ({formatScoreFloat(Math.max(0, 5 - parseCompCorrect(formData.hindi_comprehension_qs)))} {Math.abs(Math.max(0, 5 - parseCompCorrect(formData.hindi_comprehension_qs)) - 1) < 0.01 ? 'Error' : 'Errors'})
-                      </span>
-                    </div>
-                  )}
-                </td>
-                <td style={{ textAlign: 'right' }}>
-                  {isPreviewMode ? (
-                    <span className="table-score-cell">{formData.hindi_fluency}</span>
-                  ) : (
-                    <div className="locked-score-cell">
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="10"
-                        className="live-score-num-input"
-                        value={parseNumericScore(formData.hindi_fluency) || ''}
-                        onChange={(e) => handleScoreOnlyChange('hindi_fluency', e.target.value)}
-                        placeholder="08.50"
-                      />
-                      <span className="locked-denom">/ 10.00</span>
-                    </div>
-                  )}
-                </td>
-              </tr>
+          <div className="table-responsive-wrapper">
+            <table className="report-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '24%' }}>LANGUAGE MEDIUM</th>
+                  <th style={{ width: '26%' }}>PASSAGE LENGTH &amp; TIME</th>
+                  <th style={{ width: '20%' }}>SPEED (WPM)</th>
+                  <th style={{ width: '18%' }}>5 COMPREHENSION QS</th>
+                  <th style={{ width: '12%', textAlign: 'right' }}>FLUENCY (/10)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* Hindi Row */}
+                <tr>
+                  <td>
+                    <div className="table-primary-text">Hindi Passage Reading</div>
+                    <div className="table-secondary-text">(शुद्धता एवं स्पष्ट उच्चारण)</div>
+                  </td>
+                  <td>
+                    {isPreviewMode ? (
+                      <span className="table-text-cell">{formData.hindi_passage_length_time}</span>
+                    ) : (
+                      <div className="locked-passage-wrap">
+                        <span className="locked-sep">300 Words •</span>
+                        <input
+                          type="text"
+                          className="live-time-input"
+                          value={parsePassageTime(formData.hindi_passage_length_time)}
+                          onChange={(e) => handlePassageTimeChange('hindi_passage_length_time', e.target.value)}
+                          placeholder="1m 25s"
+                        />
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    {isPreviewMode ? (
+                      <span className="table-text-cell font-bold">{formData.hindi_speed_wpm}</span>
+                    ) : (
+                      <div className="locked-wpm-wrap">
+                        <input
+                          type="number"
+                          min="0"
+                          max="300"
+                          className="live-wpm-num-input"
+                          value={parseWpmNumber(formData.hindi_speed_wpm) || ''}
+                          onChange={(e) => handleWpmChange('hindi_speed_wpm', e.target.value)}
+                          placeholder="113"
+                        />
+                        <span className="locked-wpm-category">
+                          WPM {computeWpmCategory(parseWpmNumber(formData.hindi_speed_wpm))}
+                        </span>
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    {isPreviewMode ? (
+                      <span className="table-text-cell highlight-green">{formData.hindi_comprehension_qs}</span>
+                    ) : (
+                      <div className="locked-comp-wrap">
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="5"
+                          className="live-comp-num-input"
+                          value={parseCompCorrect(formData.hindi_comprehension_qs)}
+                          onChange={(e) => handleCompScoreChange('hindi_comprehension_qs', e.target.value)}
+                          placeholder="04.00"
+                        />
+                        <span className="locked-comp-denom">/ 05.00 Correct</span>
+                        <span className="locked-comp-error">
+                          ({formatScoreFloat(Math.max(0, 5 - parseCompCorrect(formData.hindi_comprehension_qs)))} {Math.abs(Math.max(0, 5 - parseCompCorrect(formData.hindi_comprehension_qs)) - 1) < 0.01 ? 'Error' : 'Errors'})
+                        </span>
+                      </div>
+                    )}
+                  </td>
+                  <td style={{ textAlign: 'right' }}>
+                    {isPreviewMode ? (
+                      <span className="table-score-cell">{formData.hindi_fluency}</span>
+                    ) : (
+                      <div className="locked-score-cell">
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="10"
+                          className="live-score-num-input"
+                          value={parseNumericScore(formData.hindi_fluency) || ''}
+                          onChange={(e) => handleScoreOnlyChange('hindi_fluency', e.target.value)}
+                          placeholder="08.50"
+                        />
+                        <span className="locked-denom">/ 10.00</span>
+                      </div>
+                    )}
+                  </td>
+                </tr>
 
-              {/* English Row */}
-              <tr>
-                <td>
-                  <div className="table-primary-text">English Passage Reading</div>
-                  <div className="table-secondary-text">(Pace &amp; Pronunciation)</div>
-                </td>
-                <td>
-                  {isPreviewMode ? (
-                    <span className="table-text-cell">{formData.english_passage_length_time}</span>
-                  ) : (
-                    <div className="locked-passage-wrap">
-                      <span className="locked-sep">300 Words •</span>
-                      <input
-                        type="text"
-                        className="live-time-input"
-                        value={parsePassageTime(formData.english_passage_length_time)}
-                        onChange={(e) => handlePassageTimeChange('english_passage_length_time', e.target.value)}
-                        placeholder="1m 35s"
-                      />
-                    </div>
-                  )}
-                </td>
-                <td>
-                  {isPreviewMode ? (
-                    <span className="table-text-cell font-bold">{formData.english_speed_wpm}</span>
-                  ) : (
-                    <div className="locked-wpm-wrap">
-                      <input
-                        type="number"
-                        min="0"
-                        max="300"
-                        className="live-wpm-num-input"
-                        value={parseWpmNumber(formData.english_speed_wpm) || ''}
-                        onChange={(e) => handleWpmChange('english_speed_wpm', e.target.value)}
-                        placeholder="110"
-                      />
-                      <span className="locked-wpm-category">
-                        WPM {computeWpmCategory(parseWpmNumber(formData.english_speed_wpm))}
-                      </span>
-                    </div>
-                  )}
-                </td>
-                <td>
-                  {isPreviewMode ? (
-                    <span className="table-text-cell highlight-green">{formData.english_comprehension_qs}</span>
-                  ) : (
-                    <div className="locked-comp-wrap">
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="5"
-                        className="live-comp-num-input"
-                        value={parseCompCorrect(formData.english_comprehension_qs)}
-                        onChange={(e) => handleCompScoreChange('english_comprehension_qs', e.target.value)}
-                        placeholder="05.00"
-                      />
-                      <span className="locked-comp-denom">/ 05.00 Correct</span>
-                      <span className="locked-comp-error">
-                        ({formatScoreFloat(Math.max(0, 5 - parseCompCorrect(formData.english_comprehension_qs)))} {Math.abs(Math.max(0, 5 - parseCompCorrect(formData.english_comprehension_qs)) - 1) < 0.01 ? 'Error' : 'Errors'})
-                      </span>
-                    </div>
-                  )}
-                </td>
-                <td style={{ textAlign: 'right' }}>
-                  {isPreviewMode ? (
-                    <span className="table-score-cell">{formData.english_fluency}</span>
-                  ) : (
-                    <div className="locked-score-cell">
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="10"
-                        className="live-score-num-input"
-                        value={parseNumericScore(formData.english_fluency) || ''}
-                        onChange={(e) => handleScoreOnlyChange('english_fluency', e.target.value)}
-                        placeholder="09.00"
-                      />
-                      <span className="locked-denom">/ 10.00</span>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                {/* English Row */}
+                <tr>
+                  <td>
+                    <div className="table-primary-text">English Passage Reading</div>
+                    <div className="table-secondary-text">(Pace &amp; Pronunciation)</div>
+                  </td>
+                  <td>
+                    {isPreviewMode ? (
+                      <span className="table-text-cell">{formData.english_passage_length_time}</span>
+                    ) : (
+                      <div className="locked-passage-wrap">
+                        <span className="locked-sep">300 Words •</span>
+                        <input
+                          type="text"
+                          className="live-time-input"
+                          value={parsePassageTime(formData.english_passage_length_time)}
+                          onChange={(e) => handlePassageTimeChange('english_passage_length_time', e.target.value)}
+                          placeholder="1m 35s"
+                        />
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    {isPreviewMode ? (
+                      <span className="table-text-cell font-bold">{formData.english_speed_wpm}</span>
+                    ) : (
+                      <div className="locked-wpm-wrap">
+                        <input
+                          type="number"
+                          min="0"
+                          max="300"
+                          className="live-wpm-num-input"
+                          value={parseWpmNumber(formData.english_speed_wpm) || ''}
+                          onChange={(e) => handleWpmChange('english_speed_wpm', e.target.value)}
+                          placeholder="110"
+                        />
+                        <span className="locked-wpm-category">
+                          WPM {computeWpmCategory(parseWpmNumber(formData.english_speed_wpm))}
+                        </span>
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    {isPreviewMode ? (
+                      <span className="table-text-cell highlight-green">{formData.english_comprehension_qs}</span>
+                    ) : (
+                      <div className="locked-comp-wrap">
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="5"
+                          className="live-comp-num-input"
+                          value={parseCompCorrect(formData.english_comprehension_qs)}
+                          onChange={(e) => handleCompScoreChange('english_comprehension_qs', e.target.value)}
+                          placeholder="05.00"
+                        />
+                        <span className="locked-comp-denom">/ 05.00 Correct</span>
+                        <span className="locked-comp-error">
+                          ({formatScoreFloat(Math.max(0, 5 - parseCompCorrect(formData.english_comprehension_qs)))} {Math.abs(Math.max(0, 5 - parseCompCorrect(formData.english_comprehension_qs)) - 1) < 0.01 ? 'Error' : 'Errors'})
+                        </span>
+                      </div>
+                    )}
+                  </td>
+                  <td style={{ textAlign: 'right' }}>
+                    {isPreviewMode ? (
+                      <span className="table-score-cell">{formData.english_fluency}</span>
+                    ) : (
+                      <div className="locked-score-cell">
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="10"
+                          className="live-score-num-input"
+                          value={parseNumericScore(formData.english_fluency) || ''}
+                          onChange={(e) => handleScoreOnlyChange('english_fluency', e.target.value)}
+                          placeholder="09.00"
+                        />
+                        <span className="locked-denom">/ 10.00</span>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* SECTION 2: ACADEMIC CHAPTER ASSESSMENTS */}
@@ -844,7 +846,8 @@ export default function ReportCardInteractiveEditor({
             <span className="section-subtitle">Monthly Progressive Cycle • Locked /10.00 Suffix • Auto Status (Cleared / Revision / Incomplete)</span>
           </div>
 
-          <table className="report-table">
+          <div className="table-responsive-wrapper">
+            <table className="report-table">
             <thead>
               <tr>
                 <th style={{ width: '18%' }}>SUBJECT</th>
@@ -1179,6 +1182,7 @@ export default function ReportCardInteractiveEditor({
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
 
         {/* SECTION 3: COMMUNICATION SKILLS & CONVERSATIONAL ENGLISH HABITS */}
@@ -1188,7 +1192,8 @@ export default function ReportCardInteractiveEditor({
             <span className="section-subtitle">Manners &amp; Confidence (/20.00) + English Usage Percentage (/10.00)</span>
           </div>
 
-          <table className="report-table">
+          <div className="table-responsive-wrapper">
+            <table className="report-table">
             <thead>
               <tr>
                 <th style={{ width: '38%' }}>BEHAVIORAL &amp; COMMUNICATION PARAMETER</th>
@@ -1310,6 +1315,7 @@ export default function ReportCardInteractiveEditor({
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
 
         {/* SECTION 4: SUPER-INTELLIGENCE & HIGH-PERFORMANCE PILLARS */}
@@ -2296,6 +2302,190 @@ export default function ReportCardInteractiveEditor({
           to { transform: rotate(360deg); }
         }
 
+        /* Table Responsive Wrapper */
+        .table-responsive-wrapper {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          border-radius: 0 0 6px 6px;
+        }
+
+        /* RESPONSIVE STYLES FOR MOBILE & TABLET DEVICES */
+        @media (max-width: 768px) {
+          .report-editor-container {
+            padding: 0.75rem 0.35rem 3rem;
+          }
+
+          .editor-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 10px;
+          }
+
+          .toolbar-left, .toolbar-right {
+            width: 100%;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 6px;
+          }
+
+          .tool-btn {
+            padding: 6px 10px;
+            font-size: 0.76rem;
+            gap: 4px;
+            border-radius: 6px;
+            flex: 1 1 auto;
+            justify-content: center;
+          }
+
+          .duty-badge {
+            padding: 4px 8px;
+            font-size: 0.70rem;
+          }
+
+          .report-card-paper {
+            padding: 14px 10px 12px;
+            border-radius: 8px;
+          }
+
+          .report-meta-grid {
+            grid-template-columns: 1fr 1fr;
+            margin: 8px 0;
+            border-radius: 6px;
+          }
+
+          .report-meta-box {
+            padding: 6px 8px;
+            border-bottom: 1px solid #334155;
+          }
+
+          .report-meta-box:nth-child(2) {
+            border-right: none;
+          }
+
+          .report-meta-box:nth-child(3),
+          .report-meta-box:nth-child(4) {
+            border-bottom: none;
+          }
+
+          .report-meta-label {
+            font-size: 0.60rem;
+            margin-bottom: 2px;
+          }
+
+          .report-meta-value {
+            font-size: 0.78rem;
+          }
+
+          .live-input, .live-select {
+            font-size: 0.76rem;
+            padding: 4px 6px;
+          }
+
+          .report-section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            padding: 5px 8px;
+          }
+
+          .section-title {
+            font-size: 0.68rem;
+          }
+
+          .section-subtitle {
+            font-size: 0.58rem;
+          }
+
+          .report-table {
+            min-width: 580px;
+            font-size: 0.72rem;
+          }
+
+          .report-table th, .report-table td {
+            padding: 4px 6px;
+          }
+
+          .pillars-grid {
+            grid-template-columns: 1fr;
+            gap: 6px;
+          }
+
+          .report-summary-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 6px;
+            padding: 6px 8px;
+          }
+
+          .summary-left {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+          }
+
+          .summary-divider {
+            display: none;
+          }
+
+          .summary-target, .summary-right {
+            width: 100%;
+          }
+
+          .live-summary-input {
+            width: 100% !important;
+            max-width: 100%;
+          }
+
+          .report-signatures {
+            gap: 6px;
+            margin-top: 12px;
+          }
+
+          .sig-line {
+            width: 90%;
+          }
+
+          .sig-title {
+            font-size: 0.54rem;
+          }
+
+          .sig-subtitle {
+            font-size: 0.48rem;
+          }
+
+          .report-footer {
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-align: center;
+            margin-top: 10px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .report-meta-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .report-meta-box {
+            border-right: none !important;
+            border-bottom: 1px solid #334155 !important;
+          }
+
+          .report-meta-box:last-child {
+            border-bottom: none !important;
+          }
+
+          .toolbar-right {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+          }
+        }
+
         /* PRINT STYLES - SINGLE CLEAN A4 PAGE */
         @media print {
           .no-print {
@@ -2324,9 +2514,15 @@ export default function ReportCardInteractiveEditor({
           .report-meta-grid {
             background: #F8FAFC !important;
             border-color: #E2E8F0 !important;
+            grid-template-columns: 1.25fr 1.15fr 1fr 1.35fr !important;
           }
           .report-meta-box {
             border-color: #E2E8F0 !important;
+            border-bottom: none !important;
+            border-right: 1px solid #E2E8F0 !important;
+          }
+          .report-meta-box:last-child {
+            border-right: none !important;
           }
           .report-meta-value {
             color: #0F172A !important;
@@ -2342,6 +2538,7 @@ export default function ReportCardInteractiveEditor({
           .report-table {
             background: #FFFFFF !important;
             border-color: #CBD5E1 !important;
+            min-width: 100% !important;
           }
           .report-table thead tr {
             background: #F8FAFC !important;
@@ -2365,6 +2562,9 @@ export default function ReportCardInteractiveEditor({
           .table-score-cell {
             color: #0284C7 !important;
           }
+          .pillars-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
           .pillar-card {
             background: #F8FAFC !important;
             border-color: #E2E8F0 !important;
@@ -2375,6 +2575,7 @@ export default function ReportCardInteractiveEditor({
           .report-summary-bar {
             background: #F1F5F9 !important;
             border-color: #CBD5E1 !important;
+            flex-direction: row !important;
           }
           .sig-line {
             background: #94A3B8 !important;

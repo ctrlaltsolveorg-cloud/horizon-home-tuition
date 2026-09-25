@@ -106,39 +106,41 @@ export default function ReportCardView({
             <span className="section-subtitle">Evaluating Reading Pace (WPM) &amp; 5 Direct Comprehension Questions</span>
           </div>
 
-          <table className="report-table">
-            <thead>
-              <tr>
-                <th style={{ width: '25%' }}>LANGUAGE MEDIUM</th>
-                <th style={{ width: '25%' }}>PASSAGE LENGTH &amp; TIME</th>
-                <th style={{ width: '18%' }}>SPEED (WPM)</th>
-                <th style={{ width: '20%' }}>5 COMPREHENSION QS</th>
-                <th style={{ width: '12%' }}>FLUENCY (10.00)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <div className="table-primary-text">Hindi Passage Reading</div>
-                  <div className="table-secondary-text">(शुद्धता एवं स्पष्ट उच्चारण)</div>
-                </td>
-                <td className="table-text-cell">{report.hindi_passage_length_time || '300 Words • 1m 25s'}</td>
-                <td className="table-text-cell font-bold">{report.hindi_speed_wpm || '113 WPM (Good)'}</td>
-                <td className="table-text-cell highlight-green">{report.hindi_comprehension_qs || '04.00 / 05.00 Correct (01.00 Error)'}</td>
-                <td className="table-score-cell">{report.hindi_fluency || '08.50 / 10.00'}</td>
-              </tr>
-              <tr>
-                <td>
-                  <div className="table-primary-text">English Passage Reading</div>
-                  <div className="table-secondary-text">(Pace &amp; Pronunciation)</div>
-                </td>
-                <td className="table-text-cell">{report.english_passage_length_time || '300 Words • 1m 35s'}</td>
-                <td className="table-text-cell font-bold">{report.english_speed_wpm || '110 WPM (Optimal)'}</td>
-                <td className="table-text-cell highlight-green">{report.english_comprehension_qs || '05.00 / 05.00 Correct (00.00 Errors)'}</td>
-                <td className="table-score-cell">{report.english_fluency || '09.00 / 10.00'}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="table-responsive-wrapper">
+            <table className="report-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '25%' }}>LANGUAGE MEDIUM</th>
+                  <th style={{ width: '25%' }}>PASSAGE LENGTH &amp; TIME</th>
+                  <th style={{ width: '18%' }}>SPEED (WPM)</th>
+                  <th style={{ width: '20%' }}>5 COMPREHENSION QS</th>
+                  <th style={{ width: '12%' }}>FLUENCY (10.00)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div className="table-primary-text">Hindi Passage Reading</div>
+                    <div className="table-secondary-text">(शुद्धता एवं स्पष्ट उच्चारण)</div>
+                  </td>
+                  <td className="table-text-cell">{report.hindi_passage_length_time || '300 Words • 1m 25s'}</td>
+                  <td className="table-text-cell font-bold">{report.hindi_speed_wpm || '113 WPM (Good)'}</td>
+                  <td className="table-text-cell highlight-green">{report.hindi_comprehension_qs || '04.00 / 05.00 Correct (01.00 Error)'}</td>
+                  <td className="table-score-cell">{report.hindi_fluency || '08.50 / 10.00'}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div className="table-primary-text">English Passage Reading</div>
+                    <div className="table-secondary-text">(Pace &amp; Pronunciation)</div>
+                  </td>
+                  <td className="table-text-cell">{report.english_passage_length_time || '300 Words • 1m 35s'}</td>
+                  <td className="table-text-cell font-bold">{report.english_speed_wpm || '110 WPM (Optimal)'}</td>
+                  <td className="table-text-cell highlight-green">{report.english_comprehension_qs || '05.00 / 05.00 Correct (00.00 Errors)'}</td>
+                  <td className="table-score-cell">{report.english_fluency || '09.00 / 10.00'}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* SECTION 2: ACADEMIC CHAPTER ASSESSMENTS */}
@@ -148,101 +150,103 @@ export default function ReportCardView({
             <span className="section-subtitle">Monthly Progressive Cycle • Each Chapter Tested Out of 10.00 Marks</span>
           </div>
 
-          <table className="report-table">
-            <thead>
-              <tr>
-                <th style={{ width: '22%' }}>SUBJECT</th>
-                <th style={{ width: '53%' }}>ASSIGNED TARGET CHAPTERS TESTED THIS MONTH</th>
-                <th style={{ width: '13%' }}>MARKS (MAX 10.00)</th>
-                <th style={{ width: '12%' }}>STATUS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* Mathematics */}
-              <tr>
-                <td rowSpan={2} className="subject-cell">Mathematics</td>
-                <td className="chapter-cell">{report.math_ch1_name || 'Ch 1: Integers, Number Line & Rules'}</td>
-                <td className="table-score-cell">{report.math_ch1_marks || '9.50 / 10.00'}</td>
-                <td className="status-cell">
-                  <span className={`status-pill ${getStatusClass(report.math_ch1_status)}`}>
-                    {report.math_ch1_status || 'CLEARED'}
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td className="chapter-cell">{report.math_ch2_name || 'Ch 2: Fractions, Decimals & Problem Sums'}</td>
-                <td className="table-score-cell">{report.math_ch2_marks || '8.50 / 10.00'}</td>
-                <td className="status-cell">
-                  <span className={`status-pill ${getStatusClass(report.math_ch2_status)}`}>
-                    {report.math_ch2_status || 'CLEARED'}
-                  </span>
-                </td>
-              </tr>
+          <div className="table-responsive-wrapper">
+            <table className="report-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '22%' }}>SUBJECT</th>
+                  <th style={{ width: '53%' }}>ASSIGNED TARGET CHAPTERS TESTED THIS MONTH</th>
+                  <th style={{ width: '13%' }}>MARKS (MAX 10.00)</th>
+                  <th style={{ width: '12%' }}>STATUS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* Mathematics */}
+                <tr>
+                  <td rowSpan={2} className="subject-cell">Mathematics</td>
+                  <td className="chapter-cell">{report.math_ch1_name || 'Ch 1: Integers, Number Line & Rules'}</td>
+                  <td className="table-score-cell">{report.math_ch1_marks || '9.50 / 10.00'}</td>
+                  <td className="status-cell">
+                    <span className={`status-pill ${getStatusClass(report.math_ch1_status)}`}>
+                      {report.math_ch1_status || 'CLEARED'}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="chapter-cell">{report.math_ch2_name || 'Ch 2: Fractions, Decimals & Problem Sums'}</td>
+                  <td className="table-score-cell">{report.math_ch2_marks || '8.50 / 10.00'}</td>
+                  <td className="status-cell">
+                    <span className={`status-pill ${getStatusClass(report.math_ch2_status)}`}>
+                      {report.math_ch2_status || 'CLEARED'}
+                    </span>
+                  </td>
+                </tr>
 
-              {/* Science */}
-              <tr>
-                <td rowSpan={2} className="subject-cell">Science</td>
-                <td className="chapter-cell">{report.science_ch1_name || 'Ch 1: Nutrition in Plants (Modes & Photosynthesis)'}</td>
-                <td className="table-score-cell">{report.science_ch1_marks || '9.00 / 10.00'}</td>
-                <td className="status-cell">
-                  <span className={`status-pill ${getStatusClass(report.science_ch1_status)}`}>
-                    {report.science_ch1_status || 'CLEARED'}
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td className="chapter-cell">{report.science_ch2_name || 'Ch 2: Nutrition in Animals (Digestive Organs)'}</td>
-                <td className="table-score-cell">{report.science_ch2_marks || '7.50 / 10.00'}</td>
-                <td className="status-cell">
-                  <span className={`status-pill ${getStatusClass(report.science_ch2_status)}`}>
-                    {report.science_ch2_status || 'REVISION'}
-                  </span>
-                </td>
-              </tr>
+                {/* Science */}
+                <tr>
+                  <td rowSpan={2} className="subject-cell">Science</td>
+                  <td className="chapter-cell">{report.science_ch1_name || 'Ch 1: Nutrition in Plants (Modes & Photosynthesis)'}</td>
+                  <td className="table-score-cell">{report.science_ch1_marks || '9.00 / 10.00'}</td>
+                  <td className="status-cell">
+                    <span className={`status-pill ${getStatusClass(report.science_ch1_status)}`}>
+                      {report.science_ch1_status || 'CLEARED'}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="chapter-cell">{report.science_ch2_name || 'Ch 2: Nutrition in Animals (Digestive Organs)'}</td>
+                  <td className="table-score-cell">{report.science_ch2_marks || '7.50 / 10.00'}</td>
+                  <td className="status-cell">
+                    <span className={`status-pill ${getStatusClass(report.science_ch2_status)}`}>
+                      {report.science_ch2_status || 'REVISION'}
+                    </span>
+                  </td>
+                </tr>
 
-              {/* Social Science */}
-              <tr>
-                <td rowSpan={2} className="subject-cell">Social Science</td>
-                <td className="chapter-cell">{report.sst_ch1_name || 'Ch 1: Tracing Changes Through a Thousand Years'}</td>
-                <td className="table-score-cell">{report.sst_ch1_marks || '8.50 / 10.00'}</td>
-                <td className="status-cell">
-                  <span className={`status-pill ${getStatusClass(report.sst_ch1_status)}`}>
-                    {report.sst_ch1_status || 'CLEARED'}
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td className="chapter-cell">{report.sst_ch2_name || 'Ch 2: Our Environment & Earth Interior Layers'}</td>
-                <td className="table-score-cell">{report.sst_ch2_marks || '8.00 / 10.00'}</td>
-                <td className="status-cell">
-                  <span className={`status-pill ${getStatusClass(report.sst_ch2_status)}`}>
-                    {report.sst_ch2_status || 'CLEARED'}
-                  </span>
-                </td>
-              </tr>
+                {/* Social Science */}
+                <tr>
+                  <td rowSpan={2} className="subject-cell">Social Science</td>
+                  <td className="chapter-cell">{report.sst_ch1_name || 'Ch 1: Tracing Changes Through a Thousand Years'}</td>
+                  <td className="table-score-cell">{report.sst_ch1_marks || '8.50 / 10.00'}</td>
+                  <td className="status-cell">
+                    <span className={`status-pill ${getStatusClass(report.sst_ch1_status)}`}>
+                      {report.sst_ch1_status || 'CLEARED'}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="chapter-cell">{report.sst_ch2_name || 'Ch 2: Our Environment & Earth Interior Layers'}</td>
+                  <td className="table-score-cell">{report.sst_ch2_marks || '8.00 / 10.00'}</td>
+                  <td className="status-cell">
+                    <span className={`status-pill ${getStatusClass(report.sst_ch2_status)}`}>
+                      {report.sst_ch2_status || 'CLEARED'}
+                    </span>
+                  </td>
+                </tr>
 
-              {/* Languages */}
-              <tr>
-                <td rowSpan={2} className="subject-cell">Languages</td>
-                <td className="chapter-cell">{report.lang_eng_name || 'English (Ch 1-2): Three Questions & The Squirrel'}</td>
-                <td className="table-score-cell">{report.lang_eng_marks || '9.00 / 10.00'}</td>
-                <td className="status-cell">
-                  <span className={`status-pill ${getStatusClass(report.lang_eng_status)}`}>
-                    {report.lang_eng_status || 'CLEARED'}
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td className="chapter-cell">{report.lang_hindi_name || 'Hindi (Ch 1-2): हम पंछी उन्मुक्त गगन के & दादी माँ'}</td>
-                <td className="table-score-cell">{report.lang_hindi_marks || '8.50 / 10.00'}</td>
-                <td className="status-cell">
-                  <span className={`status-pill ${getStatusClass(report.lang_hindi_status)}`}>
-                    {report.lang_hindi_status || 'CLEARED'}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                {/* Languages */}
+                <tr>
+                  <td rowSpan={2} className="subject-cell">Languages</td>
+                  <td className="chapter-cell">{report.lang_eng_name || 'English (Ch 1-2): Three Questions & The Squirrel'}</td>
+                  <td className="table-score-cell">{report.lang_eng_marks || '9.00 / 10.00'}</td>
+                  <td className="status-cell">
+                    <span className={`status-pill ${getStatusClass(report.lang_eng_status)}`}>
+                      {report.lang_eng_status || 'CLEARED'}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="chapter-cell">{report.lang_hindi_name || 'Hindi (Ch 1-2): हम पंछी उन्मुक्त गगन के & दादी माँ'}</td>
+                  <td className="table-score-cell">{report.lang_hindi_marks || '8.50 / 10.00'}</td>
+                  <td className="status-cell">
+                    <span className={`status-pill ${getStatusClass(report.lang_hindi_status)}`}>
+                      {report.lang_hindi_status || 'CLEARED'}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* SECTION 3: COMMUNICATION SKILLS & CONVERSATIONAL ENGLISH HABITS */}
@@ -252,45 +256,47 @@ export default function ReportCardView({
             <span className="section-subtitle">Manners &amp; Confidence (/20.00) + English Usage Percentage (/10.00)</span>
           </div>
 
-          <table className="report-table">
-            <thead>
-              <tr>
-                <th style={{ width: '38%' }}>BEHAVIORAL &amp; COMMUNICATION PARAMETER</th>
-                <th style={{ width: '12%' }}>MAX SCALE</th>
-                <th style={{ width: '14%' }}>SCORE AWARDED</th>
-                <th style={{ width: '36%' }}>OBSERVATION &amp; FEEDBACK</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <div className="table-primary-text">Respectful Manners, Listening &amp; Etiquette</div>
-                  <div className="table-secondary-text">Greeting tutor, polite speech, attentiveness</div>
-                </td>
-                <td className="table-text-cell">{report.manners_max?.toFixed(2) || '10.00'}</td>
-                <td className="table-score-cell highlight-green">{report.manners_score?.toFixed(2) || '9.50'}</td>
-                <td className="table-obs-cell">{report.manners_obs || 'Polite, attentive; follows homework schedules obediently.'}</td>
-              </tr>
-              <tr>
-                <td>
-                  <div className="table-primary-text">Confidence &amp; Articulation / Way of Speaking</div>
-                  <div className="table-secondary-text">Eye contact, voice clarity, prompt doubt-asking</div>
-                </td>
-                <td className="table-text-cell">{report.confidence_max?.toFixed(2) || '10.00'}</td>
-                <td className="table-score-cell highlight-green">{report.confidence_score?.toFixed(2) || '8.50'}</td>
-                <td className="table-obs-cell">{report.confidence_obs || 'Answers without shyness; asks doubts with clarity.'}</td>
-              </tr>
-              <tr>
-                <td>
-                  <div className="table-primary-text">Spoken English Usage in Daily Conversation</div>
-                  <div className="table-secondary-text">Percentage of English vocabulary used during tuition</div>
-                </td>
-                <td className="table-text-cell">{report.english_usage_max?.toFixed(2) || '10.00'}</td>
-                <td className="table-score-cell highlight-purple">{report.english_usage_score?.toFixed(2) || '8.00'}</td>
-                <td className="table-obs-cell">{report.english_usage_obs || '~65% English words used actively during tuition hours.'}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="table-responsive-wrapper">
+            <table className="report-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '38%' }}>BEHAVIORAL &amp; COMMUNICATION PARAMETER</th>
+                  <th style={{ width: '12%' }}>MAX SCALE</th>
+                  <th style={{ width: '14%' }}>SCORE AWARDED</th>
+                  <th style={{ width: '36%' }}>OBSERVATION &amp; FEEDBACK</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div className="table-primary-text">Respectful Manners, Listening &amp; Etiquette</div>
+                    <div className="table-secondary-text">Greeting tutor, polite speech, attentiveness</div>
+                  </td>
+                  <td className="table-text-cell">{report.manners_max?.toFixed(2) || '10.00'}</td>
+                  <td className="table-score-cell highlight-green">{report.manners_score?.toFixed(2) || '9.50'}</td>
+                  <td className="table-obs-cell">{report.manners_obs || 'Polite, attentive; follows homework schedules obediently.'}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div className="table-primary-text">Confidence &amp; Articulation / Way of Speaking</div>
+                    <div className="table-secondary-text">Eye contact, voice clarity, prompt doubt-asking</div>
+                  </td>
+                  <td className="table-text-cell">{report.confidence_max?.toFixed(2) || '10.00'}</td>
+                  <td className="table-score-cell highlight-green">{report.confidence_score?.toFixed(2) || '8.50'}</td>
+                  <td className="table-obs-cell">{report.confidence_obs || 'Answers without shyness; asks doubts with clarity.'}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div className="table-primary-text">Spoken English Usage in Daily Conversation</div>
+                    <div className="table-secondary-text">Percentage of English vocabulary used during tuition</div>
+                  </td>
+                  <td className="table-text-cell">{report.english_usage_max?.toFixed(2) || '10.00'}</td>
+                  <td className="table-score-cell highlight-purple">{report.english_usage_score?.toFixed(2) || '8.00'}</td>
+                  <td className="table-obs-cell">{report.english_usage_obs || '~65% English words used actively during tuition hours.'}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* SECTION 4: SUPER-INTELLIGENCE & HIGH-PERFORMANCE PILLARS */}
@@ -769,19 +775,26 @@ export default function ReportCardView({
           font-weight: 600;
         }
 
+        /* Table Responsive Wrapper */
+        .table-responsive-wrapper {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
         /* Mobile Media Queries */
         @media screen and (max-width: 768px) {
           .report-card-container {
-            padding: 0.65rem 0.4rem 2.5rem;
+            padding: 0.65rem 0.35rem 2.5rem;
           }
 
           .report-card-actions {
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
           }
 
           .report-card-paper {
-            padding: 16px 12px 14px;
+            padding: 14px 10px 12px;
             border-radius: 8px;
           }
 
@@ -790,9 +803,7 @@ export default function ReportCardView({
           }
 
           .report-table {
-            display: block;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+            min-width: 580px;
           }
 
           .pillars-grid {
@@ -800,7 +811,7 @@ export default function ReportCardView({
           }
 
           .report-signatures {
-            gap: 10px;
+            gap: 6px;
           }
         }
 
