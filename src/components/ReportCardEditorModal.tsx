@@ -8,7 +8,11 @@ import {
   computeChapterStatus,
   computeWpmCategory,
   parseNumericScore,
-  parseWpmNumber
+  parseWpmNumber,
+  parsePassageWords,
+  parsePassageTime,
+  parseCompCorrect,
+  formatCompString
 } from './ReportCardInteractiveEditor';
 
 interface ReportCardEditorModalProps {
@@ -424,7 +428,21 @@ export default function ReportCardEditorModal({
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', marginBottom: '12px' }}>
               <div>
                 <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Hindi Length &amp; Time</label>
-                <input type="text" value={hindiLengthTime} onChange={(e) => setHindiLengthTime(e.target.value)} style={{ width: '100%', padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
+                  <input
+                    type="number"
+                    value={parsePassageWords(hindiLengthTime)}
+                    onChange={(e) => setHindiLengthTime(`${e.target.value || '160'} Words • ${parsePassageTime(hindiLengthTime)}`)}
+                    style={{ width: '45px', background: 'transparent', border: 'none', color: '#F8FAFC', fontWeight: 700, outline: 'none', textAlign: 'right' }}
+                  />
+                  <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700 }}>Words •</span>
+                  <input
+                    type="text"
+                    value={parsePassageTime(hindiLengthTime)}
+                    onChange={(e) => setHindiLengthTime(`${parsePassageWords(hindiLengthTime)} Words • ${e.target.value}`)}
+                    style={{ width: '65px', background: 'transparent', border: 'none', color: '#F8FAFC', fontWeight: 700, outline: 'none' }}
+                  />
+                </div>
               </div>
               <div>
                 <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Hindi Speed (WPM)</label>
@@ -440,7 +458,21 @@ export default function ReportCardEditorModal({
               </div>
               <div>
                 <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Hindi Comprehension Qs</label>
-                <input type="text" value={hindiComp} onChange={(e) => setHindiComp(e.target.value)} style={{ width: '100%', padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    max="5"
+                    value={parseCompCorrect(hindiComp)}
+                    onChange={(e) => setHindiComp(formatCompString(parseFloat(e.target.value) || 0))}
+                    style={{ width: '38px', background: 'transparent', border: 'none', color: '#34D399', fontWeight: 800, textAlign: 'right', outline: 'none' }}
+                  />
+                  <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 5.0</span>
+                  <span style={{ fontSize: '0.70rem', color: '#F59E0B', fontWeight: 800 }}>
+                    ({Math.max(0, 5 - parseCompCorrect(hindiComp))} {Math.max(0, 5 - parseCompCorrect(hindiComp)) === 1 ? 'Error' : 'Errors'})
+                  </span>
+                </div>
               </div>
               <div>
                 <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Hindi Fluency (/10.00)</label>
@@ -462,7 +494,21 @@ export default function ReportCardEditorModal({
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
               <div>
                 <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>English Length &amp; Time</label>
-                <input type="text" value={englishLengthTime} onChange={(e) => setEnglishLengthTime(e.target.value)} style={{ width: '100%', padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
+                  <input
+                    type="number"
+                    value={parsePassageWords(englishLengthTime)}
+                    onChange={(e) => setEnglishLengthTime(`${e.target.value || '175'} Words • ${parsePassageTime(englishLengthTime)}`)}
+                    style={{ width: '45px', background: 'transparent', border: 'none', color: '#F8FAFC', fontWeight: 700, outline: 'none', textAlign: 'right' }}
+                  />
+                  <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700 }}>Words •</span>
+                  <input
+                    type="text"
+                    value={parsePassageTime(englishLengthTime)}
+                    onChange={(e) => setEnglishLengthTime(`${parsePassageWords(englishLengthTime)} Words • ${e.target.value}`)}
+                    style={{ width: '65px', background: 'transparent', border: 'none', color: '#F8FAFC', fontWeight: 700, outline: 'none' }}
+                  />
+                </div>
               </div>
               <div>
                 <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>English Speed (WPM)</label>
@@ -478,7 +524,21 @@ export default function ReportCardEditorModal({
               </div>
               <div>
                 <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>English Comprehension Qs</label>
-                <input type="text" value={englishComp} onChange={(e) => setEnglishComp(e.target.value)} style={{ width: '100%', padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    max="5"
+                    value={parseCompCorrect(englishComp)}
+                    onChange={(e) => setEnglishComp(formatCompString(parseFloat(e.target.value) || 0))}
+                    style={{ width: '38px', background: 'transparent', border: 'none', color: '#34D399', fontWeight: 800, textAlign: 'right', outline: 'none' }}
+                  />
+                  <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 5.0</span>
+                  <span style={{ fontSize: '0.70rem', color: '#F59E0B', fontWeight: 800 }}>
+                    ({Math.max(0, 5 - parseCompCorrect(englishComp))} {Math.max(0, 5 - parseCompCorrect(englishComp)) === 1 ? 'Error' : 'Errors'})
+                  </span>
+                </div>
               </div>
               <div>
                 <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>English Fluency (/10.00)</label>

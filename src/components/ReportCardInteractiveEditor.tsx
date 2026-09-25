@@ -87,6 +87,36 @@ export const parseWpmNumber = (val?: string): number => {
   return match ? parseInt(match[1], 10) : 0;
 };
 
+// Helper: Parse passage words count from string e.g. "160 Words • 1m 25s"
+export const parsePassageWords = (val?: string): number => {
+  if (!val) return 160;
+  const match = val.match(/([0-9]+)\s*Words/i);
+  return match ? parseInt(match[1], 10) : 160;
+};
+
+// Helper: Parse passage reading time from string e.g. "160 Words • 1m 25s"
+export const parsePassageTime = (val?: string): string => {
+  if (!val) return '1m 25s';
+  const parts = val.split('•');
+  return parts[1] ? parts[1].trim() : '1m 25s';
+};
+
+// Helper: Parse comprehension correct questions score from string e.g. "4.0 / 5.0 Correct (1 Error)"
+export const parseCompCorrect = (val?: string | number): number => {
+  if (val === undefined || val === null || val === '') return 4.0;
+  if (typeof val === 'number') return val;
+  const match = String(val).match(/([0-9]+(?:\.[0-9]+)?)/);
+  return match ? parseFloat(match[1]) : 4.0;
+};
+
+// Helper: Format comprehension string e.g. 4 -> "4.0 / 5.0 Correct (1 Error)"
+export const formatCompString = (correct: number): string => {
+  const num = Math.max(0, Math.min(5, correct));
+  const errCount = Math.max(0, 5 - num);
+  const errText = errCount === 1 ? '1 Error' : `${errCount} Errors`;
+  return `${num.toFixed(1)} / 5.0 Correct (${errText})`;
+};
+
 const DEFAULT_SAMPLE_DATA: MonthlyReportCard = {
   id: '',
   student_id: '',
@@ -327,6 +357,32 @@ export default function ReportCardInteractiveEditor({
     setFormData((prev) => ({
       ...prev,
       [field]: formatted
+    }));
+  };
+
+  // Dedicated Handler for Passage Length & Time
+  const handlePassageLengthTimeChange = (
+    field: 'hindi_passage_length_time' | 'english_passage_length_time',
+    wordsVal: string,
+    timeVal: string
+  ) => {
+    const words = wordsVal ? parseInt(wordsVal, 10) : 160;
+    const time = timeVal || '1m 25s';
+    setFormData((prev) => ({
+      ...prev,
+      [field]: `${words} Words • ${time}`
+    }));
+  };
+
+  // Dedicated Handler for Comprehension Score
+  const handleCompScoreChange = (
+    field: 'hindi_comprehension_qs' | 'english_comprehension_qs',
+    rawNum: string
+  ) => {
+    const num = Math.max(0, Math.min(5, parseFloat(rawNum) || 0));
+    setFormData((prev) => ({
+      ...prev,
+      [field]: formatCompString(num)
     }));
   };
 
@@ -611,13 +667,25 @@ export default function ReportCardInteractiveEditor({
                   {isPreviewMode ? (
                     <span className="table-text-cell">{formData.hindi_passage_length_time}</span>
                   ) : (
-                    <input
-                      type="text"
-                      className="live-table-input"
-                      value={formData.hindi_passage_length_time || ''}
-                      onChange={(e) => handleChange('hindi_passage_length_time', e.target.value)}
-                      placeholder="e.g. 160 Words • 1m 25s"
-                    />
+                    <div className="locked-passage-wrap">
+                      <input
+                        type="number"
+                        min="0"
+                        max="1000"
+                        className="live-words-num-input"
+                        value={parsePassageWords(formData.hindi_passage_length_time)}
+                        onChange={(e) => handlePassageLengthTimeChange('hindi_passage_length_time', e.target.value, parsePassageTime(formData.hindi_passage_length_time))}
+                        placeholder="160"
+                      />
+                      <span className="locked-sep">Words •</span>
+                      <input
+                        type="text"
+                        className="live-time-input"
+                        value={parsePassageTime(formData.hindi_passage_length_time)}
+                        onChange={(e) => handlePassageLengthTimeChange('hindi_passage_length_time', String(parsePassageWords(formData.hindi_passage_length_time)), e.target.value)}
+                        placeholder="1m 25s"
+                      />
+                    </div>
                   )}
                 </td>
                 <td>
@@ -644,13 +712,22 @@ export default function ReportCardInteractiveEditor({
                   {isPreviewMode ? (
                     <span className="table-text-cell highlight-green">{formData.hindi_comprehension_qs}</span>
                   ) : (
-                    <input
-                      type="text"
-                      className="live-table-input highlight-green"
-                      value={formData.hindi_comprehension_qs || ''}
-                      onChange={(e) => handleChange('hindi_comprehension_qs', e.target.value)}
-                      placeholder="e.g. 4.0 / 5.0 Correct"
-                    />
+                    <div className="locked-comp-wrap">
+                      <input
+                        type="number"
+                        step="0.5"
+                        min="0"
+                        max="5"
+                        className="live-comp-num-input"
+                        value={parseCompCorrect(formData.hindi_comprehension_qs)}
+                        onChange={(e) => handleCompScoreChange('hindi_comprehension_qs', e.target.value)}
+                        placeholder="4.0"
+                      />
+                      <span className="locked-comp-denom">/ 5.0 Correct</span>
+                      <span className="locked-comp-error">
+                        ({Math.max(0, 5 - parseCompCorrect(formData.hindi_comprehension_qs))} {Math.max(0, 5 - parseCompCorrect(formData.hindi_comprehension_qs)) === 1 ? 'Error' : 'Errors'})
+                      </span>
+                    </div>
                   )}
                 </td>
                 <td style={{ textAlign: 'right' }}>
@@ -684,13 +761,25 @@ export default function ReportCardInteractiveEditor({
                   {isPreviewMode ? (
                     <span className="table-text-cell">{formData.english_passage_length_time}</span>
                   ) : (
-                    <input
-                      type="text"
-                      className="live-table-input"
-                      value={formData.english_passage_length_time || ''}
-                      onChange={(e) => handleChange('english_passage_length_time', e.target.value)}
-                      placeholder="e.g. 175 Words • 1m 35s"
-                    />
+                    <div className="locked-passage-wrap">
+                      <input
+                        type="number"
+                        min="0"
+                        max="1000"
+                        className="live-words-num-input"
+                        value={parsePassageWords(formData.english_passage_length_time)}
+                        onChange={(e) => handlePassageLengthTimeChange('english_passage_length_time', e.target.value, parsePassageTime(formData.english_passage_length_time))}
+                        placeholder="175"
+                      />
+                      <span className="locked-sep">Words •</span>
+                      <input
+                        type="text"
+                        className="live-time-input"
+                        value={parsePassageTime(formData.english_passage_length_time)}
+                        onChange={(e) => handlePassageLengthTimeChange('english_passage_length_time', String(parsePassageWords(formData.english_passage_length_time)), e.target.value)}
+                        placeholder="1m 35s"
+                      />
+                    </div>
                   )}
                 </td>
                 <td>
@@ -717,13 +806,22 @@ export default function ReportCardInteractiveEditor({
                   {isPreviewMode ? (
                     <span className="table-text-cell highlight-green">{formData.english_comprehension_qs}</span>
                   ) : (
-                    <input
-                      type="text"
-                      className="live-table-input highlight-green"
-                      value={formData.english_comprehension_qs || ''}
-                      onChange={(e) => handleChange('english_comprehension_qs', e.target.value)}
-                      placeholder="e.g. 5.0 / 5.0 Correct"
-                    />
+                    <div className="locked-comp-wrap">
+                      <input
+                        type="number"
+                        step="0.5"
+                        min="0"
+                        max="5"
+                        className="live-comp-num-input"
+                        value={parseCompCorrect(formData.english_comprehension_qs)}
+                        onChange={(e) => handleCompScoreChange('english_comprehension_qs', e.target.value)}
+                        placeholder="5.0"
+                      />
+                      <span className="locked-comp-denom">/ 5.0 Correct</span>
+                      <span className="locked-comp-error">
+                        ({Math.max(0, 5 - parseCompCorrect(formData.english_comprehension_qs))} {Math.max(0, 5 - parseCompCorrect(formData.english_comprehension_qs)) === 1 ? 'Error' : 'Errors'})
+                      </span>
+                    </div>
                   )}
                 </td>
                 <td style={{ textAlign: 'right' }}>
@@ -1645,6 +1743,91 @@ export default function ReportCardInteractiveEditor({
           opacity: 0.75 !important;
           font-style: italic !important;
           font-weight: 400 !important;
+        }
+
+        /* Locked Passage Length & Time Wrap */
+        .locked-passage-wrap {
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+          background: #0F172A;
+          border: 1px solid #334155;
+          border-radius: 4px;
+          padding: 3px 5px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .locked-passage-wrap:focus-within {
+          border-color: #38BDF8;
+          background: #0B0F19;
+        }
+        .live-words-num-input {
+          width: 38px;
+          background: transparent;
+          border: none;
+          color: #F8FAFC;
+          font-size: 0.78rem;
+          font-weight: 800;
+          text-align: right;
+          outline: none;
+        }
+        .locked-sep {
+          font-size: 0.70rem;
+          color: #64748B;
+          font-weight: 700;
+          user-select: none;
+          white-space: nowrap;
+        }
+        .live-time-input {
+          width: 58px;
+          background: transparent;
+          border: none;
+          color: #F8FAFC;
+          font-size: 0.76rem;
+          font-weight: 700;
+          outline: none;
+        }
+
+        /* Locked Comprehension Score Wrap */
+        .locked-comp-wrap {
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+          background: #0F172A;
+          border: 1px solid #334155;
+          border-radius: 4px;
+          padding: 3px 5px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .locked-comp-wrap:focus-within {
+          border-color: #10B981;
+          background: #0B0F19;
+        }
+        .live-comp-num-input {
+          width: 32px;
+          background: transparent;
+          border: none;
+          color: #34D399;
+          font-size: 0.80rem;
+          font-weight: 800;
+          text-align: right;
+          outline: none;
+        }
+        .locked-comp-denom {
+          font-size: 0.68rem;
+          color: #64748B;
+          font-weight: 700;
+          user-select: none;
+          white-space: nowrap;
+        }
+        .locked-comp-error {
+          font-size: 0.66rem;
+          color: #F59E0B;
+          font-weight: 800;
+          user-select: none;
+          white-space: nowrap;
+          margin-left: 2px;
         }
 
         /* Locked Score Cell (Number input + fixed /10.00 suffix) */
