@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import HorizonBrandHeader from './HorizonBrandHeader';
 import { MonthlyReportCard, supabase } from '@/lib/supabase';
+import { FormattedScoreInput } from './FormattedScoreInput';
 import {
   Printer,
   Save,
@@ -712,14 +713,13 @@ export default function ReportCardInteractiveEditor({
                       <span className="table-text-cell highlight-green">{formData.hindi_comprehension_qs}</span>
                     ) : (
                       <div className="locked-comp-wrap">
-                        <input
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          max="5"
+                        <FormattedScoreInput
+                          min={0}
+                          max={5}
+                          step={0.1}
                           className="live-comp-num-input"
                           value={parseCompCorrect(formData.hindi_comprehension_qs)}
-                          onChange={(e) => handleCompScoreChange('hindi_comprehension_qs', e.target.value)}
+                          onChange={(val) => handleCompScoreChange('hindi_comprehension_qs', val)}
                           placeholder="04.00"
                         />
                         <span className="locked-comp-denom">/ 05.00 Correct</span>
@@ -734,14 +734,13 @@ export default function ReportCardInteractiveEditor({
                       <span className="table-score-cell">{formData.hindi_fluency}</span>
                     ) : (
                       <div className="locked-score-cell">
-                        <input
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          max="10"
+                        <FormattedScoreInput
+                          min={0}
+                          max={10}
+                          step={0.1}
                           className="live-score-num-input"
-                          value={parseNumericScore(formData.hindi_fluency) || ''}
-                          onChange={(e) => handleScoreOnlyChange('hindi_fluency', e.target.value)}
+                          value={formData.hindi_fluency}
+                          onChange={(val) => handleScoreOnlyChange('hindi_fluency', val)}
                           placeholder="08.50"
                         />
                         <span className="locked-denom">/ 10.00</span>
@@ -797,14 +796,13 @@ export default function ReportCardInteractiveEditor({
                       <span className="table-text-cell highlight-green">{formData.english_comprehension_qs}</span>
                     ) : (
                       <div className="locked-comp-wrap">
-                        <input
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          max="5"
+                        <FormattedScoreInput
+                          min={0}
+                          max={5}
+                          step={0.1}
                           className="live-comp-num-input"
                           value={parseCompCorrect(formData.english_comprehension_qs)}
-                          onChange={(e) => handleCompScoreChange('english_comprehension_qs', e.target.value)}
+                          onChange={(val) => handleCompScoreChange('english_comprehension_qs', val)}
                           placeholder="05.00"
                         />
                         <span className="locked-comp-denom">/ 05.00 Correct</span>
@@ -819,14 +817,13 @@ export default function ReportCardInteractiveEditor({
                       <span className="table-score-cell">{formData.english_fluency}</span>
                     ) : (
                       <div className="locked-score-cell">
-                        <input
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          max="10"
+                        <FormattedScoreInput
+                          min={0}
+                          max={10}
+                          step={0.1}
                           className="live-score-num-input"
-                          value={parseNumericScore(formData.english_fluency) || ''}
-                          onChange={(e) => handleScoreOnlyChange('english_fluency', e.target.value)}
+                          value={formData.english_fluency}
+                          onChange={(val) => handleScoreOnlyChange('english_fluency', val)}
                           placeholder="09.00"
                         />
                         <span className="locked-denom">/ 10.00</span>
@@ -878,15 +875,14 @@ export default function ReportCardInteractiveEditor({
                     <span className="table-score-cell">{formData.math_ch1_marks}</span>
                   ) : (
                     <div className="locked-score-cell">
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="10"
+                      <FormattedScoreInput
+                        min={0}
+                        max={10}
+                        step={0.1}
                         className="live-score-num-input"
-                        value={parseNumericScore(formData.math_ch1_marks) || ''}
-                        onChange={(e) => handleChapterMarkChange('math_ch1_marks', 'math_ch1_status', e.target.value)}
-                        placeholder="7.5"
+                        value={formData.math_ch1_marks}
+                        onChange={(val) => handleChapterMarkChange('math_ch1_marks', 'math_ch1_status', val)}
+                        placeholder="07.50"
                       />
                       <span className="locked-denom">/ 10.00</span>
                     </div>
@@ -917,15 +913,14 @@ export default function ReportCardInteractiveEditor({
                     <span className="table-score-cell">{formData.math_ch2_marks}</span>
                   ) : (
                     <div className="locked-score-cell">
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="10"
+                      <FormattedScoreInput
+                        min={0}
+                        max={10}
+                        step={0.1}
                         className="live-score-num-input"
-                        value={parseNumericScore(formData.math_ch2_marks) || ''}
-                        onChange={(e) => handleChapterMarkChange('math_ch2_marks', 'math_ch2_status', e.target.value)}
-                        placeholder="8.5"
+                        value={formData.math_ch2_marks}
+                        onChange={(val) => handleChapterMarkChange('math_ch2_marks', 'math_ch2_status', val)}
+                        placeholder="08.50"
                       />
                       <span className="locked-denom">/ 10.00</span>
                     </div>
@@ -959,15 +954,14 @@ export default function ReportCardInteractiveEditor({
                     <span className="table-score-cell">{formData.science_ch1_marks}</span>
                   ) : (
                     <div className="locked-score-cell">
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="10"
+                      <FormattedScoreInput
+                        min={0}
+                        max={10}
+                        step={0.1}
                         className="live-score-num-input"
-                        value={parseNumericScore(formData.science_ch1_marks) || ''}
-                        onChange={(e) => handleChapterMarkChange('science_ch1_marks', 'science_ch1_status', e.target.value)}
-                        placeholder="9.0"
+                        value={formData.science_ch1_marks}
+                        onChange={(val) => handleChapterMarkChange('science_ch1_marks', 'science_ch1_status', val)}
+                        placeholder="09.00"
                       />
                       <span className="locked-denom">/ 10.00</span>
                     </div>
@@ -998,15 +992,14 @@ export default function ReportCardInteractiveEditor({
                     <span className="table-score-cell">{formData.science_ch2_marks}</span>
                   ) : (
                     <div className="locked-score-cell">
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="10"
+                      <FormattedScoreInput
+                        min={0}
+                        max={10}
+                        step={0.1}
                         className="live-score-num-input"
-                        value={parseNumericScore(formData.science_ch2_marks) || ''}
-                        onChange={(e) => handleChapterMarkChange('science_ch2_marks', 'science_ch2_status', e.target.value)}
-                        placeholder="7.5"
+                        value={formData.science_ch2_marks}
+                        onChange={(val) => handleChapterMarkChange('science_ch2_marks', 'science_ch2_status', val)}
+                        placeholder="07.50"
                       />
                       <span className="locked-denom">/ 10.00</span>
                     </div>
@@ -1040,15 +1033,14 @@ export default function ReportCardInteractiveEditor({
                     <span className="table-score-cell">{formData.sst_ch1_marks}</span>
                   ) : (
                     <div className="locked-score-cell">
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="10"
+                      <FormattedScoreInput
+                        min={0}
+                        max={10}
+                        step={0.1}
                         className="live-score-num-input"
-                        value={parseNumericScore(formData.sst_ch1_marks) || ''}
-                        onChange={(e) => handleChapterMarkChange('sst_ch1_marks', 'sst_ch1_status', e.target.value)}
-                        placeholder="8.5"
+                        value={formData.sst_ch1_marks}
+                        onChange={(val) => handleChapterMarkChange('sst_ch1_marks', 'sst_ch1_status', val)}
+                        placeholder="08.50"
                       />
                       <span className="locked-denom">/ 10.00</span>
                     </div>
@@ -1079,15 +1071,14 @@ export default function ReportCardInteractiveEditor({
                     <span className="table-score-cell">{formData.sst_ch2_marks}</span>
                   ) : (
                     <div className="locked-score-cell">
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="10"
+                      <FormattedScoreInput
+                        min={0}
+                        max={10}
+                        step={0.1}
                         className="live-score-num-input"
-                        value={parseNumericScore(formData.sst_ch2_marks) || ''}
-                        onChange={(e) => handleChapterMarkChange('sst_ch2_marks', 'sst_ch2_status', e.target.value)}
-                        placeholder="8.0"
+                        value={formData.sst_ch2_marks}
+                        onChange={(val) => handleChapterMarkChange('sst_ch2_marks', 'sst_ch2_status', val)}
+                        placeholder="08.00"
                       />
                       <span className="locked-denom">/ 10.00</span>
                     </div>
@@ -1121,15 +1112,14 @@ export default function ReportCardInteractiveEditor({
                     <span className="table-score-cell">{formData.lang_eng_marks}</span>
                   ) : (
                     <div className="locked-score-cell">
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="10"
+                      <FormattedScoreInput
+                        min={0}
+                        max={10}
+                        step={0.1}
                         className="live-score-num-input"
-                        value={parseNumericScore(formData.lang_eng_marks) || ''}
-                        onChange={(e) => handleChapterMarkChange('lang_eng_marks', 'lang_eng_status', e.target.value)}
-                        placeholder="9.0"
+                        value={formData.lang_eng_marks}
+                        onChange={(val) => handleChapterMarkChange('lang_eng_marks', 'lang_eng_status', val)}
+                        placeholder="09.00"
                       />
                       <span className="locked-denom">/ 10.00</span>
                     </div>
@@ -1160,15 +1150,14 @@ export default function ReportCardInteractiveEditor({
                     <span className="table-score-cell">{formData.lang_hindi_marks}</span>
                   ) : (
                     <div className="locked-score-cell">
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="10"
+                      <FormattedScoreInput
+                        min={0}
+                        max={10}
+                        step={0.1}
                         className="live-score-num-input"
-                        value={parseNumericScore(formData.lang_hindi_marks) || ''}
-                        onChange={(e) => handleChapterMarkChange('lang_hindi_marks', 'lang_hindi_status', e.target.value)}
-                        placeholder="8.5"
+                        value={formData.lang_hindi_marks}
+                        onChange={(val) => handleChapterMarkChange('lang_hindi_marks', 'lang_hindi_status', val)}
+                        placeholder="08.50"
                       />
                       <span className="locked-denom">/ 10.00</span>
                     </div>
@@ -1214,14 +1203,14 @@ export default function ReportCardInteractiveEditor({
                   {isPreviewMode ? (
                     <span className="table-score-cell highlight-green">{formatScoreFloat(formData.manners_score ?? 9.5)}</span>
                   ) : (
-                    <input
-                      type="number"
-                      step="0.1"
-                      max="10"
-                      min="0"
+                    <FormattedScoreInput
+                      min={0}
+                      max={10}
+                      step={0.1}
                       className="live-table-score-input highlight-green"
                       value={formData.manners_score ?? 9.5}
-                      onChange={(e) => handleChange('manners_score', parseFloat(e.target.value) || 0)}
+                      onChange={(val) => handleChange('manners_score', parseFloat(val) || 0)}
+                      placeholder="09.50"
                     />
                   )}
                 </td>
@@ -1251,14 +1240,14 @@ export default function ReportCardInteractiveEditor({
                   {isPreviewMode ? (
                     <span className="table-score-cell highlight-green">{formatScoreFloat(formData.confidence_score ?? 8.5)}</span>
                   ) : (
-                    <input
-                      type="number"
-                      step="0.1"
-                      max="10"
-                      min="0"
+                    <FormattedScoreInput
+                      min={0}
+                      max={10}
+                      step={0.1}
                       className="live-table-score-input highlight-green"
                       value={formData.confidence_score ?? 8.5}
-                      onChange={(e) => handleChange('confidence_score', parseFloat(e.target.value) || 0)}
+                      onChange={(val) => handleChange('confidence_score', parseFloat(val) || 0)}
+                      placeholder="08.50"
                     />
                   )}
                 </td>
@@ -1288,14 +1277,14 @@ export default function ReportCardInteractiveEditor({
                   {isPreviewMode ? (
                     <span className="table-score-cell highlight-purple">{formatScoreFloat(formData.english_usage_score ?? 8.0)}</span>
                   ) : (
-                    <input
-                      type="number"
-                      step="0.1"
-                      max="10"
-                      min="0"
+                    <FormattedScoreInput
+                      min={0}
+                      max={10}
+                      step={0.1}
                       className="live-table-score-input highlight-purple"
                       value={formData.english_usage_score ?? 8.0}
-                      onChange={(e) => handleEnglishUsageChange(e.target.value)}
+                      onChange={(val) => handleEnglishUsageChange(val)}
+                      placeholder="08.00"
                     />
                   )}
                 </td>
@@ -1334,15 +1323,14 @@ export default function ReportCardInteractiveEditor({
                   <span className="pillar-score">{formData.mental_math_score}</span>
                 ) : (
                   <div className="locked-score-cell" style={{ maxWidth: '105px' }}>
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="10"
+                    <FormattedScoreInput
+                      min={0}
+                      max={10}
+                      step={0.1}
                       className="live-score-num-input"
-                      value={parseNumericScore(formData.mental_math_score) || ''}
-                      onChange={(e) => handleScoreOnlyChange('mental_math_score', e.target.value)}
-                      placeholder="9.0"
+                      value={formData.mental_math_score}
+                      onChange={(val) => handleScoreOnlyChange('mental_math_score', val)}
+                      placeholder="09.00"
                     />
                     <span className="locked-denom">/ 10.00</span>
                   </div>
@@ -1371,15 +1359,14 @@ export default function ReportCardInteractiveEditor({
                   <span className="pillar-score">{formData.logical_aptitude_score}</span>
                 ) : (
                   <div className="locked-score-cell" style={{ maxWidth: '105px' }}>
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="10"
+                    <FormattedScoreInput
+                      min={0}
+                      max={10}
+                      step={0.1}
                       className="live-score-num-input"
-                      value={parseNumericScore(formData.logical_aptitude_score) || ''}
-                      onChange={(e) => handleScoreOnlyChange('logical_aptitude_score', e.target.value)}
-                      placeholder="8.5"
+                      value={formData.logical_aptitude_score}
+                      onChange={(val) => handleScoreOnlyChange('logical_aptitude_score', val)}
+                      placeholder="08.50"
                     />
                     <span className="locked-denom">/ 10.00</span>
                   </div>
@@ -1408,15 +1395,14 @@ export default function ReportCardInteractiveEditor({
                   <span className="pillar-score">{formData.homework_score}</span>
                 ) : (
                   <div className="locked-score-cell" style={{ maxWidth: '105px' }}>
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="10"
+                    <FormattedScoreInput
+                      min={0}
+                      max={10}
+                      step={0.1}
                       className="live-score-num-input"
-                      value={parseNumericScore(formData.homework_score) || ''}
-                      onChange={(e) => handleScoreOnlyChange('homework_score', e.target.value)}
-                      placeholder="9.5"
+                      value={formData.homework_score}
+                      onChange={(val) => handleScoreOnlyChange('homework_score', val)}
+                      placeholder="09.50"
                     />
                     <span className="locked-denom">/ 10.00</span>
                   </div>
@@ -1445,15 +1431,14 @@ export default function ReportCardInteractiveEditor({
                   <span className="pillar-score">{formData.neatness_score}</span>
                 ) : (
                   <div className="locked-score-cell" style={{ maxWidth: '105px' }}>
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="10"
+                    <FormattedScoreInput
+                      min={0}
+                      max={10}
+                      step={0.1}
                       className="live-score-num-input"
-                      value={parseNumericScore(formData.neatness_score) || ''}
-                      onChange={(e) => handleScoreOnlyChange('neatness_score', e.target.value)}
-                      placeholder="8.0"
+                      value={formData.neatness_score}
+                      onChange={(val) => handleScoreOnlyChange('neatness_score', val)}
+                      placeholder="08.00"
                     />
                     <span className="locked-denom">/ 10.00</span>
                   </div>
@@ -1800,13 +1785,14 @@ export default function ReportCardInteractiveEditor({
           background: #0B0F19;
         }
         .live-comp-num-input {
-          width: 32px;
+          width: 44px;
           background: transparent;
           border: none;
           color: #34D399;
           font-size: 0.80rem;
           font-weight: 800;
           text-align: right;
+          font-family: 'Inter', monospace;
           outline: none;
         }
         .locked-comp-denom {
@@ -1837,7 +1823,7 @@ export default function ReportCardInteractiveEditor({
           padding: 3px 6px;
           box-sizing: border-box;
           width: 100%;
-          max-width: 110px;
+          max-width: 115px;
         }
         .locked-score-cell:focus-within {
           border-color: #38BDF8;

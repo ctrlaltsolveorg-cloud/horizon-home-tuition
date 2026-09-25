@@ -15,6 +15,7 @@ import {
   formatCompString,
   formatScoreFloat
 } from './ReportCardInteractiveEditor';
+import { FormattedScoreInput } from './FormattedScoreInput';
 
 interface ReportCardEditorModalProps {
   isOpen: boolean;
@@ -455,13 +456,12 @@ export default function ReportCardEditorModal({
               <div>
                 <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Hindi Comprehension Qs</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="5"
+                  <FormattedScoreInput
+                    min={0}
+                    max={5}
+                    step={0.1}
                     value={parseCompCorrect(hindiComp)}
-                    onChange={(e) => setHindiComp(formatCompString(parseFloat(e.target.value) || 0))}
+                    onChange={(val) => setHindiComp(formatCompString(parseFloat(val) || 0))}
                     style={{ width: '48px', background: 'transparent', border: 'none', color: '#34D399', fontWeight: 800, textAlign: 'right', outline: 'none' }}
                   />
                   <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 05.00</span>
@@ -473,13 +473,12 @@ export default function ReportCardEditorModal({
               <div>
                 <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Hindi Fluency (/10.00)</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="10"
-                    value={hindiFluencyNum || ''}
-                    onChange={(e) => setHindiFluencyNum(parseFloat(e.target.value) || 0)}
+                  <FormattedScoreInput
+                    min={0}
+                    max={10}
+                    step={0.1}
+                    value={hindiFluencyNum}
+                    onChange={(val) => setHindiFluencyNum(parseFloat(val) || 0)}
                     style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }}
                   />
                   <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700 }}>/ 10.00</span>
@@ -516,13 +515,12 @@ export default function ReportCardEditorModal({
               <div>
                 <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>English Comprehension Qs</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="5"
+                  <FormattedScoreInput
+                    min={0}
+                    max={5}
+                    step={0.1}
                     value={parseCompCorrect(englishComp)}
-                    onChange={(e) => setEnglishComp(formatCompString(parseFloat(e.target.value) || 0))}
+                    onChange={(val) => setEnglishComp(formatCompString(parseFloat(val) || 0))}
                     style={{ width: '48px', background: 'transparent', border: 'none', color: '#34D399', fontWeight: 800, textAlign: 'right', outline: 'none' }}
                   />
                   <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 05.00</span>
@@ -534,13 +532,12 @@ export default function ReportCardEditorModal({
               <div>
                 <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>English Fluency (/10.00)</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="10"
-                    value={englishFluencyNum || ''}
-                    onChange={(e) => setEnglishFluencyNum(parseFloat(e.target.value) || 0)}
+                  <FormattedScoreInput
+                    min={0}
+                    max={10}
+                    step={0.1}
+                    value={englishFluencyNum}
+                    onChange={(val) => setEnglishFluencyNum(parseFloat(val) || 0)}
                     style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }}
                   />
                   <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700 }}>/ 10.00</span>
@@ -561,7 +558,7 @@ export default function ReportCardEditorModal({
                 <span style={{ fontWeight: 800, color: '#38BDF8', fontSize: '0.82rem' }}>Math Ch 1</span>
                 <input type="text" value={mathCh1Name} onChange={(e) => setMathCh1Name(e.target.value)} style={{ padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC', fontSize: '0.82rem' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
-                  <input type="number" step="0.1" min="0" max="10" value={mathCh1Score || ''} onChange={(e) => setMathCh1Score(parseFloat(e.target.value) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
+                  <FormattedScoreInput min={0} max={10} step={0.1} value={mathCh1Score} onChange={(val) => setMathCh1Score(parseFloat(val) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
                   <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 10.00</span>
                 </div>
                 <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, textAlign: 'center', background: mathCh1Score >= 8.5 ? 'rgba(16, 185, 129, 0.2)' : mathCh1Score >= 5.0 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)', color: mathCh1Score >= 8.5 ? '#34D399' : mathCh1Score >= 5.0 ? '#FBBF24' : '#F87171' }}>
@@ -573,7 +570,7 @@ export default function ReportCardEditorModal({
                 <span style={{ fontWeight: 800, color: '#38BDF8', fontSize: '0.82rem' }}>Math Ch 2</span>
                 <input type="text" value={mathCh2Name} onChange={(e) => setMathCh2Name(e.target.value)} style={{ padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC', fontSize: '0.82rem' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
-                  <input type="number" step="0.1" min="0" max="10" value={mathCh2Score || ''} onChange={(e) => setMathCh2Score(parseFloat(e.target.value) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
+                  <FormattedScoreInput min={0} max={10} step={0.1} value={mathCh2Score} onChange={(val) => setMathCh2Score(parseFloat(val) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
                   <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 10.00</span>
                 </div>
                 <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, textAlign: 'center', background: mathCh2Score >= 8.5 ? 'rgba(16, 185, 129, 0.2)' : mathCh2Score >= 5.0 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)', color: mathCh2Score >= 8.5 ? '#34D399' : mathCh2Score >= 5.0 ? '#FBBF24' : '#F87171' }}>
@@ -586,7 +583,7 @@ export default function ReportCardEditorModal({
                 <span style={{ fontWeight: 800, color: '#10B981', fontSize: '0.82rem' }}>Science Ch 1</span>
                 <input type="text" value={sciCh1Name} onChange={(e) => setSciCh1Name(e.target.value)} style={{ padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC', fontSize: '0.82rem' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
-                  <input type="number" step="0.1" min="0" max="10" value={sciCh1Score || ''} onChange={(e) => setSciCh1Score(parseFloat(e.target.value) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
+                  <FormattedScoreInput min={0} max={10} step={0.1} value={sciCh1Score} onChange={(val) => setSciCh1Score(parseFloat(val) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
                   <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 10.00</span>
                 </div>
                 <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, textAlign: 'center', background: sciCh1Score >= 8.5 ? 'rgba(16, 185, 129, 0.2)' : sciCh1Score >= 5.0 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)', color: sciCh1Score >= 8.5 ? '#34D399' : sciCh1Score >= 5.0 ? '#FBBF24' : '#F87171' }}>
@@ -598,7 +595,7 @@ export default function ReportCardEditorModal({
                 <span style={{ fontWeight: 800, color: '#10B981', fontSize: '0.82rem' }}>Science Ch 2</span>
                 <input type="text" value={sciCh2Name} onChange={(e) => setSciCh2Name(e.target.value)} style={{ padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC', fontSize: '0.82rem' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
-                  <input type="number" step="0.1" min="0" max="10" value={sciCh2Score || ''} onChange={(e) => setSciCh2Score(parseFloat(e.target.value) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
+                  <FormattedScoreInput min={0} max={10} step={0.1} value={sciCh2Score} onChange={(val) => setSciCh2Score(parseFloat(val) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
                   <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 10.00</span>
                 </div>
                 <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, textAlign: 'center', background: sciCh2Score >= 8.5 ? 'rgba(16, 185, 129, 0.2)' : sciCh2Score >= 5.0 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)', color: sciCh2Score >= 8.5 ? '#34D399' : sciCh2Score >= 5.0 ? '#FBBF24' : '#F87171' }}>
@@ -611,7 +608,7 @@ export default function ReportCardEditorModal({
                 <span style={{ fontWeight: 800, color: '#A855F7', fontSize: '0.82rem' }}>Social Sci Ch 1</span>
                 <input type="text" value={sstCh1Name} onChange={(e) => setSstCh1Name(e.target.value)} style={{ padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC', fontSize: '0.82rem' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
-                  <input type="number" step="0.1" min="0" max="10" value={sstCh1Score || ''} onChange={(e) => setSstCh1Score(parseFloat(e.target.value) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
+                  <FormattedScoreInput min={0} max={10} step={0.1} value={sstCh1Score} onChange={(val) => setSstCh1Score(parseFloat(val) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
                   <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 10.00</span>
                 </div>
                 <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, textAlign: 'center', background: sstCh1Score >= 8.5 ? 'rgba(16, 185, 129, 0.2)' : sstCh1Score >= 5.0 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)', color: sstCh1Score >= 8.5 ? '#34D399' : sstCh1Score >= 5.0 ? '#FBBF24' : '#F87171' }}>
@@ -623,7 +620,7 @@ export default function ReportCardEditorModal({
                 <span style={{ fontWeight: 800, color: '#A855F7', fontSize: '0.82rem' }}>Social Sci Ch 2</span>
                 <input type="text" value={sstCh2Name} onChange={(e) => setSstCh2Name(e.target.value)} style={{ padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC', fontSize: '0.82rem' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
-                  <input type="number" step="0.1" min="0" max="10" value={sstCh2Score || ''} onChange={(e) => setSstCh2Score(parseFloat(e.target.value) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
+                  <FormattedScoreInput min={0} max={10} step={0.1} value={sstCh2Score} onChange={(val) => setSstCh2Score(parseFloat(val) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
                   <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 10.00</span>
                 </div>
                 <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, textAlign: 'center', background: sstCh2Score >= 8.5 ? 'rgba(16, 185, 129, 0.2)' : sstCh2Score >= 5.0 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)', color: sstCh2Score >= 8.5 ? '#34D399' : sstCh2Score >= 5.0 ? '#FBBF24' : '#F87171' }}>
@@ -636,7 +633,7 @@ export default function ReportCardEditorModal({
                 <span style={{ fontWeight: 800, color: '#EC4899', fontSize: '0.82rem' }}>English Ch 1-2</span>
                 <input type="text" value={langEngName} onChange={(e) => setLangEngName(e.target.value)} style={{ padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC', fontSize: '0.82rem' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
-                  <input type="number" step="0.1" min="0" max="10" value={langEngScore || ''} onChange={(e) => setLangEngScore(parseFloat(e.target.value) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
+                  <FormattedScoreInput min={0} max={10} step={0.1} value={langEngScore} onChange={(val) => setLangEngScore(parseFloat(val) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
                   <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 10.00</span>
                 </div>
                 <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, textAlign: 'center', background: langEngScore >= 8.5 ? 'rgba(16, 185, 129, 0.2)' : langEngScore >= 5.0 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)', color: langEngScore >= 8.5 ? '#34D399' : langEngScore >= 5.0 ? '#FBBF24' : '#F87171' }}>
@@ -648,7 +645,7 @@ export default function ReportCardEditorModal({
                 <span style={{ fontWeight: 800, color: '#EC4899', fontSize: '0.82rem' }}>Hindi Ch 1-2</span>
                 <input type="text" value={langHindiName} onChange={(e) => setLangHindiName(e.target.value)} style={{ padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC', fontSize: '0.82rem' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
-                  <input type="number" step="0.1" min="0" max="10" value={langHindiScore || ''} onChange={(e) => setLangHindiScore(parseFloat(e.target.value) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
+                  <FormattedScoreInput min={0} max={10} step={0.1} value={langHindiScore} onChange={(val) => setLangHindiScore(parseFloat(val) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
                   <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 10.00</span>
                 </div>
                 <span style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, textAlign: 'center', background: langHindiScore >= 8.5 ? 'rgba(16, 185, 129, 0.2)' : langHindiScore >= 5.0 ? 'rgba(245, 158, 11, 0.2)' : 'rgba(239, 68, 68, 0.2)', color: langHindiScore >= 8.5 ? '#34D399' : langHindiScore >= 5.0 ? '#FBBF24' : '#F87171' }}>
@@ -691,7 +688,7 @@ export default function ReportCardEditorModal({
               <div>
                 <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Mental Math Score (/10)</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px', marginBottom: '4px' }}>
-                  <input type="number" step="0.1" min="0" max="10" value={mentalMathScore || ''} onChange={(e) => setMentalMathScore(parseFloat(e.target.value) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
+                  <FormattedScoreInput min={0} max={10} step={0.1} value={mentalMathScore} onChange={(val) => setMentalMathScore(parseFloat(val) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
                   <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 10.00</span>
                 </div>
                 <textarea rows={2} value={mentalMathObs} onChange={(e) => setMentalMathObs(e.target.value)} placeholder="Fast oral tables up to 19; prompt mental addition without rough notebook dependence." style={{ width: '100%', padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC', fontSize: '0.75rem' }} />
@@ -699,7 +696,7 @@ export default function ReportCardEditorModal({
               <div>
                 <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Logical Aptitude Score (/10)</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px', marginBottom: '4px' }}>
-                  <input type="number" step="0.1" min="0" max="10" value={logicalScore || ''} onChange={(e) => setLogicalScore(parseFloat(e.target.value) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
+                  <FormattedScoreInput min={0} max={10} step={0.1} value={logicalScore} onChange={(val) => setLogicalScore(parseFloat(val) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
                   <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 10.00</span>
                 </div>
                 <textarea rows={2} value={logicalObs} onChange={(e) => setLogicalObs(e.target.value)} placeholder="Solved 4/5 pattern-finding and critical reasoning puzzles during weekly aptitude rounds." style={{ width: '100%', padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC', fontSize: '0.75rem' }} />
@@ -707,7 +704,7 @@ export default function ReportCardEditorModal({
               <div>
                 <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Homework Discipline (/10)</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px', marginBottom: '4px' }}>
-                  <input type="number" step="0.1" min="0" max="10" value={homeworkScore || ''} onChange={(e) => setHomeworkScore(parseFloat(e.target.value) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
+                  <FormattedScoreInput min={0} max={10} step={0.1} value={homeworkScore} onChange={(val) => setHomeworkScore(parseFloat(val) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
                   <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 10.00</span>
                 </div>
                 <textarea rows={2} value={homeworkObs} onChange={(e) => setHomeworkObs(e.target.value)} placeholder="96% daily homework completion rate on time without needing repeated follow-ups." style={{ width: '100%', padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC', fontSize: '0.75rem' }} />
@@ -715,7 +712,7 @@ export default function ReportCardEditorModal({
               <div>
                 <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Neatness &amp; Handwriting (/10)</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px', marginBottom: '4px' }}>
-                  <input type="number" step="0.1" min="0" max="10" value={neatnessScore || ''} onChange={(e) => setNeatnessScore(parseFloat(e.target.value) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
+                  <FormattedScoreInput min={0} max={10} step={0.1} value={neatnessScore} onChange={(val) => setNeatnessScore(parseFloat(val) || 0)} style={{ width: '45px', background: 'transparent', border: 'none', color: '#38BDF8', fontWeight: 800, textAlign: 'right', outline: 'none' }} />
                   <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 10.00</span>
                 </div>
                 <textarea rows={2} value={neatnessObs} onChange={(e) => setNeatnessObs(e.target.value)} placeholder="Clean margin maintenance; neat step-by-step working. Science diagram labeling can improve." style={{ width: '100%', padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC', fontSize: '0.75rem' }} />
