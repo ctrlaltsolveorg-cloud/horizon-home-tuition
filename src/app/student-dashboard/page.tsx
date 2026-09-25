@@ -858,10 +858,10 @@ export default function StudentDashboard() {
                       September 2026
                     </span>
                     <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px' }}>
-                      Monthly Comprehensive Audit
+                      Horizon Monthly Assessment
                     </h3>
                     <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                      Evaluated at: <strong style={{ color: 'var(--text-primary)' }}>Purnia Central Examination Hub</strong>
+                      Conducted by: <strong style={{ color: 'var(--text-primary)' }}>Horizon Academic Assessment Cell</strong>
                     </div>
                   </div>
 

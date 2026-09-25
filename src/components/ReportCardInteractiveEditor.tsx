@@ -44,7 +44,7 @@ const DEFAULT_SAMPLE_DATA: MonthlyReportCard = {
   assigned_tutor_name: 'Harshit Patel (PCE Purnia)',
   assigned_tutor_contact: '+91 9162162128',
   evaluator_tutor_name: 'Vikash Kumar (Certified Cross-Examiner)',
-  test_center_name: 'Purnia Central Evaluation Hub (Center #1)',
+  test_center_name: 'Horizon Central Assessment Center (Center #1)',
 
   hindi_passage_length_time: '160 Words • 1m 25s',
   hindi_speed_wpm: '113 WPM (Good)',
