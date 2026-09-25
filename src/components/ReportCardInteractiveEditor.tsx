@@ -1784,16 +1784,19 @@ export default function ReportCardInteractiveEditor({
           border-color: #10B981;
           background: #0B0F19;
         }
+        :global(.live-comp-num-input),
         .live-comp-num-input {
-          width: 44px;
-          background: transparent;
-          border: none;
-          color: #34D399;
-          font-size: 0.80rem;
-          font-weight: 800;
-          text-align: right;
-          font-family: 'Inter', monospace;
-          outline: none;
+          width: 44px !important;
+          background: transparent !important;
+          background-color: transparent !important;
+          border: none !important;
+          color: #34D399 !important;
+          font-size: 0.80rem !important;
+          font-weight: 800 !important;
+          text-align: right !important;
+          font-family: 'Inter', monospace !important;
+          outline: none !important;
+          box-shadow: none !important;
         }
         .locked-comp-denom {
           font-size: 0.68rem;
@@ -1831,17 +1834,21 @@ export default function ReportCardInteractiveEditor({
           box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
         }
 
+        :global(.live-score-num-input),
         .live-score-num-input {
-          width: 44px;
-          background: transparent;
-          border: none;
-          color: #38BDF8;
-          font-size: 0.82rem;
-          font-weight: 800;
-          text-align: right;
-          font-family: 'Inter', monospace;
-          outline: none;
+          width: 46px !important;
+          background: transparent !important;
+          background-color: transparent !important;
+          border: none !important;
+          color: #38BDF8 !important;
+          font-size: 0.82rem !important;
+          font-weight: 800 !important;
+          text-align: right !important;
+          font-family: 'Inter', monospace !important;
+          outline: none !important;
+          box-shadow: none !important;
         }
+        :global(.live-score-num-input::placeholder),
         .live-score-num-input::placeholder {
           color: #94A3B8 !important;
         }

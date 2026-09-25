@@ -94,6 +94,21 @@ export function FormattedScoreInput({
     }
   };
 
+  const defaultStyle: React.CSSProperties = {
+    background: 'transparent',
+    border: 'none',
+    outline: 'none',
+    boxShadow: 'none',
+    textAlign: 'right',
+    fontFamily: "'Inter', monospace",
+    fontWeight: 800,
+    fontSize: '0.82rem',
+    color: '#38BDF8',
+    padding: 0,
+    margin: 0,
+    ...style
+  };
+
   return (
     <input
       type="text"
@@ -104,7 +119,7 @@ export function FormattedScoreInput({
       onFocus={handleFocus}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
-      style={style}
+      style={defaultStyle}
       placeholder={placeholder}
     />
   );

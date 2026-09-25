@@ -573,14 +573,54 @@ textarea:not(:placeholder-shown) {
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2) !important;
 }
 
-/* Disabled / Read-Only Input Styling */
-input:disabled,
-textarea:disabled,
-.input-readonly {
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #94A3B8 !important;
-  cursor: not-allowed !important;
-  user-select: none !important;
+/* Report Card Live Score Input Global Styles */
+.live-score-num-input,
+.live-comp-num-input,
+.locked-score-cell input,
+.locked-comp-wrap input {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  font-family: 'Inter', monospace !important;
+  text-align: right !important;
+  font-weight: 800 !important;
+}
+
+.live-comp-num-input,
+.locked-comp-wrap input {
+  color: #34D399 !important;
+  width: 44px !important;
+  font-size: 0.80rem !important;
+}
+
+.live-score-num-input,
+.locked-score-cell input {
+  color: #38BDF8 !important;
+  width: 46px !important;
+  font-size: 0.82rem !important;
+}
+
+.live-table-score-input {
+  background: #0F172A !important;
+  background-color: #0F172A !important;
+  border: 1px solid #334155 !important;
+  border-radius: 4px !important;
+  padding: 4px 6px !important;
+  font-size: 0.78rem !important;
+  color: #38BDF8 !important;
+  font-weight: 800 !important;
+  font-family: 'Inter', monospace !important;
+  text-align: right !important;
+  outline: none !important;
+}
+
+.live-table-score-input.highlight-green {
+  color: #34D399 !important;
+}
+
+.live-table-score-input.highlight-purple {
+  color: #C084FC !important;
 }
 
