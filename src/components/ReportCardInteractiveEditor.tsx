@@ -140,22 +140,22 @@ const DEFAULT_SAMPLE_DATA: MonthlyReportCard = {
 
   manners_max: 10,
   manners_score: 9.50,
-  manners_obs: 'Polite, attentive; follows homework schedules obediently.',
+  manners_obs: '',
   confidence_max: 10,
   confidence_score: 8.50,
-  confidence_obs: 'Answers without shyness; asks doubts with clarity.',
+  confidence_obs: '',
   english_usage_max: 10,
   english_usage_score: 8.00,
-  english_usage_obs: '~80% English words used actively during tuition hours.',
+  english_usage_obs: '',
 
   mental_math_score: '9.00 / 10.00',
-  mental_math_obs: 'Fast oral tables up to 19; prompt mental addition without rough notebook dependence.',
+  mental_math_obs: '',
   logical_aptitude_score: '8.50 / 10.00',
-  logical_aptitude_obs: 'Solved 4/5 pattern-finding and critical reasoning puzzles during weekly aptitude rounds.',
+  logical_aptitude_obs: '',
   homework_score: '9.50 / 10.00',
-  homework_obs: '96% daily homework completion rate on time without needing repeated follow-ups.',
+  homework_obs: '',
   neatness_score: '8.00 / 10.00',
-  neatness_obs: 'Clean margin maintenance; neat step-by-step working. Science diagram labeling can improve.',
+  neatness_obs: '',
 
   overall_percentage: 86.5,
   grade: 'Grade A+ Outstanding',
@@ -1580,8 +1580,8 @@ export default function ReportCardInteractiveEditor({
           transition: all 0.2s;
         }
         .live-input::placeholder {
-          color: #94A3B8 !important;
-          opacity: 0.85 !important;
+          color: #64748B !important;
+          opacity: 0.75 !important;
           font-weight: 400 !important;
         }
         .live-input:focus {
@@ -1626,8 +1626,8 @@ export default function ReportCardInteractiveEditor({
           transition: all 0.15s;
         }
         .live-table-input::placeholder {
-          color: #94A3B8 !important;
-          opacity: 0.85 !important;
+          color: #64748B !important;
+          opacity: 0.75 !important;
           font-weight: 400 !important;
         }
         .live-table-input:hover {
@@ -1641,9 +1641,10 @@ export default function ReportCardInteractiveEditor({
         }
 
         .live-instruction-input::placeholder {
-          color: #94A3B8 !important;
-          opacity: 0.9 !important;
-          font-style: italic;
+          color: #64748B !important;
+          opacity: 0.75 !important;
+          font-style: italic !important;
+          font-weight: 400 !important;
         }
 
         /* Locked Score Cell (Number input + fixed /10.00 suffix) */
@@ -1759,8 +1760,10 @@ export default function ReportCardInteractiveEditor({
           box-sizing: border-box;
         }
         .live-textarea::placeholder {
-          color: #94A3B8 !important;
-          opacity: 0.9 !important;
+          color: #64748B !important;
+          opacity: 0.75 !important;
+          font-style: italic !important;
+          font-weight: 400 !important;
         }
         .live-textarea:focus {
           border-color: #38BDF8;

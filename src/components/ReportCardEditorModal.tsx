@@ -87,21 +87,21 @@ export default function ReportCardEditorModal({
 
   // Section 3: Communication Skills
   const [mannersScore, setMannersScore] = useState(existingReport?.manners_score || 9.5);
-  const [mannersObs, setMannersObs] = useState(existingReport?.manners_obs || 'Polite, attentive; follows homework schedules obediently.');
+  const [mannersObs, setMannersObs] = useState(existingReport?.manners_obs || '');
   const [confidenceScore, setConfidenceScore] = useState(existingReport?.confidence_score || 8.5);
-  const [confidenceObs, setConfidenceObs] = useState(existingReport?.confidence_obs || 'Answers without shyness; asks doubts with clarity.');
+  const [confidenceObs, setConfidenceObs] = useState(existingReport?.confidence_obs || '');
   const [englishUsageScore, setEnglishUsageScore] = useState(existingReport?.english_usage_score || 8.0);
-  const [englishUsageObs, setEnglishUsageObs] = useState(existingReport?.english_usage_obs || '~80% English words used actively during tuition hours.');
+  const [englishUsageObs, setEnglishUsageObs] = useState(existingReport?.english_usage_obs || '');
 
   // Section 4: Super-Intelligence Pillars
   const [mentalMathScore, setMentalMathScore] = useState<number>(parseNumericScore(existingReport?.mental_math_score) || 9.0);
-  const [mentalMathObs, setMentalMathObs] = useState(existingReport?.mental_math_obs || 'Fast oral tables up to 19; prompt mental addition without rough notebook dependence.');
+  const [mentalMathObs, setMentalMathObs] = useState(existingReport?.mental_math_obs || '');
   const [logicalScore, setLogicalScore] = useState<number>(parseNumericScore(existingReport?.logical_aptitude_score) || 8.5);
-  const [logicalObs, setLogicalObs] = useState(existingReport?.logical_aptitude_obs || 'Solved 4/5 pattern-finding and critical reasoning puzzles during weekly aptitude rounds.');
+  const [logicalObs, setLogicalObs] = useState(existingReport?.logical_aptitude_obs || '');
   const [homeworkScore, setHomeworkScore] = useState<number>(parseNumericScore(existingReport?.homework_score) || 9.5);
-  const [homeworkObs, setHomeworkObs] = useState(existingReport?.homework_obs || '96% daily homework completion rate on time without needing repeated follow-ups.');
+  const [homeworkObs, setHomeworkObs] = useState(existingReport?.homework_obs || '');
   const [neatnessScore, setNeatnessScore] = useState<number>(parseNumericScore(existingReport?.neatness_score) || 8.0);
-  const [neatnessObs, setNeatnessObs] = useState(existingReport?.neatness_obs || 'Clean margin maintenance; neat step-by-step working. Science diagram labeling can improve.');
+  const [neatnessObs, setNeatnessObs] = useState(existingReport?.neatness_obs || '');
 
   // Summary & Targets
   const [overallPercentage, setOverallPercentage] = useState<number>(existingReport?.overall_percentage || 86.5);
