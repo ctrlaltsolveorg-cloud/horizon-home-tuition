@@ -12,7 +12,8 @@ import {
   parsePassageWords,
   parsePassageTime,
   parseCompCorrect,
-  formatCompString
+  formatCompString,
+  formatScoreFloat
 } from './ReportCardInteractiveEditor';
 
 interface ReportCardEditorModalProps {
@@ -54,14 +55,14 @@ export default function ReportCardEditorModal({
   const [assessmentMonth, setAssessmentMonth] = useState(existingReport?.assessment_month || 'September, 2026');
 
   // Section 1: Passage Reading
-  const [hindiLengthTime, setHindiLengthTime] = useState(existingReport?.hindi_passage_length_time || '160 Words • 1m 25s');
+  const [hindiLengthTime, setHindiLengthTime] = useState(existingReport?.hindi_passage_length_time || '300 Words • 1m 25s');
   const [hindiWpmNum, setHindiWpmNum] = useState<number>(parseWpmNumber(existingReport?.hindi_speed_wpm) || 113);
-  const [hindiComp, setHindiComp] = useState(existingReport?.hindi_comprehension_qs || '4.0 / 5.0 Correct (1 Error)');
+  const [hindiComp, setHindiComp] = useState(existingReport?.hindi_comprehension_qs || '04.00 / 05.00 Correct (01.00 Error)');
   const [hindiFluencyNum, setHindiFluencyNum] = useState<number>(parseNumericScore(existingReport?.hindi_fluency) || 8.5);
 
-  const [englishLengthTime, setEnglishLengthTime] = useState(existingReport?.english_passage_length_time || '175 Words • 1m 35s');
+  const [englishLengthTime, setEnglishLengthTime] = useState(existingReport?.english_passage_length_time || '300 Words • 1m 35s');
   const [englishWpmNum, setEnglishWpmNum] = useState<number>(parseWpmNumber(existingReport?.english_speed_wpm) || 110);
-  const [englishComp, setEnglishComp] = useState(existingReport?.english_comprehension_qs || '5.0 / 5.0 Correct (0 Error)');
+  const [englishComp, setEnglishComp] = useState(existingReport?.english_comprehension_qs || '05.00 / 05.00 Correct (00.00 Errors)');
   const [englishFluencyNum, setEnglishFluencyNum] = useState<number>(parseNumericScore(existingReport?.english_fluency) || 9.0);
 
   // Section 2: Chapter Assessments (Scores out of 10)
@@ -170,39 +171,39 @@ export default function ReportCardEditorModal({
       hindi_passage_length_time: hindiLengthTime,
       hindi_speed_wpm: `${hindiWpmNum} WPM ${computeWpmCategory(hindiWpmNum)}`,
       hindi_comprehension_qs: hindiComp,
-      hindi_fluency: `${hindiFluencyNum.toFixed(2)} / 10.00`,
+      hindi_fluency: `${formatScoreFloat(hindiFluencyNum)} / 10.00`,
 
       english_passage_length_time: englishLengthTime,
       english_speed_wpm: `${englishWpmNum} WPM ${computeWpmCategory(englishWpmNum)}`,
       english_comprehension_qs: englishComp,
-      english_fluency: `${englishFluencyNum.toFixed(2)} / 10.00`,
+      english_fluency: `${formatScoreFloat(englishFluencyNum)} / 10.00`,
 
       math_ch1_name: mathCh1Name,
-      math_ch1_marks: `${mathCh1Score.toFixed(2)} / 10.00`,
+      math_ch1_marks: `${formatScoreFloat(mathCh1Score)} / 10.00`,
       math_ch1_status: computeChapterStatus(mathCh1Score),
       math_ch2_name: mathCh2Name,
-      math_ch2_marks: `${mathCh2Score.toFixed(2)} / 10.00`,
+      math_ch2_marks: `${formatScoreFloat(mathCh2Score)} / 10.00`,
       math_ch2_status: computeChapterStatus(mathCh2Score),
 
       science_ch1_name: sciCh1Name,
-      science_ch1_marks: `${sciCh1Score.toFixed(2)} / 10.00`,
+      science_ch1_marks: `${formatScoreFloat(sciCh1Score)} / 10.00`,
       science_ch1_status: computeChapterStatus(sciCh1Score),
       science_ch2_name: sciCh2Name,
-      science_ch2_marks: `${sciCh2Score.toFixed(2)} / 10.00`,
+      science_ch2_marks: `${formatScoreFloat(sciCh2Score)} / 10.00`,
       science_ch2_status: computeChapterStatus(sciCh2Score),
 
       sst_ch1_name: sstCh1Name,
-      sst_ch1_marks: `${sstCh1Score.toFixed(2)} / 10.00`,
+      sst_ch1_marks: `${formatScoreFloat(sstCh1Score)} / 10.00`,
       sst_ch1_status: computeChapterStatus(sstCh1Score),
       sst_ch2_name: sstCh2Name,
-      sst_ch2_marks: `${sstCh2Score.toFixed(2)} / 10.00`,
+      sst_ch2_marks: `${formatScoreFloat(sstCh2Score)} / 10.00`,
       sst_ch2_status: computeChapterStatus(sstCh2Score),
 
       lang_eng_name: langEngName,
-      lang_eng_marks: `${langEngScore.toFixed(2)} / 10.00`,
+      lang_eng_marks: `${formatScoreFloat(langEngScore)} / 10.00`,
       lang_eng_status: computeChapterStatus(langEngScore),
       lang_hindi_name: langHindiName,
-      lang_hindi_marks: `${langHindiScore.toFixed(2)} / 10.00`,
+      lang_hindi_marks: `${formatScoreFloat(langHindiScore)} / 10.00`,
       lang_hindi_status: computeChapterStatus(langHindiScore),
 
       manners_max: 10,
@@ -215,13 +216,13 @@ export default function ReportCardEditorModal({
       english_usage_score: Number(englishUsageScore),
       english_usage_obs: englishUsageObs,
 
-      mental_math_score: `${mentalMathScore.toFixed(2)} / 10.00`,
+      mental_math_score: `${formatScoreFloat(mentalMathScore)} / 10.00`,
       mental_math_obs: mentalMathObs,
-      logical_aptitude_score: `${logicalScore.toFixed(2)} / 10.00`,
+      logical_aptitude_score: `${formatScoreFloat(logicalScore)} / 10.00`,
       logical_aptitude_obs: logicalObs,
-      homework_score: `${homeworkScore.toFixed(2)} / 10.00`,
+      homework_score: `${formatScoreFloat(homeworkScore)} / 10.00`,
       homework_obs: homeworkObs,
-      neatness_score: `${neatnessScore.toFixed(2)} / 10.00`,
+      neatness_score: `${formatScoreFloat(neatnessScore)} / 10.00`,
       neatness_obs: neatnessObs,
 
       overall_percentage: overallPercentage,
@@ -427,20 +428,15 @@ export default function ReportCardEditorModal({
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', marginBottom: '12px' }}>
               <div>
-                <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Hindi Length &amp; Time</label>
+                <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Hindi Reading Time</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
-                  <input
-                    type="number"
-                    value={parsePassageWords(hindiLengthTime)}
-                    onChange={(e) => setHindiLengthTime(`${e.target.value || '160'} Words • ${parsePassageTime(hindiLengthTime)}`)}
-                    style={{ width: '45px', background: 'transparent', border: 'none', color: '#F8FAFC', fontWeight: 700, outline: 'none', textAlign: 'right' }}
-                  />
-                  <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700 }}>Words •</span>
+                  <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700 }}>300 Words •</span>
                   <input
                     type="text"
                     value={parsePassageTime(hindiLengthTime)}
-                    onChange={(e) => setHindiLengthTime(`${parsePassageWords(hindiLengthTime)} Words • ${e.target.value}`)}
-                    style={{ width: '65px', background: 'transparent', border: 'none', color: '#F8FAFC', fontWeight: 700, outline: 'none' }}
+                    onChange={(e) => setHindiLengthTime(`300 Words • ${e.target.value}`)}
+                    placeholder="1m 25s"
+                    style={{ width: '75px', background: 'transparent', border: 'none', color: '#F8FAFC', fontWeight: 700, outline: 'none' }}
                   />
                 </div>
               </div>
@@ -461,16 +457,16 @@ export default function ReportCardEditorModal({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
                   <input
                     type="number"
-                    step="0.5"
+                    step="0.1"
                     min="0"
                     max="5"
                     value={parseCompCorrect(hindiComp)}
                     onChange={(e) => setHindiComp(formatCompString(parseFloat(e.target.value) || 0))}
-                    style={{ width: '38px', background: 'transparent', border: 'none', color: '#34D399', fontWeight: 800, textAlign: 'right', outline: 'none' }}
+                    style={{ width: '48px', background: 'transparent', border: 'none', color: '#34D399', fontWeight: 800, textAlign: 'right', outline: 'none' }}
                   />
-                  <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 5.0</span>
+                  <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 05.00</span>
                   <span style={{ fontSize: '0.70rem', color: '#F59E0B', fontWeight: 800 }}>
-                    ({Math.max(0, 5 - parseCompCorrect(hindiComp))} {Math.max(0, 5 - parseCompCorrect(hindiComp)) === 1 ? 'Error' : 'Errors'})
+                    ({formatScoreFloat(Math.max(0, 5 - parseCompCorrect(hindiComp)))} {Math.abs(Math.max(0, 5 - parseCompCorrect(hindiComp)) - 1) < 0.01 ? 'Error' : 'Errors'})
                   </span>
                 </div>
               </div>
@@ -493,20 +489,15 @@ export default function ReportCardEditorModal({
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
               <div>
-                <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>English Length &amp; Time</label>
+                <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>English Reading Time</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
-                  <input
-                    type="number"
-                    value={parsePassageWords(englishLengthTime)}
-                    onChange={(e) => setEnglishLengthTime(`${e.target.value || '175'} Words • ${parsePassageTime(englishLengthTime)}`)}
-                    style={{ width: '45px', background: 'transparent', border: 'none', color: '#F8FAFC', fontWeight: 700, outline: 'none', textAlign: 'right' }}
-                  />
-                  <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700 }}>Words •</span>
+                  <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700 }}>300 Words •</span>
                   <input
                     type="text"
                     value={parsePassageTime(englishLengthTime)}
-                    onChange={(e) => setEnglishLengthTime(`${parsePassageWords(englishLengthTime)} Words • ${e.target.value}`)}
-                    style={{ width: '65px', background: 'transparent', border: 'none', color: '#F8FAFC', fontWeight: 700, outline: 'none' }}
+                    onChange={(e) => setEnglishLengthTime(`300 Words • ${e.target.value}`)}
+                    placeholder="1m 35s"
+                    style={{ width: '75px', background: 'transparent', border: 'none', color: '#F8FAFC', fontWeight: 700, outline: 'none' }}
                   />
                 </div>
               </div>
@@ -527,16 +518,16 @@ export default function ReportCardEditorModal({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', padding: '3px 8px' }}>
                   <input
                     type="number"
-                    step="0.5"
+                    step="0.1"
                     min="0"
                     max="5"
                     value={parseCompCorrect(englishComp)}
                     onChange={(e) => setEnglishComp(formatCompString(parseFloat(e.target.value) || 0))}
-                    style={{ width: '38px', background: 'transparent', border: 'none', color: '#34D399', fontWeight: 800, textAlign: 'right', outline: 'none' }}
+                    style={{ width: '48px', background: 'transparent', border: 'none', color: '#34D399', fontWeight: 800, textAlign: 'right', outline: 'none' }}
                   />
-                  <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 5.0</span>
+                  <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700 }}>/ 05.00</span>
                   <span style={{ fontSize: '0.70rem', color: '#F59E0B', fontWeight: 800 }}>
-                    ({Math.max(0, 5 - parseCompCorrect(englishComp))} {Math.max(0, 5 - parseCompCorrect(englishComp)) === 1 ? 'Error' : 'Errors'})
+                    ({formatScoreFloat(Math.max(0, 5 - parseCompCorrect(englishComp)))} {Math.abs(Math.max(0, 5 - parseCompCorrect(englishComp)) - 1) < 0.01 ? 'Error' : 'Errors'})
                   </span>
                 </div>
               </div>
@@ -674,18 +665,18 @@ export default function ReportCardEditorModal({
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
               <div>
-                <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Respectful Manners Score (/10): <strong>{mannersScore}</strong></label>
-                <input type="range" min="1" max="10" step="0.5" value={mannersScore} onChange={(e) => setMannersScore(parseFloat(e.target.value))} style={{ width: '100%' }} />
+                <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Respectful Manners Score (/10): <strong>{formatScoreFloat(mannersScore)}</strong></label>
+                <input type="range" min="1" max="10" step="0.1" value={mannersScore} onChange={(e) => setMannersScore(parseFloat(e.target.value))} style={{ width: '100%' }} />
                 <textarea rows={2} value={mannersObs} onChange={(e) => setMannersObs(e.target.value)} placeholder="Polite, attentive; follows homework schedules obediently." style={{ width: '100%', padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC', fontSize: '0.8rem', marginTop: '4px' }} />
               </div>
               <div>
-                <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Confidence &amp; Articulation (/10): <strong>{confidenceScore}</strong></label>
-                <input type="range" min="1" max="10" step="0.5" value={confidenceScore} onChange={(e) => setConfidenceScore(parseFloat(e.target.value))} style={{ width: '100%' }} />
+                <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>Confidence &amp; Articulation (/10): <strong>{formatScoreFloat(confidenceScore)}</strong></label>
+                <input type="range" min="1" max="10" step="0.1" value={confidenceScore} onChange={(e) => setConfidenceScore(parseFloat(e.target.value))} style={{ width: '100%' }} />
                 <textarea rows={2} value={confidenceObs} onChange={(e) => setConfidenceObs(e.target.value)} placeholder="Answers without shyness; asks doubts with clarity." style={{ width: '100%', padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC', fontSize: '0.8rem', marginTop: '4px' }} />
               </div>
               <div>
-                <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>English Spoken Usage (/10): <strong>{englishUsageScore}</strong></label>
-                <input type="range" min="1" max="10" step="0.5" value={englishUsageScore} onChange={(e) => handleEnglishUsageChange(parseFloat(e.target.value))} style={{ width: '100%' }} />
+                <label style={{ fontSize: '0.78rem', color: '#94A3B8' }}>English Spoken Usage (/10): <strong>{formatScoreFloat(englishUsageScore)}</strong></label>
+                <input type="range" min="1" max="10" step="0.1" value={englishUsageScore} onChange={(e) => handleEnglishUsageChange(parseFloat(e.target.value))} style={{ width: '100%' }} />
                 <textarea rows={2} value={englishUsageObs} onChange={(e) => setEnglishUsageObs(e.target.value)} placeholder="~80% English words used actively during tuition hours." style={{ width: '100%', padding: '6px 10px', background: '#0F172A', border: '1px solid #334155', borderRadius: '6px', color: '#F8FAFC', fontSize: '0.8rem', marginTop: '4px' }} />
               </div>
             </div>

@@ -80,6 +80,15 @@ export const parseNumericScore = (val?: string | number): number => {
   return match ? parseFloat(match[1]) : 0;
 };
 
+// Helper: Format score as 2-decimal float with leading zero if single digit (e.g. "05.30", "10.00", "08.50")
+export const formatScoreFloat = (val?: number | string): string => {
+  if (val === undefined || val === null || val === '') return '00.00';
+  const num = typeof val === 'number' ? val : parseNumericScore(val);
+  const clamped = Math.max(0, num);
+  const fixed = clamped.toFixed(2);
+  return clamped < 10 ? `0${fixed}` : fixed;
+};
+
 // Helper: Parse WPM number from string like "110 WPM (Optimal)"
 export const parseWpmNumber = (val?: string): number => {
   if (!val) return 0;
@@ -87,21 +96,22 @@ export const parseWpmNumber = (val?: string): number => {
   return match ? parseInt(match[1], 10) : 0;
 };
 
-// Helper: Parse passage words count from string e.g. "160 Words • 1m 25s"
-export const parsePassageWords = (val?: string): number => {
-  if (!val) return 160;
-  const match = val.match(/([0-9]+)\s*Words/i);
-  return match ? parseInt(match[1], 10) : 160;
+// Helper: Parse passage words count from string e.g. "300 Words • 1m 25s" (Always 300 words)
+export const parsePassageWords = (_val?: string): number => {
+  return 300;
 };
 
-// Helper: Parse passage reading time from string e.g. "160 Words • 1m 25s"
+// Helper: Parse passage reading time from string e.g. "300 Words • 1m 25s"
 export const parsePassageTime = (val?: string): string => {
   if (!val) return '1m 25s';
   const parts = val.split('•');
-  return parts[1] ? parts[1].trim() : '1m 25s';
+  if (parts.length > 1) {
+    return parts[1].trim();
+  }
+  return val.replace(/^[0-9]+\s*Words\s*/i, '').trim() || '1m 25s';
 };
 
-// Helper: Parse comprehension correct questions score from string e.g. "4.0 / 5.0 Correct (1 Error)"
+// Helper: Parse comprehension correct questions score from string e.g. "04.00 / 05.00 Correct (01.00 Error)"
 export const parseCompCorrect = (val?: string | number): number => {
   if (val === undefined || val === null || val === '') return 4.0;
   if (typeof val === 'number') return val;
@@ -109,12 +119,12 @@ export const parseCompCorrect = (val?: string | number): number => {
   return match ? parseFloat(match[1]) : 4.0;
 };
 
-// Helper: Format comprehension string e.g. 4 -> "4.0 / 5.0 Correct (1 Error)"
+// Helper: Format comprehension string e.g. 4 -> "04.00 / 05.00 Correct (01.00 Error)"
 export const formatCompString = (correct: number): string => {
   const num = Math.max(0, Math.min(5, correct));
   const errCount = Math.max(0, 5 - num);
-  const errText = errCount === 1 ? '1 Error' : `${errCount} Errors`;
-  return `${num.toFixed(1)} / 5.0 Correct (${errText})`;
+  const errText = Math.abs(errCount - 1) < 0.01 ? 'Error' : 'Errors';
+  return `${formatScoreFloat(num)} / 05.00 Correct (${formatScoreFloat(errCount)} ${errText})`;
 };
 
 const DEFAULT_SAMPLE_DATA: MonthlyReportCard = {
@@ -130,42 +140,42 @@ const DEFAULT_SAMPLE_DATA: MonthlyReportCard = {
   evaluator_tutor_name: 'Vikash Kumar (Certified Cross-Examiner)',
   test_center_name: 'Horizon Central Assessment Center (Center #1)',
 
-  hindi_passage_length_time: '160 Words • 1m 25s',
+  hindi_passage_length_time: '300 Words • 1m 25s',
   hindi_speed_wpm: '113 WPM (Good)',
-  hindi_comprehension_qs: '4.0 / 5.0 Correct (1 Error)',
-  hindi_fluency: '8.50 / 10.00',
+  hindi_comprehension_qs: '04.00 / 05.00 Correct (01.00 Error)',
+  hindi_fluency: '08.50 / 10.00',
 
-  english_passage_length_time: '175 Words • 1m 35s',
+  english_passage_length_time: '300 Words • 1m 35s',
   english_speed_wpm: '110 WPM (Optimal)',
-  english_comprehension_qs: '5.0 / 5.0 Correct (0 Error)',
-  english_fluency: '9.00 / 10.00',
+  english_comprehension_qs: '05.00 / 05.00 Correct (00.00 Errors)',
+  english_fluency: '09.00 / 10.00',
 
   math_ch1_name: 'Ch 1: Integers, Number Line & Rules',
-  math_ch1_marks: '7.50 / 10.00',
+  math_ch1_marks: '07.50 / 10.00',
   math_ch1_status: 'Revision',
   math_ch2_name: 'Ch 2: Fractions, Decimals & Problem Sums',
-  math_ch2_marks: '8.50 / 10.00',
+  math_ch2_marks: '08.50 / 10.00',
   math_ch2_status: 'Cleared',
 
   science_ch1_name: 'Ch 1: Nutrition in Plants (Modes & Photosynthesis)',
-  science_ch1_marks: '9.00 / 10.00',
+  science_ch1_marks: '09.00 / 10.00',
   science_ch1_status: 'Cleared',
   science_ch2_name: 'Ch 2: Nutrition in Animals (Digestive Organs)',
-  science_ch2_marks: '7.50 / 10.00',
+  science_ch2_marks: '07.50 / 10.00',
   science_ch2_status: 'Revision',
 
   sst_ch1_name: 'Ch 1: Tracing Changes Through a Thousand Years',
-  sst_ch1_marks: '8.50 / 10.00',
+  sst_ch1_marks: '08.50 / 10.00',
   sst_ch1_status: 'Cleared',
   sst_ch2_name: 'Ch 2: Our Environment & Earth Interior Layers',
-  sst_ch2_marks: '8.00 / 10.00',
+  sst_ch2_marks: '08.00 / 10.00',
   sst_ch2_status: 'Cleared',
 
   lang_eng_name: 'English (Ch 1-2): Three Questions & The Squirrel',
-  lang_eng_marks: '9.00 / 10.00',
+  lang_eng_marks: '09.00 / 10.00',
   lang_eng_status: 'Cleared',
   lang_hindi_name: 'Hindi (Ch 1-2): हम पंछी उन्मुक्त गगन के & दादी माँ',
-  lang_hindi_marks: '8.50 / 10.00',
+  lang_hindi_marks: '08.50 / 10.00',
   lang_hindi_status: 'Cleared',
 
   manners_max: 10,
@@ -178,13 +188,13 @@ const DEFAULT_SAMPLE_DATA: MonthlyReportCard = {
   english_usage_score: 8.00,
   english_usage_obs: '',
 
-  mental_math_score: '9.00 / 10.00',
+  mental_math_score: '09.00 / 10.00',
   mental_math_obs: '',
-  logical_aptitude_score: '8.50 / 10.00',
+  logical_aptitude_score: '08.50 / 10.00',
   logical_aptitude_obs: '',
-  homework_score: '9.50 / 10.00',
+  homework_score: '09.50 / 10.00',
   homework_obs: '',
-  neatness_score: '8.00 / 10.00',
+  neatness_score: '08.00 / 10.00',
   neatness_obs: '',
 
   overall_percentage: 86.5,
@@ -329,7 +339,7 @@ export default function ReportCardInteractiveEditor({
     rawNum: string
   ) => {
     const num = Math.max(0, Math.min(10, parseFloat(rawNum) || 0));
-    const formattedMarks = `${num.toFixed(2)} / 10.00`;
+    const formattedMarks = `${formatScoreFloat(num)} / 10.00`;
     const computedStatus = computeChapterStatus(num);
 
     setFormData((prev) => ({
@@ -342,7 +352,7 @@ export default function ReportCardInteractiveEditor({
   // Dedicated Handler for Section 4 Pillars / Section 1 Fluency Score
   const handleScoreOnlyChange = (field: keyof MonthlyReportCard, rawNum: string) => {
     const num = Math.max(0, Math.min(10, parseFloat(rawNum) || 0));
-    const formattedMarks = `${num.toFixed(2)} / 10.00`;
+    const formattedMarks = `${formatScoreFloat(num)} / 10.00`;
     setFormData((prev) => ({
       ...prev,
       [field]: rawNum === '' ? '' : formattedMarks
@@ -360,17 +370,14 @@ export default function ReportCardInteractiveEditor({
     }));
   };
 
-  // Dedicated Handler for Passage Length & Time
-  const handlePassageLengthTimeChange = (
+  // Dedicated Handler for Passage Time (Locked 300 Words)
+  const handlePassageTimeChange = (
     field: 'hindi_passage_length_time' | 'english_passage_length_time',
-    wordsVal: string,
     timeVal: string
   ) => {
-    const words = wordsVal ? parseInt(wordsVal, 10) : 160;
-    const time = timeVal || '1m 25s';
     setFormData((prev) => ({
       ...prev,
-      [field]: `${words} Words • ${time}`
+      [field]: `300 Words • ${timeVal || '1m 25s'}`
     }));
   };
 
@@ -668,21 +675,12 @@ export default function ReportCardInteractiveEditor({
                     <span className="table-text-cell">{formData.hindi_passage_length_time}</span>
                   ) : (
                     <div className="locked-passage-wrap">
-                      <input
-                        type="number"
-                        min="0"
-                        max="1000"
-                        className="live-words-num-input"
-                        value={parsePassageWords(formData.hindi_passage_length_time)}
-                        onChange={(e) => handlePassageLengthTimeChange('hindi_passage_length_time', e.target.value, parsePassageTime(formData.hindi_passage_length_time))}
-                        placeholder="160"
-                      />
-                      <span className="locked-sep">Words •</span>
+                      <span className="locked-sep">300 Words •</span>
                       <input
                         type="text"
                         className="live-time-input"
                         value={parsePassageTime(formData.hindi_passage_length_time)}
-                        onChange={(e) => handlePassageLengthTimeChange('hindi_passage_length_time', String(parsePassageWords(formData.hindi_passage_length_time)), e.target.value)}
+                        onChange={(e) => handlePassageTimeChange('hindi_passage_length_time', e.target.value)}
                         placeholder="1m 25s"
                       />
                     </div>
@@ -715,17 +713,17 @@ export default function ReportCardInteractiveEditor({
                     <div className="locked-comp-wrap">
                       <input
                         type="number"
-                        step="0.5"
+                        step="0.1"
                         min="0"
                         max="5"
                         className="live-comp-num-input"
                         value={parseCompCorrect(formData.hindi_comprehension_qs)}
                         onChange={(e) => handleCompScoreChange('hindi_comprehension_qs', e.target.value)}
-                        placeholder="4.0"
+                        placeholder="04.00"
                       />
-                      <span className="locked-comp-denom">/ 5.0 Correct</span>
+                      <span className="locked-comp-denom">/ 05.00 Correct</span>
                       <span className="locked-comp-error">
-                        ({Math.max(0, 5 - parseCompCorrect(formData.hindi_comprehension_qs))} {Math.max(0, 5 - parseCompCorrect(formData.hindi_comprehension_qs)) === 1 ? 'Error' : 'Errors'})
+                        ({formatScoreFloat(Math.max(0, 5 - parseCompCorrect(formData.hindi_comprehension_qs)))} {Math.abs(Math.max(0, 5 - parseCompCorrect(formData.hindi_comprehension_qs)) - 1) < 0.01 ? 'Error' : 'Errors'})
                       </span>
                     </div>
                   )}
@@ -743,7 +741,7 @@ export default function ReportCardInteractiveEditor({
                         className="live-score-num-input"
                         value={parseNumericScore(formData.hindi_fluency) || ''}
                         onChange={(e) => handleScoreOnlyChange('hindi_fluency', e.target.value)}
-                        placeholder="8.5"
+                        placeholder="08.50"
                       />
                       <span className="locked-denom">/ 10.00</span>
                     </div>
@@ -762,21 +760,12 @@ export default function ReportCardInteractiveEditor({
                     <span className="table-text-cell">{formData.english_passage_length_time}</span>
                   ) : (
                     <div className="locked-passage-wrap">
-                      <input
-                        type="number"
-                        min="0"
-                        max="1000"
-                        className="live-words-num-input"
-                        value={parsePassageWords(formData.english_passage_length_time)}
-                        onChange={(e) => handlePassageLengthTimeChange('english_passage_length_time', e.target.value, parsePassageTime(formData.english_passage_length_time))}
-                        placeholder="175"
-                      />
-                      <span className="locked-sep">Words •</span>
+                      <span className="locked-sep">300 Words •</span>
                       <input
                         type="text"
                         className="live-time-input"
                         value={parsePassageTime(formData.english_passage_length_time)}
-                        onChange={(e) => handlePassageLengthTimeChange('english_passage_length_time', String(parsePassageWords(formData.english_passage_length_time)), e.target.value)}
+                        onChange={(e) => handlePassageTimeChange('english_passage_length_time', e.target.value)}
                         placeholder="1m 35s"
                       />
                     </div>
@@ -809,17 +798,17 @@ export default function ReportCardInteractiveEditor({
                     <div className="locked-comp-wrap">
                       <input
                         type="number"
-                        step="0.5"
+                        step="0.1"
                         min="0"
                         max="5"
                         className="live-comp-num-input"
                         value={parseCompCorrect(formData.english_comprehension_qs)}
                         onChange={(e) => handleCompScoreChange('english_comprehension_qs', e.target.value)}
-                        placeholder="5.0"
+                        placeholder="05.00"
                       />
-                      <span className="locked-comp-denom">/ 5.0 Correct</span>
+                      <span className="locked-comp-denom">/ 05.00 Correct</span>
                       <span className="locked-comp-error">
-                        ({Math.max(0, 5 - parseCompCorrect(formData.english_comprehension_qs))} {Math.max(0, 5 - parseCompCorrect(formData.english_comprehension_qs)) === 1 ? 'Error' : 'Errors'})
+                        ({formatScoreFloat(Math.max(0, 5 - parseCompCorrect(formData.english_comprehension_qs)))} {Math.abs(Math.max(0, 5 - parseCompCorrect(formData.english_comprehension_qs)) - 1) < 0.01 ? 'Error' : 'Errors'})
                       </span>
                     </div>
                   )}
@@ -837,7 +826,7 @@ export default function ReportCardInteractiveEditor({
                         className="live-score-num-input"
                         value={parseNumericScore(formData.english_fluency) || ''}
                         onChange={(e) => handleScoreOnlyChange('english_fluency', e.target.value)}
-                        placeholder="9.0"
+                        placeholder="09.00"
                       />
                       <span className="locked-denom">/ 10.00</span>
                     </div>
@@ -1218,7 +1207,7 @@ export default function ReportCardInteractiveEditor({
                 <td className="table-text-cell">10.00</td>
                 <td>
                   {isPreviewMode ? (
-                    <span className="table-score-cell highlight-green">{formData.manners_score?.toFixed(2)}</span>
+                    <span className="table-score-cell highlight-green">{formatScoreFloat(formData.manners_score ?? 9.5)}</span>
                   ) : (
                     <input
                       type="number"
@@ -1255,7 +1244,7 @@ export default function ReportCardInteractiveEditor({
                 <td className="table-text-cell">10.00</td>
                 <td>
                   {isPreviewMode ? (
-                    <span className="table-score-cell highlight-green">{formData.confidence_score?.toFixed(2)}</span>
+                    <span className="table-score-cell highlight-green">{formatScoreFloat(formData.confidence_score ?? 8.5)}</span>
                   ) : (
                     <input
                       type="number"
@@ -1292,7 +1281,7 @@ export default function ReportCardInteractiveEditor({
                 <td className="table-text-cell">10.00</td>
                 <td>
                   {isPreviewMode ? (
-                    <span className="table-score-cell highlight-purple">{formData.english_usage_score?.toFixed(2)}</span>
+                    <span className="table-score-cell highlight-purple">{formatScoreFloat(formData.english_usage_score ?? 8.0)}</span>
                   ) : (
                     <input
                       type="number"

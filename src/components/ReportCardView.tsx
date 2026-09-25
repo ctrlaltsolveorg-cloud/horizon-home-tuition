@@ -122,20 +122,20 @@ export default function ReportCardView({
                   <div className="table-primary-text">Hindi Passage Reading</div>
                   <div className="table-secondary-text">(शुद्धता एवं स्पष्ट उच्चारण)</div>
                 </td>
-                <td className="table-text-cell">{report.hindi_passage_length_time || '160 Words • 1m 25s'}</td>
+                <td className="table-text-cell">{report.hindi_passage_length_time || '300 Words • 1m 25s'}</td>
                 <td className="table-text-cell font-bold">{report.hindi_speed_wpm || '113 WPM (Good)'}</td>
-                <td className="table-text-cell highlight-green">{report.hindi_comprehension_qs || '4.0 / 5.0 Correct (1 Error)'}</td>
-                <td className="table-score-cell">{report.hindi_fluency || '8.50 / 10.00'}</td>
+                <td className="table-text-cell highlight-green">{report.hindi_comprehension_qs || '04.00 / 05.00 Correct (01.00 Error)'}</td>
+                <td className="table-score-cell">{report.hindi_fluency || '08.50 / 10.00'}</td>
               </tr>
               <tr>
                 <td>
                   <div className="table-primary-text">English Passage Reading</div>
                   <div className="table-secondary-text">(Pace &amp; Pronunciation)</div>
                 </td>
-                <td className="table-text-cell">{report.english_passage_length_time || '175 Words • 1m 35s'}</td>
+                <td className="table-text-cell">{report.english_passage_length_time || '300 Words • 1m 35s'}</td>
                 <td className="table-text-cell font-bold">{report.english_speed_wpm || '110 WPM (Optimal)'}</td>
-                <td className="table-text-cell highlight-green">{report.english_comprehension_qs || '5.0 / 5.0 Correct (0 Error)'}</td>
-                <td className="table-score-cell">{report.english_fluency || '9.00 / 10.00'}</td>
+                <td className="table-text-cell highlight-green">{report.english_comprehension_qs || '05.00 / 05.00 Correct (00.00 Errors)'}</td>
+                <td className="table-score-cell">{report.english_fluency || '09.00 / 10.00'}</td>
               </tr>
             </tbody>
           </table>
