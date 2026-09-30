@@ -94,30 +94,63 @@ export default function SingleReportCardPage() {
   useEffect(() => {
     const fetchReport = async () => {
       try {
-        if (!reportId || reportId === 'demo' || reportId === 'sample') {
-          setReport(SAMPLE_AUDIT_REPORT);
+        const isUUID = (str: any) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+
+        // Fetch from Supabase
+        let matched: any = null;
+        try {
+          if (isUUID(reportId)) {
+            const { data } = await supabase
+              .from('monthly_report_cards')
+              .select('*')
+              .eq('id', reportId)
+              .maybeSingle();
+            matched = data;
+          } else if (reportId && reportId !== 'demo' && reportId !== 'sample') {
+            const { data } = await supabase
+              .from('monthly_report_cards')
+              .select('*')
+              .or(`report_code.eq.${reportId},student_id.eq.${reportId}`)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            matched = data;
+          }
+
+          // If not matched by exact ID, try fetching the latest report
+          if (!matched) {
+            const { data: latestList } = await supabase
+              .from('monthly_report_cards')
+              .select('*')
+              .order('created_at', { ascending: false })
+              .limit(1);
+            if (latestList && latestList.length > 0) {
+              matched = latestList[0];
+            }
+          }
+        } catch (dbErr) {
+          console.warn('DB query error:', dbErr);
+        }
+
+        if (matched) {
+          setReport(matched);
           setLoading(false);
           return;
         }
 
-        // Fetch from Supabase
-        const { data, error } = await supabase
-          .from('monthly_report_cards')
-          .select('*')
-          .eq('id', reportId)
-          .maybeSingle();
-
-        if (data && !error) {
-          setReport(data);
-        } else {
-          // Check localstorage or fallback to sample
-          const localSaved = localStorage.getItem(`horizon_report_${reportId}`);
+        // Check localstorage
+        if (typeof window !== 'undefined') {
+          const localSaved = 
+            localStorage.getItem(`horizon_report_${reportId}`) || 
+            localStorage.getItem('horizon_report_latest');
           if (localSaved) {
             setReport(JSON.parse(localSaved));
-          } else {
-            setReport({ ...SAMPLE_AUDIT_REPORT, id: reportId });
+            setLoading(false);
+            return;
           }
         }
+
+        setReport(SAMPLE_AUDIT_REPORT);
       } catch (e) {
         console.warn('Error loading report card:', e);
         setReport(SAMPLE_AUDIT_REPORT);

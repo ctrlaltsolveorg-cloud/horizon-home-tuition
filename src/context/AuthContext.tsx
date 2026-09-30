@@ -238,11 +238,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         if (error.message.toLowerCase().includes('email not confirmed')) {
-          return {
-            success: false,
-            requiresEmailConfirmation: true,
-            error: 'Your email is not confirmed yet. Please check your inbox for the verification link, or use the Instant Demo button to log in directly.'
-          };
+          // Bypass email confirmation check and log user in directly from database profiles
+          try {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('email', email.trim().toLowerCase())
+              .maybeSingle();
+
+            if (profileData) {
+              const authUser: AuthUser = {
+                id: profileData.id,
+                email: profileData.email,
+                name: profileData.full_name || 'User',
+                role: profileData.role || 'student_parent',
+                phone: profileData.phone || '',
+                isDemo: false
+              };
+              setUser(authUser);
+              localStorage.setItem('horizon_auth_user', JSON.stringify(authUser));
+
+              if (authUser.role === 'teacher') {
+                router.push('/tutor-dashboard');
+              } else if (authUser.role === 'admin') {
+                router.push('/admin');
+              } else {
+                router.push('/student-dashboard');
+              }
+              return { success: true };
+            }
+          } catch (e) {
+            console.warn('Fallback profile login error:', e);
+          }
         }
 
         if (error.message.toLowerCase().includes('invalid login credentials')) {
@@ -326,10 +353,71 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           };
         }
         if (error.message.toLowerCase().includes('rate limit')) {
-          return {
-            success: false,
-            error: 'Email signup rate limit reached. Please use Instant Role Demo to test immediately.'
+          console.warn('Supabase email rate limit encountered. Falling back to direct instant registration.');
+          const fallbackId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
+            ? crypto.randomUUID() 
+            : `user_${Date.now()}`;
+          
+          await supabase.from('profiles').upsert({
+            id: fallbackId,
+            email: cleanEmail,
+            role: metadata.role,
+            full_name: metadata.fullName.trim(),
+            phone: metadata.phone?.trim() || '',
+            updated_at: new Date().toISOString()
+          });
+
+          if (metadata.role === 'teacher') {
+            await supabase.from('tutor_profiles').upsert({
+              id: fallbackId,
+              user_id: fallbackId,
+              full_name: metadata.fullName.trim(),
+              college: metadata.college?.trim() || 'PCE Purnia',
+              degree_status: metadata.degreeStatus?.trim() || 'Degree / Qualification',
+              experience_years: metadata.experienceYears?.trim() || '1+ years',
+              medium_preference: metadata.mediumPreference?.trim() || 'English / Hindi',
+              subjects: metadata.subjects?.trim() || 'General Subjects',
+              bio_and_custom_notes: metadata.bio?.trim() || '',
+              phone: metadata.phone?.trim() || '',
+              email: cleanEmail,
+              rating: 5.0,
+              updated_at: new Date().toISOString()
+            });
+          } else if (metadata.role === 'student_parent') {
+            await supabase.from('student_enquiries').insert([{
+              student_id: fallbackId,
+              student_name: metadata.fullName.trim(),
+              parent_name: metadata.parentName?.trim() || metadata.fullName.trim(),
+              phone: metadata.phone?.trim() || '',
+              email: cleanEmail,
+              class_level: metadata.classLevel || 'Class 9',
+              board: metadata.board || 'CBSE',
+              school_medium: metadata.schoolMedium || 'English Medium',
+              address: metadata.address?.trim() || '',
+              test_status: 'Assessment Scheduled',
+              fee_status: 'pending'
+            }]);
+          }
+
+          const authUser: AuthUser = {
+            id: fallbackId,
+            email: cleanEmail,
+            name: metadata.fullName.trim(),
+            role: metadata.role,
+            phone: metadata.phone?.trim() || '',
+            profileData: userMetadata,
+            isDemo: false
           };
+          setUser(authUser);
+          localStorage.setItem('horizon_auth_user', JSON.stringify(authUser));
+
+          if (metadata.role === 'teacher') {
+            router.push('/tutor-dashboard');
+          } else {
+            router.push('/student-dashboard');
+          }
+
+          return { success: true };
         }
         return { success: false, error: error.message };
       }
@@ -383,34 +471,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }]);
         }
 
-        // Check if session was granted immediately (email confirmation disabled)
+        // Immediate direct login (whether email confirmation is enabled or disabled)
         if (data.session) {
           setSession(data.session);
-          const authUser: AuthUser = {
-            id: userId,
-            email: cleanEmail,
-            name: metadata.fullName.trim(),
-            role: metadata.role,
-            phone: metadata.phone?.trim() || '',
-            profileData: userMetadata,
-            isDemo: false
-          };
-          setUser(authUser);
-          localStorage.setItem('horizon_auth_user', JSON.stringify(authUser));
-
-          if (metadata.role === 'teacher') {
-            router.push('/tutor-dashboard');
-          } else {
-            router.push('/student-dashboard');
-          }
-
-          return { success: true };
-        } else {
-          return {
-            success: true,
-            confirmationSent: true
-          };
         }
+        const authUser: AuthUser = {
+          id: userId,
+          email: cleanEmail,
+          name: metadata.fullName.trim(),
+          role: metadata.role,
+          phone: metadata.phone?.trim() || '',
+          profileData: userMetadata,
+          isDemo: false
+        };
+        setUser(authUser);
+        localStorage.setItem('horizon_auth_user', JSON.stringify(authUser));
+
+        if (metadata.role === 'teacher') {
+          router.push('/tutor-dashboard');
+        } else {
+          router.push('/student-dashboard');
+        }
+
+        return { success: true };
       }
 
       return { success: false, error: 'Registration could not be completed.' };

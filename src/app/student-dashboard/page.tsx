@@ -39,6 +39,8 @@ export default function StudentDashboard() {
   const [tutor, setTutor] = useState<any>(null);
   const [reports, setReports] = useState<any[]>([]);
   const [selectedReportIndex, setSelectedReportIndex] = useState(0);
+  const [officialReportCard, setOfficialReportCard] = useState<any>(null);
+  const [studentReportCardsList, setStudentReportCardsList] = useState<any[]>([]);
 
   // Live countdown state for Diagnostic Assessment
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number; isPast: boolean }>({
@@ -219,6 +221,60 @@ export default function StudentDashboard() {
             }
           ]);
         }
+
+        // Fetch official evaluated report cards specifically for THIS student
+        let studentCards: any[] = [];
+        try {
+          const { data: cards } = await supabase
+            .from('monthly_report_cards')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (cards && cards.length > 0) {
+            const currentStudentName = (enquiryData?.student_name || user?.name || '').toLowerCase().trim();
+            const currentStudentFirstName = currentStudentName.split(' ')[0];
+
+            studentCards = cards.filter((c: any) => {
+              const cName = (c.student_name || '').toLowerCase().trim();
+              const cId = c.student_id;
+              if (user?.id && cId === user.id) return true;
+              if (enquiryData?.id && cId === enquiryData.id) return true;
+              if (currentStudentFirstName && cName.includes(currentStudentFirstName)) return true;
+              return false;
+            });
+
+            // If no exact name match, fallback to all cards for demo viewing
+            if (studentCards.length === 0 && (!user || user.isDemo)) {
+              studentCards = cards;
+            }
+          }
+        } catch (cardErr) {
+          console.warn('Error fetching official monthly report cards:', cardErr);
+        }
+
+        // Check local storage for real-time immediate updates
+        if (typeof window !== 'undefined') {
+          try {
+            const studentSlug = (enquiryData?.student_name || user?.name || 'student').toLowerCase().replace(/\s+/g, '_');
+            const localStr = localStorage.getItem(`horizon_report_latest_${studentSlug}`) || localStorage.getItem('horizon_report_latest');
+            if (localStr) {
+              const parsed = JSON.parse(localStr);
+              if (parsed && parsed.student_name) {
+                const existingIdx = studentCards.findIndex(c => c.id === parsed.id || c.assessment_month === parsed.assessment_month);
+                if (existingIdx >= 0) {
+                  studentCards[existingIdx] = { ...studentCards[existingIdx], ...parsed };
+                } else {
+                  studentCards.unshift(parsed);
+                }
+              }
+            }
+          } catch (e) {}
+        }
+
+        setStudentReportCardsList(studentCards);
+        if (studentCards.length > 0) {
+          setOfficialReportCard(studentCards[0]);
+        }
       } catch (e) {
         console.error('Error loading student dashboard:', e);
       } finally {
@@ -227,6 +283,21 @@ export default function StudentDashboard() {
     }
 
     loadData();
+
+    // Event listener for live report updates across tabs or from editor
+    const handleReportUpdate = (e: any) => {
+      if (e.detail) {
+        setOfficialReportCard(e.detail);
+      } else {
+        loadData();
+      }
+    };
+    window.addEventListener('horizon_report_updated', handleReportUpdate);
+    window.addEventListener('storage', handleReportUpdate);
+    return () => {
+      window.removeEventListener('horizon_report_updated', handleReportUpdate);
+      window.removeEventListener('storage', handleReportUpdate);
+    };
   }, []);
 
   const formatDate = (dateString?: string) => {
@@ -853,22 +924,22 @@ export default function StudentDashboard() {
                     fontWeight: 800,
                     marginBottom: '6px'
                   }}>
-                    September 2026
+                    {officialReportCard?.assessment_month || 'September, 2026'}
                   </span>
                   <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px' }}>
-                    Horizon Monthly Assessment
+                    {officialReportCard?.student_name ? `${officialReportCard.student_name}'s Monthly Assessment` : 'Horizon Monthly Assessment'}
                   </h3>
                   <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
-                    Conducted by: <strong style={{ color: 'var(--text-primary)' }}>Horizon Academic Assessment Cell</strong>
+                    Conducted by: <strong style={{ color: 'var(--text-primary)' }}>{officialReportCard?.evaluator_tutor_name || officialReportCard?.assigned_tutor_name || 'Horizon Academic Assessment Cell'}</strong>
                   </div>
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '1.65rem', fontWeight: 900, color: 'var(--primary)', fontFamily: 'monospace' }}>
-                    86.5%
+                    {officialReportCard?.overall_percentage ? `${officialReportCard.overall_percentage.toFixed(1)}%` : '86.5%'}
                   </div>
                   <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#10B981' }}>
-                    Grade A+ Outstanding
+                    {officialReportCard?.grade || 'Grade A+ Outstanding'}
                   </div>
                 </div>
               </div>
@@ -884,11 +955,15 @@ export default function StudentDashboard() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#F59E0B', fontWeight: 700, marginBottom: '2px' }}>
                   <ShieldCheck size={14} /> Independent Cross-Examiner Audit
                 </div>
-                <span>Evaluated independently by certified cross-examiner faculty to guarantee 100% unbiased academic verification.</span>
+                <span>
+                  {officialReportCard
+                    ? `Class: ${officialReportCard.class_grade || 'Class 7th'} • Target: ${officialReportCard.next_month_target || 'Continuous Academic Mastery'} • Focus: ${officialReportCard.focus_recommendation || 'Daily Habit Building'}`
+                    : 'Evaluated independently by certified cross-examiner faculty to guarantee 100% unbiased academic verification.'}
+                </span>
               </div>
 
               <Link
-                href="/report-card/rep-sample-001"
+                href={`/report-card/${officialReportCard?.id || officialReportCard?.report_code || 'rep-sample-001'}`}
                 style={{
                   display: 'flex',
                   alignItems: 'center',

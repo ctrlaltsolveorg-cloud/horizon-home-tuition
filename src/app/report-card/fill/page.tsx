@@ -6,6 +6,8 @@ import ReportCardInteractiveEditor from '@/components/ReportCardInteractiveEdito
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
+import { supabase, MonthlyReportCard } from '@/lib/supabase';
+
 function FillReportCardContent() {
   const searchParams = useSearchParams();
   const studentName = searchParams.get('studentName') || undefined;
@@ -14,7 +16,57 @@ function FillReportCardContent() {
   const dutyId = searchParams.get('dutyId') || undefined;
   const centerName = searchParams.get('centerName') || undefined;
 
-  const initialReport = {
+  const [loadedReport, setLoadedReport] = React.useState<Partial<MonthlyReportCard> | null>(null);
+
+  React.useEffect(() => {
+    async function fetchExistingReport() {
+      let existing: any = null;
+      const targetName = studentName || 'Aarav Sharma';
+      const firstName = targetName.split(' ')[0].toLowerCase();
+
+      try {
+        // Query Supabase for latest report card for this student
+        const { data } = await supabase
+          .from('monthly_report_cards')
+          .select('*')
+          .ilike('student_name', `%${firstName}%`)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (data) {
+          existing = data;
+        }
+      } catch (err) {
+        console.warn('Error fetching existing report from DB:', err);
+      }
+
+      // Check localStorage fallback
+      if (!existing && typeof window !== 'undefined') {
+        try {
+          const studentSlug = targetName.toLowerCase().replace(/\s+/g, '_');
+          const localStr = localStorage.getItem(`horizon_report_latest_${studentSlug}`) || localStorage.getItem('horizon_report_latest');
+          if (localStr) {
+            existing = JSON.parse(localStr);
+          }
+        } catch (e) {}
+      }
+
+      const merged = {
+        ...(existing || {}),
+        ...(studentName ? { student_name: studentName } : {}),
+        ...(classGrade ? { class_grade: classGrade } : {}),
+        ...(tutorName ? { assigned_tutor_name: tutorName } : {}),
+        ...(centerName ? { test_center_name: centerName } : {})
+      };
+
+      setLoadedReport(merged);
+    }
+
+    fetchExistingReport();
+  }, [studentName, classGrade, tutorName, centerName]);
+
+  const initialReport = loadedReport || {
     ...(studentName ? { student_name: studentName } : {}),
     ...(classGrade ? { class_grade: classGrade } : {}),
     ...(tutorName ? { assigned_tutor_name: tutorName } : {}),

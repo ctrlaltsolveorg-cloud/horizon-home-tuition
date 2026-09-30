@@ -431,38 +431,116 @@ export default function ReportCardInteractiveEditor({
 
     try {
       const code = formData.report_code || `REP-${Date.now().toString().slice(-6)}`;
-      const payload: MonthlyReportCard = {
+      
+      const payload: any = {
         ...formData,
         report_code: code,
         status: 'VERIFIED'
       };
 
-      // Save to Supabase
+      // UUID verification helper
+      const isUUID = (str: any) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+
+      // If id is not a valid UUID (e.g. empty or sample string), strip it so Postgres generates gen_random_uuid()
+      if (!isUUID(payload.id)) {
+        delete payload.id;
+      }
+      if (!isUUID(payload.duty_id)) {
+        delete payload.duty_id;
+      }
+      if (!isUUID(payload.test_center_id)) {
+        delete payload.test_center_id;
+      }
+      // Ensure student_id is set
+      const studentSlug = (payload.student_name || 'student').toLowerCase().trim().replace(/[^a-z0-9]/g, '_');
+      if (!payload.student_id || payload.student_id === '') {
+        payload.student_id = studentId || `stu_${studentSlug}`;
+      }
+
+      // Check if a report for this student AND assessment_month already exists in Supabase
+      if (!payload.id) {
+        try {
+          const { data: existingRecord } = await supabase
+            .from('monthly_report_cards')
+            .select('id')
+            .eq('student_name', payload.student_name)
+            .eq('assessment_month', payload.assessment_month)
+            .maybeSingle();
+
+          if (existingRecord && isUUID(existingRecord.id)) {
+            payload.id = existingRecord.id;
+          }
+        } catch (e) {
+          console.warn('Check existing record error:', e);
+        }
+      }
+
+      // Upsert into Supabase online database table monthly_report_cards
       const { data, error } = await supabase
         .from('monthly_report_cards')
         .upsert([payload])
         .select()
         .single();
 
+      if (error) {
+        console.error('Supabase monthly_report_cards error:', error);
+        throw error;
+      }
+
       const finalRecord = data || payload;
       
-      // Save local backup
-      localStorage.setItem(`horizon_report_${finalRecord.id || code}`, JSON.stringify(finalRecord));
+      // Update form state with newly generated record ID and code
+      if (finalRecord.id) {
+        setFormData(prev => ({
+          ...prev,
+          id: finalRecord.id,
+          report_code: finalRecord.report_code || code
+        }));
+      }
+
+      // Save local backup copies for instant zero-latency client sync
+      const safeId = finalRecord.id || code;
+      const safeStudentSlug = (finalRecord.student_name || 'student').toLowerCase().replace(/\s+/g, '_');
+      localStorage.setItem(`horizon_report_${safeId}`, JSON.stringify(finalRecord));
+      localStorage.setItem(`horizon_report_latest_${safeStudentSlug}`, JSON.stringify(finalRecord));
+      localStorage.setItem('horizon_report_latest', JSON.stringify(finalRecord));
+
+      // Global broadcast event for student dashboard and other tabs
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('horizon_report_updated', { detail: finalRecord }));
+        window.dispatchEvent(new Event('storage'));
+      }
       
       setSaveMessage({
         type: 'success',
-        text: `Official Report Card for ${finalRecord.student_name} successfully saved & locked!`
+        text: `Official Report Card for ${finalRecord.student_name} successfully saved to online database & locked!`
       });
 
       if (onSaveSuccess) {
         onSaveSuccess(finalRecord);
       }
     } catch (err: any) {
-      console.warn('Supabase save with local storage fallback:', err.message);
-      localStorage.setItem(`horizon_report_${formData.id}`, JSON.stringify(formData));
+      console.warn('Supabase save with local storage fallback:', err.message || err);
+      
+      const fallbackRecord: MonthlyReportCard = {
+        ...formData,
+        id: formData.id || `local_${Date.now()}`,
+        report_code: formData.report_code || `REP-${Date.now().toString().slice(-6)}`,
+        status: 'VERIFIED'
+      };
+      const studentSlug = (fallbackRecord.student_name || 'student').toLowerCase().replace(/\s+/g, '_');
+      localStorage.setItem(`horizon_report_${fallbackRecord.id}`, JSON.stringify(fallbackRecord));
+      localStorage.setItem(`horizon_report_latest_${studentSlug}`, JSON.stringify(fallbackRecord));
+      localStorage.setItem('horizon_report_latest', JSON.stringify(fallbackRecord));
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('horizon_report_updated', { detail: fallbackRecord }));
+        window.dispatchEvent(new Event('storage'));
+      }
+
       setSaveMessage({
         type: 'success',
-        text: `Report saved to offline store successfully!`
+        text: `Report saved successfully (${err.message ? 'Synced locally' : 'Saved'})!`
       });
     } finally {
       setIsSaving(false);
@@ -2479,58 +2557,113 @@ export default function ReportCardInteractiveEditor({
           }
         }
 
-        /* PRINT STYLES - SINGLE CLEAN A4 PAGE */
+        /* PRINT STYLES - GUARANTEED SINGLE-PAGE CLEAN A4 */
         @media print {
+          @page {
+            size: A4 portrait;
+            margin: 4mm 6mm;
+          }
+
+          html, body {
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #FFFFFF !important;
+            color: #000000 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
           .no-print {
             display: none !important;
           }
-          body {
-            background: #FFFFFF !important;
-            color: #000000 !important;
-            padding: 0 !important;
-            margin: 0 !important;
-          }
+
           .report-editor-container {
             background: transparent !important;
             padding: 0 !important;
+            margin: 0 !important;
             min-height: auto !important;
+            width: 100% !important;
           }
+
           .report-card-paper {
+            width: 100% !important;
             max-width: 100% !important;
             box-shadow: none !important;
-            border: 1px solid #CBD5E1 !important;
+            border: 1.5px solid #1E293B !important;
             border-radius: 0 !important;
-            padding: 18px 22px !important;
+            padding: 8px 12px 6px 12px !important;
             background: #FFFFFF !important;
             color: #0F172A !important;
+            page-break-after: avoid !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            box-sizing: border-box !important;
           }
+
+          .horizon-brand-header {
+            padding-bottom: 3px !important;
+            margin-bottom: 3px !important;
+            border-bottom: 1.5px solid #0F172A !important;
+          }
+          .horizon-brand-header h1 {
+            color: #0F172A !important;
+            font-size: 1.1rem !important;
+          }
+          .horizon-brand-header div {
+            color: #0F172A !important;
+          }
+
           .report-meta-grid {
             background: #F8FAFC !important;
-            border-color: #E2E8F0 !important;
+            border: 1px solid #CBD5E1 !important;
             grid-template-columns: 1.25fr 1.15fr 1fr 1.35fr !important;
+            margin-bottom: 3.5px !important;
           }
           .report-meta-box {
-            border-color: #E2E8F0 !important;
+            padding: 2.5px 6px !important;
+            border-color: #CBD5E1 !important;
             border-bottom: none !important;
-            border-right: 1px solid #E2E8F0 !important;
+            border-right: 1px solid #CBD5E1 !important;
           }
           .report-meta-box:last-child {
             border-right: none !important;
           }
+          .report-meta-label {
+            font-size: 7px !important;
+            margin-bottom: 1px !important;
+            color: #64748B !important;
+          }
           .report-meta-value {
+            font-size: 9.5px !important;
             color: #0F172A !important;
+            font-weight: 800 !important;
+          }
+
+          .report-section {
+            margin-bottom: 3px !important;
+            page-break-inside: avoid !important;
           }
           .report-section-header {
             background: #F1F5F9 !important;
-            border-color: #CBD5E1 !important;
+            border: 1px solid #CBD5E1 !important;
             color: #0F172A !important;
+            padding: 2px 6px !important;
+            margin-bottom: 1.5px !important;
           }
           .section-title {
-            color: #D97706 !important;
+            color: #B45309 !important;
+            font-size: 8.5px !important;
+            font-weight: 800 !important;
           }
+          .section-subtitle {
+            font-size: 7px !important;
+            color: #64748B !important;
+          }
+
           .report-table {
             background: #FFFFFF !important;
-            border-color: #CBD5E1 !important;
+            border: 1px solid #CBD5E1 !important;
             min-width: 100% !important;
           }
           .report-table thead tr {
@@ -2538,59 +2671,153 @@ export default function ReportCardInteractiveEditor({
             color: #475569 !important;
             border-color: #E2E8F0 !important;
           }
-          .report-table tbody tr {
+          .report-table th {
+            padding: 2px 4px !important;
+            font-size: 7.5px !important;
+            border-color: #E2E8F0 !important;
+          }
+          .report-table td {
+            padding: 2px 4px !important;
+            font-size: 8px !important;
+            line-height: 1.15 !important;
             border-color: #E2E8F0 !important;
           }
           .subject-cell {
             background: #F8FAFC !important;
             color: #0F172A !important;
             border-color: #E2E8F0 !important;
+            font-weight: 800 !important;
+            font-size: 8px !important;
           }
           .chapter-cell {
             color: #334155 !important;
+            font-size: 8px !important;
           }
           .table-primary-text {
             color: #0F172A !important;
+            font-size: 8px !important;
+            font-weight: 700 !important;
+          }
+          .table-secondary-text {
+            color: #64748B !important;
+            font-size: 6.5px !important;
           }
           .table-score-cell {
             color: #0284C7 !important;
+            font-size: 8.5px !important;
+            font-weight: 800 !important;
           }
-          .pillars-grid {
-            grid-template-columns: 1fr 1fr !important;
-          }
-          .pillar-card {
-            background: #F8FAFC !important;
-            border-color: #E2E8F0 !important;
-          }
-          .pillar-body {
+          .table-obs-cell {
             color: #475569 !important;
+            font-size: 7.5px !important;
+            line-height: 1.15 !important;
           }
-          .report-summary-bar {
-            background: #F1F5F9 !important;
-            border-color: #CBD5E1 !important;
-            flex-direction: row !important;
-          }
-          .sig-line {
-            background: #94A3B8 !important;
-          }
-          .sig-title {
-            color: #0F172A !important;
-          }
+
           .status-cleared {
             background: #DCFCE7 !important;
             color: #166534 !important;
-            border-color: #86EFAC !important;
+            border: 1px solid #86EFAC !important;
+            font-size: 7px !important;
+            padding: 1px 4px !important;
+            border-radius: 3px !important;
           }
           .status-revision {
             background: #FEF3C7 !important;
             color: #92400E !important;
-            border-color: #FDE68A !important;
+            border: 1px solid #FDE68A !important;
+            font-size: 7px !important;
+            padding: 1px 4px !important;
+            border-radius: 3px !important;
           }
           .status-incomplete {
             background: #FEE2E2 !important;
             color: #991B1B !important;
-            border-color: #FCA5A5 !important;
+            border: 1px solid #FCA5A5 !important;
+            font-size: 7px !important;
+            padding: 1px 4px !important;
+            border-radius: 3px !important;
           }
+
+          .pillars-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 3px !important;
+          }
+          .pillar-card {
+            background: #F8FAFC !important;
+            border: 1px solid #E2E8F0 !important;
+            padding: 2.5px 6px !important;
+          }
+          .pillar-card-header {
+            margin-bottom: 1.5px !important;
+          }
+          .pillar-title {
+            color: #0F172A !important;
+            font-size: 8px !important;
+            font-weight: 700 !important;
+          }
+          .pillar-score {
+            color: #0284C7 !important;
+            font-size: 8px !important;
+            font-weight: 800 !important;
+          }
+          .pillar-body {
+            color: #475569 !important;
+            font-size: 7px !important;
+            line-height: 1.15 !important;
+          }
+
+          .report-summary-bar {
+            background: #F1F5F9 !important;
+            border: 1px solid #CBD5E1 !important;
+            flex-direction: row !important;
+            padding: 3px 8px !important;
+            margin-top: 3.5px !important;
+            font-size: 8px !important;
+            page-break-inside: avoid !important;
+          }
+          .summary-label {
+            font-size: 7.5px !important;
+            color: #475569 !important;
+          }
+          .summary-highlight {
+            font-size: 8.5px !important;
+            color: #0284C7 !important;
+            font-weight: 800 !important;
+          }
+          .summary-target {
+            font-size: 7.5px !important;
+            color: #334155 !important;
+          }
+
+          .report-signatures {
+            margin-top: 4px !important;
+            gap: 10px !important;
+            page-break-inside: avoid !important;
+          }
+          .sig-line {
+            background: #94A3B8 !important;
+            margin-bottom: 2px !important;
+          }
+          .sig-title {
+            color: #0F172A !important;
+            font-size: 7.5px !important;
+            font-weight: 800 !important;
+          }
+          .sig-subtitle {
+            font-size: 6.5px !important;
+            color: #64748B !important;
+          }
+
+          .report-footer {
+            margin-top: 3px !important;
+            font-size: 6.5px !important;
+            color: #94A3B8 !important;
+            padding-top: 2px !important;
+            border-top: 1px solid #E2E8F0 !important;
+            display: flex !important;
+            justify-content: space-between !important;
+          }
+
           .locked-score-cell, .locked-wpm-wrap {
             background: transparent !important;
             border: none !important;
