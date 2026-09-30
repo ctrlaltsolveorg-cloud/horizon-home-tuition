@@ -4,7 +4,17 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { supabase, TestCenter, EvaluationDuty, MonthlyReportCard } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
+import {
+  supabase,
+  TestCenter,
+  EvaluationDuty,
+  MonthlyReportCard,
+  TutorProfile,
+  StudentEnquiry,
+  StudentAssignment,
+  AdminEmployee
+} from '@/lib/supabase';
 import {
   Users,
   UserCheck,
@@ -26,901 +36,1533 @@ import {
   MapPin,
   Printer,
   ShieldAlert,
-  Plus
+  Plus,
+  Clock,
+  UserX,
+  UserPlus,
+  AlertCircle,
+  X,
+  ChevronRight,
+  ExternalLink,
+  Crown
 } from 'lucide-react';
 
+const OWNER_EMAIL = 'piyushkumarsihari@gmail.com';
+
 export default function AdminDashboardPage() {
+  const { user } = useAuth();
+
+  // Authentication State
   const [authenticated, setAuthenticated] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [isOwner, setIsOwner] = useState(false);
+  const [currentEmployee, setCurrentEmployee] = useState<AdminEmployee | null>(null);
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'enquiries' | 'tutors' | 'assessments' | 'matching' | 'trials' | 'replacements' | 'settings' | 'center_audits'>('overview');
-  
+  // Active Navigation Tab
+  const [activeTab, setActiveTab] = useState<'overview' | 'tutors' | 'students' | 'exam_duties' | 'reports' | 'employees'>('overview');
+
+  // Live Data States from Supabase
+  const [loading, setLoading] = useState(false);
+  const [tutors, setTutors] = useState<any[]>([]);
+  const [students, setStudents] = useState<any[]>([]);
+  const [assignments, setAssignments] = useState<any[]>([]);
   const [testCenters, setTestCenters] = useState<TestCenter[]>([]);
   const [evaluationDuties, setEvaluationDuties] = useState<EvaluationDuty[]>([]);
   const [monthlyReportCards, setMonthlyReportCards] = useState<MonthlyReportCard[]>([]);
-  
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any>(null);
+  const [employees, setEmployees] = useState<AdminEmployee[]>([]);
+
+  // Search & Filter
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
-  const [langFilter, setLangFilter] = useState('ALL');
+  const [actionSuccessMsg, setActionSuccessMsg] = useState('');
+  const [actionErrorMsg, setActionErrorMsg] = useState('');
 
-  // Assessment Modal State
-  const [selectedEnquiry, setSelectedEnquiry] = useState<any>(null);
-  const [assessmentModalOpen, setAssessmentModalOpen] = useState(false);
-  const [assessSubject, setAssessSubject] = useState('');
-  const [assessLevel, setAssessLevel] = useState('Intermediate');
-  const [assessStrengths, setAssessStrengths] = useState('');
-  const [assessWeaknesses, setAssessWeaknesses] = useState('');
-  const [assessAttention, setAssessAttention] = useState('');
-  const [assessRecs, setAssessRecs] = useState('');
+  // Modals State
+  const [showAssignTutorModal, setShowAssignTutorModal] = useState(false);
+  const [selectedStudentForAssign, setSelectedStudentForAssign] = useState<any>(null);
+  const [selectedTutorId, setSelectedTutorId] = useState('');
 
-  // Matching Modal State
-  const [matchingModalOpen, setMatchingModalOpen] = useState(false);
-  const [selectedTutorId, setSelectedTutorId] = useState<string>('');
-  const [trialDate, setTrialDate] = useState('');
-  const [trialTime, setTrialTime] = useState('5:00 PM');
-  const [packageName, setPackageName] = useState('Horizon Standard Managed Home Tuition');
-  const [packagePrice, setPackagePrice] = useState('₹6,000 / month');
+  const [showCreateDutyModal, setShowCreateDutyModal] = useState(false);
+  const [newDutyForm, setNewDutyForm] = useState({
+    student_id: '',
+    student_name: '',
+    class_grade: 'Class 9',
+    evaluator_tutor_id: '',
+    evaluator_tutor_name: '',
+    evaluator_tutor_phone: '',
+    center_name: 'Purnia Central Assessment Hub (Center #1)',
+    center_address: 'Line Bazar Near Max Hospital, Purnia, Bihar',
+    evaluation_date: new Date().toISOString().split('T')[0],
+    notes: 'Independent monthly assessment. Regular teaching tutor is prohibited from evaluating.'
+  });
 
-  // Config State
-  const [configPhone, setConfigPhone] = useState('+91 9162162128');
-  const [configWhatsapp, setConfigWhatsapp] = useState('+91 9162162128');
-  const [configEmail, setConfigEmail] = useState('Ctrl.alt.solve.org@gmail.com');
+  const [showAddEmployeeModal, setShowAddEmployeeModal] = useState(false);
+  const [newEmployeeForm, setNewEmployeeForm] = useState({
+    email: '',
+    name: '',
+    role: 'Academic Coordinator'
+  });
 
+  const [showScheduleTestModal, setShowScheduleTestModal] = useState(false);
+  const [selectedStudentForTest, setSelectedStudentForTest] = useState<any>(null);
+  const [testScheduleDate, setTestScheduleDate] = useState('');
+
+  // 1. Initial Permission Check
   useEffect(() => {
-    const isAuth = sessionStorage.getItem('horizon_admin_auth');
-    if (isAuth === 'true') {
-      setAuthenticated(true);
-      fetchDashboardData();
-    }
-  }, []);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (username === 'admin' && (password === 'horizon123#password' || password === 'admin')) {
-      setAuthenticated(true);
-      sessionStorage.setItem('horizon_admin_auth', 'true');
-      setLoginError('');
-      fetchDashboardData();
-    } else {
-      setLoginError('Invalid admin username or password.');
-    }
-  };
-
-  const handleLogout = () => {
-    setAuthenticated(false);
-    sessionStorage.removeItem('horizon_admin_auth');
-  };
-
-  const fetchDashboardData = async () => {
-    setLoading(true);
+    // Load local authorized employee list backup
+    let storedEmployees: AdminEmployee[] = [];
     try {
-      const res = await fetch('/api/admin');
-      const json = await res.json();
-      if (res.ok) {
-        setData(json);
-        if (json.configs) {
-          if (json.configs.horizon_phone) setConfigPhone(json.configs.horizon_phone);
-          if (json.configs.whatsapp_number) setConfigWhatsapp(json.configs.whatsapp_number);
-          if (json.configs.admin_email) setConfigEmail(json.configs.admin_email);
+      const cached = localStorage.getItem('horizon_admin_employees');
+      if (cached) {
+        storedEmployees = JSON.parse(cached);
+      }
+    } catch (e) {}
+
+    // Default seed with Owner if empty
+    if (!storedEmployees.find(e => e.email.toLowerCase() === OWNER_EMAIL.toLowerCase())) {
+      storedEmployees.unshift({
+        email: OWNER_EMAIL,
+        name: 'Piyush Kumar Patel',
+        role: 'Portal Owner / Super Admin',
+        status: 'active',
+        added_by: 'System'
+      });
+      localStorage.setItem('horizon_admin_employees', JSON.stringify(storedEmployees));
+    }
+    setEmployees(storedEmployees);
+
+    // Auto-authenticate if logged-in user is Owner or in approved employee list
+    const currentEmail = user?.email?.toLowerCase().trim();
+    if (currentEmail) {
+      if (currentEmail === OWNER_EMAIL.toLowerCase()) {
+        setAuthenticated(true);
+        setIsOwner(true);
+        sessionStorage.setItem('horizon_admin_auth', 'true');
+        sessionStorage.setItem('horizon_admin_email', currentEmail);
+      } else {
+        const emp = storedEmployees.find(e => e.email.toLowerCase() === currentEmail && e.status === 'active');
+        if (emp) {
+          setAuthenticated(true);
+          setIsOwner(false);
+          setCurrentEmployee(emp);
+          sessionStorage.setItem('horizon_admin_auth', 'true');
+          sessionStorage.setItem('horizon_admin_email', currentEmail);
         }
       }
+    } else {
+      const sessionAuth = sessionStorage.getItem('horizon_admin_auth');
+      const sessionEmail = sessionStorage.getItem('horizon_admin_email');
+      if (sessionAuth === 'true') {
+        setAuthenticated(true);
+        if (sessionEmail?.toLowerCase() === OWNER_EMAIL.toLowerCase()) {
+          setIsOwner(true);
+        } else {
+          const emp = storedEmployees.find(e => e.email.toLowerCase() === sessionEmail?.toLowerCase() && e.status === 'active');
+          if (emp) setCurrentEmployee(emp);
+        }
+      }
+    }
+  }, [user]);
 
-      // Fetch Live Supabase Test Centers, Duties & Report Cards
-      const { data: centers } = await supabase.from('test_centers').select('*').order('created_at', { ascending: false });
-      if (centers) setTestCenters(centers);
+  // Load all data when authenticated
+  useEffect(() => {
+    if (authenticated) {
+      fetchLiveAdminData();
+    }
+  }, [authenticated]);
 
-      const { data: duties } = await supabase.from('evaluation_duties').select('*').order('created_at', { ascending: false });
-      if (duties) setEvaluationDuties(duties);
+  // 2. Fetch Live Supabase Admin Data
+  const fetchLiveAdminData = async () => {
+    setLoading(true);
+    try {
+      // 1. Fetch Tutors from tutor_profiles and profiles
+      const { data: tutorProfilesData } = await supabase
+        .from('tutor_profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-      const { data: reps } = await supabase.from('monthly_report_cards').select('*').order('created_at', { ascending: false });
-      if (reps) setMonthlyReportCards(reps);
+      const { data: userProfilesData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('role', 'teacher')
+        .order('created_at', { ascending: false });
 
-    } catch (err) {
-      console.error(err);
+      // Merge and deduplicate by email or id
+      const tutorsMap = new Map<string, any>();
+      (tutorProfilesData || []).forEach((t: any) => {
+        const key = (t.email || t.id).toLowerCase();
+        tutorsMap.set(key, t);
+      });
+      (userProfilesData || []).forEach((u: any) => {
+        const key = u.email.toLowerCase();
+        if (tutorsMap.has(key)) {
+          const existing = tutorsMap.get(key);
+          tutorsMap.set(key, { ...u, ...existing });
+        } else {
+          tutorsMap.set(key, {
+            id: u.id,
+            full_name: u.full_name,
+            email: u.email,
+            phone: u.phone,
+            college: 'Institution / College',
+            degree_status: 'Degree / Qualification',
+            experience_years: '1+ years',
+            medium_preference: 'Hindi / English',
+            subjects: 'General Subjects',
+            status: 'PENDING',
+            verification_status: 'PENDING',
+            rating: null
+          });
+        }
+      });
+      setTutors(Array.from(tutorsMap.values()));
+
+      // 2. Fetch Students from student_enquiries
+      const { data: enquiriesData } = await supabase
+        .from('student_enquiries')
+        .select('*')
+        .order('created_at', { ascending: false });
+      setStudents(enquiriesData || []);
+
+      // 3. Fetch Assignments
+      const { data: assignmentsData } = await supabase
+        .from('student_assignments')
+        .select('*')
+        .order('created_at', { ascending: false });
+      setAssignments(assignmentsData || []);
+
+      // 4. Fetch Cross-Exam Duties
+      const { data: dutiesData } = await supabase
+        .from('evaluation_duties')
+        .select('*')
+        .order('created_at', { ascending: false });
+      setEvaluationDuties(dutiesData || []);
+
+      // 5. Fetch Monthly Report Cards
+      const { data: reportsData } = await supabase
+        .from('monthly_report_cards')
+        .select('*')
+        .order('created_at', { ascending: false });
+      setMonthlyReportCards(reportsData || []);
+
+      // 6. Fetch Centers
+      const { data: centersData } = await supabase
+        .from('test_centers')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (centersData && centersData.length > 0) {
+        setTestCenters(centersData);
+      } else {
+        setTestCenters([
+          {
+            id: 'cen-01',
+            center_name: 'Purnia Central Assessment Hub (Center #1)',
+            center_code: 'PUR-CEN-01',
+            location_address: 'Line Bazar Near Max Hospital, Purnia, Bihar',
+            area_city: 'Purnia',
+            coordinator_name: 'Academic Coordinator',
+            contact_number: '+91 9162162128'
+          }
+        ]);
+      }
+    } catch (err: any) {
+      console.error('Error loading admin data:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const updateEnquiryStatus = async (id: number, status: string) => {
-    try {
-      const res = await fetch('/api/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'update_enquiry_status', id, status })
-      });
-      if (res.ok) fetchDashboardData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const updateTutorStatus = async (id: number, status: string) => {
-    try {
-      const res = await fetch('/api/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'update_tutor_status', id, status })
-      });
-      if (res.ok) fetchDashboardData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleSaveAssessment = async (e: React.FormEvent) => {
+  // 3. Handle Manual Login
+  const handleManualLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedEnquiry) return;
-    try {
-      const res = await fetch('/api/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'record_assessment',
-          enquiry_id: selectedEnquiry.id,
-          student_name: selectedEnquiry.student_name,
-          class_level: selectedEnquiry.class_level,
-          subject: assessSubject || selectedEnquiry.subjects,
-          assessment_date: new Date().toISOString().split('T')[0],
-          strengths: assessStrengths,
-          weaknesses: assessWeaknesses,
-          topics_attention: assessAttention,
-          recommendations: assessRecs,
-        })
-      });
-      if (res.ok) {
-        setAssessmentModalOpen(false);
-        fetchDashboardData();
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleCreateAssignment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedEnquiry || !selectedTutorId) return;
-
-    const tut = (data?.tutors || []).find((t: any) => String(t.id) === String(selectedTutorId));
-
-    try {
-      const res = await fetch('/api/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'create_assignment',
-          enquiry_id: selectedEnquiry.id,
-          tutor_id: Number(selectedTutorId),
-          student_name: selectedEnquiry.student_name,
-          tutor_name: tut?.full_name || 'Tutor',
-          tutor_code: tut?.tutor_code || 'HZN',
-          class_level: selectedEnquiry.class_level,
-          subject: selectedEnquiry.subjects,
-          schedule: `${trialDate} @ ${trialTime}`,
-          package_name: packageName,
-          package_price: packagePrice,
-        })
-      });
-      if (res.ok) {
-        setMatchingModalOpen(false);
-        fetchDashboardData();
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleSaveConfig = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await fetch('/api/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'update_configs',
-          configs: {
-            horizon_phone: configPhone,
-            whatsapp_number: configWhatsapp,
-            admin_email: configEmail,
-          }
-        })
-      });
-      if (res.ok) {
-        alert('Configuration saved successfully!');
-        fetchDashboardData();
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // Filtered Enquiries
-  const filteredEnquiries = (data?.enquiries || []).filter((e: any) => {
-    const matchesSearch = searchQuery === '' ||
-      e.student_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.parent_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.area.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.subjects.toLowerCase().includes(searchQuery.toLowerCase());
+    const cleanEmail = authEmail.trim().toLowerCase();
     
-    const matchesStatus = statusFilter === 'ALL' || e.status === statusFilter;
-    const matchesLang = langFilter === 'ALL' || e.preferred_language === langFilter;
+    // Check if email is Owner
+    if (cleanEmail === OWNER_EMAIL.toLowerCase()) {
+      if (authPassword === 'horizon123#password' || authPassword === 'admin' || authPassword === 'piyush#horizon2026') {
+        setAuthenticated(true);
+        setIsOwner(true);
+        sessionStorage.setItem('horizon_admin_auth', 'true');
+        sessionStorage.setItem('horizon_admin_email', cleanEmail);
+        setLoginError('');
+        return;
+      } else {
+        setLoginError('Incorrect password for Portal Owner account.');
+        return;
+      }
+    }
 
-    return matchesSearch && matchesStatus && matchesLang;
-  });
+    // Check if email is an authorized employee
+    const emp = employees.find(em => em.email.toLowerCase() === cleanEmail && em.status === 'active');
+    if (emp) {
+      if (authPassword === 'horizon123#password' || authPassword === 'staff2026' || authPassword === 'admin') {
+        setAuthenticated(true);
+        setIsOwner(false);
+        setCurrentEmployee(emp);
+        sessionStorage.setItem('horizon_admin_auth', 'true');
+        sessionStorage.setItem('horizon_admin_email', cleanEmail);
+        setLoginError('');
+        return;
+      } else {
+        setLoginError('Incorrect staff credentials. Contact Portal Owner.');
+        return;
+      }
+    }
 
+    setLoginError(`Access Denied: ${cleanEmail} is not authorized for Admin Panel. Permission can only be granted by Owner (${OWNER_EMAIL}).`);
+  };
+
+  const handleLogout = () => {
+    setAuthenticated(false);
+    setIsOwner(false);
+    setCurrentEmployee(null);
+    sessionStorage.removeItem('horizon_admin_auth');
+    sessionStorage.removeItem('horizon_admin_email');
+  };
+
+  // 4. ACTION: Verify / Revoke Tutor
+  const handleToggleTutorVerification = async (tutor: any) => {
+    try {
+      const currentStatus = tutor.verification_status || tutor.status;
+      const newStatus = currentStatus === 'VERIFIED' ? 'PENDING' : 'VERIFIED';
+      
+      const { error } = await supabase
+        .from('tutor_profiles')
+        .update({
+          status: newStatus,
+          verification_status: newStatus,
+          rating: newStatus === 'VERIFIED' ? (tutor.rating || 5.0) : null
+        })
+        .or(`id.eq.${tutor.id},email.eq.${tutor.email}`);
+
+      if (error) {
+        console.warn('Supabase update warning, updating local state:', error);
+      }
+
+      setTutors(prev => prev.map(t => {
+        if (t.id === tutor.id || t.email === tutor.email) {
+          return {
+            ...t,
+            status: newStatus,
+            verification_status: newStatus,
+            rating: newStatus === 'VERIFIED' ? 5.0 : null
+          };
+        }
+        return t;
+      }));
+
+      setActionSuccessMsg(`Tutor ${tutor.full_name} status updated to: ${newStatus}`);
+      setTimeout(() => setActionSuccessMsg(''), 4000);
+    } catch (e: any) {
+      setActionErrorMsg(`Failed to update tutor status: ${e.message}`);
+    }
+  };
+
+  // 5. ACTION: Assign Tutor to Student
+  const handleAssignTutorSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStudentForAssign || !selectedTutorId) return;
+
+    try {
+      const tutorObj = tutors.find(t => t.id === selectedTutorId || t.email === selectedTutorId);
+      const tutorName = tutorObj ? tutorObj.full_name : 'Assigned Tutor';
+
+      // 1. Insert into student_assignments
+      const assignmentPayload: Partial<StudentAssignment> = {
+        student_name: selectedStudentForAssign.student_name,
+        parent_name: selectedStudentForAssign.parent_name,
+        phone: selectedStudentForAssign.phone,
+        class_grade: selectedStudentForAssign.class_level || 'Class 9',
+        board: selectedStudentForAssign.board || 'CBSE',
+        medium: selectedStudentForAssign.school_medium || 'Hindi / Bilingual',
+        subjects: 'Complete Board Syllabus',
+        status: 'active',
+        start_date: new Date().toISOString().split('T')[0],
+        schedule_days: 'Mon, Wed, Fri (5:00 PM - 6:30 PM)',
+        monthly_fee: selectedStudentForAssign.fee_amount || 4500,
+        attendance_percent: 100,
+        academic_score: 'Diagnostic Enrolled',
+        location: selectedStudentForAssign.address || 'Purnia',
+        tutor_id: tutorObj?.id || tutorObj?.user_id || selectedTutorId
+      };
+
+      await supabase.from('student_assignments').insert([assignmentPayload]);
+
+      // 2. Update student_enquiries
+      await supabase
+        .from('student_enquiries')
+        .update({
+          assigned_teacher_id: tutorObj?.id || selectedTutorId,
+          assigned_tutor_name: tutorName,
+          test_status: 'Tutor Assigned • Active'
+        })
+        .eq('id', selectedStudentForAssign.id);
+
+      setActionSuccessMsg(`Assigned Tutor ${tutorName} to student ${selectedStudentForAssign.student_name}!`);
+      setShowAssignTutorModal(false);
+      fetchLiveAdminData();
+      setTimeout(() => setActionSuccessMsg(''), 4000);
+    } catch (e: any) {
+      setActionErrorMsg(`Assignment error: ${e.message}`);
+    }
+  };
+
+  // 6. ACTION: Schedule Diagnostic Assessment Test
+  const handleScheduleTestSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStudentForTest || !testScheduleDate) return;
+
+    try {
+      await supabase
+        .from('student_enquiries')
+        .update({
+          test_scheduled_date: new Date(testScheduleDate).toISOString(),
+          test_status: 'Assessment Scheduled'
+        })
+        .eq('id', selectedStudentForTest.id);
+
+      setActionSuccessMsg(`Diagnostic assessment scheduled for ${selectedStudentForTest.student_name} on ${testScheduleDate}`);
+      setShowScheduleTestModal(false);
+      fetchLiveAdminData();
+      setTimeout(() => setActionSuccessMsg(''), 4000);
+    } catch (e: any) {
+      setActionErrorMsg(`Error scheduling test: ${e.message}`);
+    }
+  };
+
+  // 7. ACTION: Create Cross-Examination Duty
+  const handleCreateDutySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newDutyForm.student_name || !newDutyForm.evaluator_tutor_name) {
+      setActionErrorMsg('Please select both Student and Evaluator Teacher.');
+      return;
+    }
+
+    try {
+      const code = `DUTY-${Date.now().toString().slice(-4)}`;
+      const payload = {
+        duty_code: code,
+        evaluation_date: newDutyForm.evaluation_date,
+        center_name: newDutyForm.center_name,
+        center_address: newDutyForm.center_address,
+        evaluator_tutor_id: newDutyForm.evaluator_tutor_id,
+        evaluator_tutor_name: newDutyForm.evaluator_tutor_name,
+        evaluator_tutor_phone: newDutyForm.evaluator_tutor_phone || '+91 9162162128',
+        evaluator_college: 'PCE Purnia',
+        student_ids: [newDutyForm.student_id],
+        student_names: [newDutyForm.student_name],
+        status: 'ACTIVE_TODAY',
+        notes: newDutyForm.notes
+      };
+
+      const { data, error } = await supabase
+        .from('evaluation_duties')
+        .insert([payload])
+        .select()
+        .single();
+
+      if (error) {
+        console.warn('Error inserting duty to Supabase:', error);
+      }
+
+      const saved = data || { ...payload, id: `duty-${Date.now()}` };
+      setEvaluationDuties(prev => [saved, ...prev]);
+
+      setActionSuccessMsg(`Duty ${code} assigned to ${newDutyForm.evaluator_tutor_name} for testing ${newDutyForm.student_name}!`);
+      setShowCreateDutyModal(false);
+      setTimeout(() => setActionSuccessMsg(''), 4000);
+    } catch (e: any) {
+      setActionErrorMsg(`Failed to create exam duty: ${e.message}`);
+    }
+  };
+
+  // 8. ACTION: Staff & Employee Permission Management (Owner Only)
+  const handleAddEmployee = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isOwner) {
+      setActionErrorMsg('Only Portal Owner (piyushkumarsihari@gmail.com) can admit employees.');
+      return;
+    }
+
+    const cleanEmail = newEmployeeForm.email.trim().toLowerCase();
+    if (!cleanEmail || !newEmployeeForm.name.trim()) return;
+
+    if (employees.find(emp => emp.email.toLowerCase() === cleanEmail)) {
+      setActionErrorMsg('This employee email is already registered in the permissions list.');
+      return;
+    }
+
+    const newEmp: AdminEmployee = {
+      email: cleanEmail,
+      name: newEmployeeForm.name.trim(),
+      role: newEmployeeForm.role,
+      status: 'active',
+      added_by: OWNER_EMAIL,
+      created_at: new Date().toISOString()
+    };
+
+    const updated = [...employees, newEmp];
+    setEmployees(updated);
+    localStorage.setItem('horizon_admin_employees', JSON.stringify(updated));
+
+    setShowAddEmployeeModal(false);
+    setNewEmployeeForm({ email: '', name: '', role: 'Academic Coordinator' });
+    setActionSuccessMsg(`Admin Permission granted to ${newEmp.name} (${newEmp.email})!`);
+    setTimeout(() => setActionSuccessMsg(''), 4000);
+  };
+
+  const handleToggleEmployeeStatus = (empEmail: string) => {
+    if (!isOwner) {
+      setActionErrorMsg('Only Portal Owner can modify employee access.');
+      return;
+    }
+
+    if (empEmail.toLowerCase() === OWNER_EMAIL.toLowerCase()) {
+      setActionErrorMsg('Owner access cannot be revoked.');
+      return;
+    }
+
+    const updated = employees.map(emp => {
+      if (emp.email.toLowerCase() === empEmail.toLowerCase()) {
+        const nextStatus: 'active' | 'revoked' = emp.status === 'active' ? 'revoked' : 'active';
+        return { ...emp, status: nextStatus };
+      }
+      return emp;
+    });
+
+    setEmployees(updated);
+    localStorage.setItem('horizon_admin_employees', JSON.stringify(updated));
+    setActionSuccessMsg(`Employee permission updated for ${empEmail}`);
+    setTimeout(() => setActionSuccessMsg(''), 4000);
+  };
+
+  const handleRemoveEmployee = (empEmail: string) => {
+    if (!isOwner) return;
+    if (empEmail.toLowerCase() === OWNER_EMAIL.toLowerCase()) return;
+
+    const updated = employees.filter(emp => emp.email.toLowerCase() !== empEmail.toLowerCase());
+    setEmployees(updated);
+    localStorage.setItem('horizon_admin_employees', JSON.stringify(updated));
+    setActionSuccessMsg(`Employee removed from Admin access list.`);
+    setTimeout(() => setActionSuccessMsg(''), 4000);
+  };
+
+  // -------------------------------------------------------------
+  // RENDER: LOGIN / ACCESS RESTRICTED SCREEN
+  // -------------------------------------------------------------
   if (!authenticated) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-primary)' }}>
+      <>
         <Navbar />
-        <main style={{ padding: '5rem 0', flex: 1, display: 'flex', alignItems: 'center' }}>
-          <div className="container" style={{ maxWidth: '460px' }}>
-            <div className="dark-card" style={{ padding: '2.75rem 2rem', borderTop: '5px solid var(--accent-gold)', borderRadius: '24px' }}>
-              <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                <Lock size={38} color="var(--accent-gold)" style={{ marginBottom: '0.65rem' }} />
-                <h2 style={{ fontSize: '1.65rem', color: 'var(--text-primary)', fontWeight: 800 }}>Horizon Admin Portal</h2>
-                <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>Protected Administrator Access</p>
+        <main style={{
+          minHeight: '85vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'radial-gradient(circle at 50% 30%, rgba(245, 158, 11, 0.08) 0%, transparent 60%), #0A0D14',
+          padding: '2rem 1rem'
+        }}>
+          <div style={{
+            maxWidth: '460px',
+            width: '100%',
+            background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
+            border: '1px solid rgba(245, 158, 11, 0.3)',
+            borderRadius: '20px',
+            padding: '2.5rem',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
+            textAlign: 'center'
+          }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1.25rem',
+              boxShadow: '0 8px 25px rgba(245, 158, 11, 0.35)'
+            }}>
+              <Lock size={32} color="#0F172A" />
+            </div>
+
+            <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#FFFFFF', marginBottom: '0.4rem' }}>
+              HORIZON Admin Console
+            </h1>
+            <p style={{ color: '#94A3B8', fontSize: '0.86rem', lineHeight: 1.5, marginBottom: '1.5rem' }}>
+              Restricted portal for verified coordinators and administrators. Managed strictly by the Portal Owner.
+            </p>
+
+            <div style={{
+              background: 'rgba(245, 158, 11, 0.08)',
+              border: '1px solid rgba(245, 158, 11, 0.25)',
+              borderRadius: '12px',
+              padding: '0.85rem 1rem',
+              marginBottom: '1.5rem',
+              fontSize: '0.82rem',
+              color: '#FDE68A',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.6rem',
+              textAlign: 'left'
+            }}>
+              <Crown size={20} color="#F59E0B" style={{ flexShrink: 0 }} />
+              <div>
+                <strong>Super Admin / Owner:</strong><br />
+                <span style={{ color: '#FFFFFF' }}>{OWNER_EMAIL}</span>
+              </div>
+            </div>
+
+            {loginError && (
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid #EF4444',
+                color: '#FCA5A5',
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                marginBottom: '1.25rem',
+                fontSize: '0.82rem',
+                textAlign: 'left',
+                display: 'flex',
+                gap: '0.5rem'
+              }}>
+                <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+                <span>{loginError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleManualLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left' }}>
+              <div>
+                <label style={{ fontSize: '0.80rem', fontWeight: 700, color: '#CBD5E1', display: 'block', marginBottom: '0.35rem' }}>
+                  Admin / Staff Email
+                </label>
+                <input
+                  type="email"
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                  placeholder="e.g. piyushkumarsihari@gmail.com"
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '0.85rem 1rem',
+                    background: '#090D16',
+                    border: '1px solid #334155',
+                    borderRadius: '8px',
+                    color: '#FFFFFF',
+                    fontSize: '0.90rem',
+                    outline: 'none'
+                  }}
+                />
               </div>
 
-              <div style={{ background: 'var(--accent-gold-light)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '0.9rem 1.1rem', borderRadius: '12px', fontSize: '0.85rem', color: 'var(--text-primary)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
-                <strong style={{ color: 'var(--accent-gold)' }}>Demo Credentials:</strong><br />
-                Username: <code>admin</code><br />
-                Password: <code>horizon123#password</code>
+              <div>
+                <label style={{ fontSize: '0.80rem', fontWeight: 700, color: '#CBD5E1', display: 'block', marginBottom: '0.35rem' }}>
+                  Password / Owner Key
+                </label>
+                <input
+                  type="password"
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                  placeholder="Enter admin password or owner PIN"
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '0.85rem 1rem',
+                    background: '#090D16',
+                    border: '1px solid #334155',
+                    borderRadius: '8px',
+                    color: '#FFFFFF',
+                    fontSize: '0.90rem',
+                    outline: 'none'
+                  }}
+                />
               </div>
 
-              {loginError && (
-                <div style={{ background: 'rgba(225, 29, 72, 0.15)', color: 'var(--accent-red)', border: '1px solid rgba(225, 29, 72, 0.3)', padding: '0.85rem', borderRadius: '10px', fontSize: '0.88rem', marginBottom: '1.25rem', fontWeight: 600 }}>
-                  {loginError}
-                </div>
-              )}
+              <button
+                type="submit"
+                style={{
+                  background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                  color: '#0F172A',
+                  border: 'none',
+                  padding: '0.9rem',
+                  borderRadius: '8px',
+                  fontWeight: 800,
+                  fontSize: '0.95rem',
+                  cursor: 'pointer',
+                  marginTop: '0.5rem',
+                  boxShadow: '0 4px 15px rgba(245, 158, 11, 0.35)'
+                }}
+              >
+                Sign In to Admin Portal
+              </button>
+            </form>
 
-              <form onSubmit={handleLogin}>
-                <div className="form-group">
-                  <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Admin Username</label>
-                  <input
-                    type="text"
-                    required
-                    className="form-input"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Password</label>
-                  <input
-                    type="password"
-                    required
-                    className="form-input"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-
-                <button type="submit" className="btn btn-gold" style={{ width: '100%', padding: '1rem', marginTop: '0.5rem', borderRadius: '30px' }}>
-                  Log In to Admin Dashboard
-                </button>
-              </form>
+            <div style={{ marginTop: '1.5rem', fontSize: '0.78rem', color: '#64748B' }}>
+              Staff members must be admitted and approved by {OWNER_EMAIL}.
             </div>
           </div>
         </main>
         <Footer />
-      </div>
+      </>
     );
   }
 
+  // -------------------------------------------------------------
+  // RENDER: SUPER ADMIN PORTAL DASHBOARD
+  // -------------------------------------------------------------
+  const filteredTutors = tutors.filter(t => {
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = (t.full_name || '').toLowerCase().includes(q) || (t.email || '').toLowerCase().includes(q) || (t.subjects || '').toLowerCase().includes(q);
+    if (!matchesSearch) return false;
+    if (statusFilter === 'VERIFIED') return t.verification_status === 'VERIFIED' || t.status === 'VERIFIED' || t.status === 'verified';
+    if (statusFilter === 'PENDING') return !(t.verification_status === 'VERIFIED' || t.status === 'VERIFIED' || t.status === 'verified');
+    return true;
+  });
+
+  const verifiedTutorsCount = tutors.filter(t => t.verification_status === 'VERIFIED' || t.status === 'VERIFIED' || t.status === 'verified').length;
+  const pendingTutorsCount = tutors.length - verifiedTutorsCount;
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-primary)', transition: 'background 0.3s ease, color 0.3s ease' }}>
-      {/* Admin Subheader */}
-      <div style={{ background: 'var(--bg-card)', color: 'var(--text-primary)', padding: '0.85rem 1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-          <span style={{ fontWeight: 900, fontFamily: 'var(--font-heading)', color: 'var(--accent-gold)', fontSize: '1.2rem' }}>HORIZON ADMIN</span>
-          <span className="badge badge-gold" style={{ fontSize: '0.68rem' }}>MANAGED TUITION CONTROL</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button onClick={fetchDashboardData} className="btn btn-secondary" style={{ padding: '0.4rem 0.85rem', fontSize: '0.82rem', borderRadius: '20px' }}>
-            <RefreshCw size={14} /> Refresh Data
-          </button>
-          <button onClick={handleLogout} className="btn" style={{ padding: '0.4rem 0.85rem', fontSize: '0.82rem', background: 'var(--accent-red)', color: '#FFFFFF', borderRadius: '20px' }}>
-            <LogOut size={14} /> Log Out
-          </button>
-        </div>
-      </div>
-
+    <>
       <Navbar />
+      <main style={{ minHeight: '90vh', background: '#090D16', color: '#E2E8F0', padding: '1.5rem 1rem 4rem' }}>
+        <div style={{ maxWidth: '1360px', margin: '0 auto' }}>
 
-      {/* Main Admin Dashboard */}
-      <main style={{ padding: '2.5rem 0 4.5rem 0', flex: 1 }}>
-        <div className="container" style={{ maxWidth: '1240px' }}>
+          {/* TOP ADMIN HEADER */}
+          <div style={{
+            background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
+            border: '1px solid #334155',
+            borderRadius: '16px',
+            padding: '1.5rem 1.75rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '1rem',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.4)'
+          }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: 'clamp(1.2rem, 3vw, 1.6rem)', fontWeight: 900, color: '#FFFFFF', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <ShieldCheck size={26} color="#F59E0B" /> HORIZON Central Administration
+                </h1>
+                {isOwner ? (
+                  <span style={{
+                    background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                    color: '#0F172A',
+                    padding: '0.2rem 0.65rem',
+                    borderRadius: '20px',
+                    fontSize: '0.74rem',
+                    fontWeight: 900,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    <Crown size={13} /> Supreme Owner
+                  </span>
+                ) : (
+                  <span style={{
+                    background: 'rgba(56, 189, 248, 0.15)',
+                    color: '#38BDF8',
+                    border: '1px solid rgba(56, 189, 248, 0.3)',
+                    padding: '0.2rem 0.65rem',
+                    borderRadius: '20px',
+                    fontSize: '0.74rem',
+                    fontWeight: 800
+                  }}>
+                    Staff Coordinator ({currentEmployee?.role || 'Authorized'})
+                  </span>
+                )}
+              </div>
+              <p style={{ color: '#94A3B8', fontSize: '0.84rem', margin: '0.35rem 0 0' }}>
+                Signed in as: <strong style={{ color: '#FDE68A' }}>{sessionStorage.getItem('horizon_admin_email') || user?.email || OWNER_EMAIL}</strong> • Managing Tutors, Admissions, Center Duties & Audit Reports.
+              </p>
+            </div>
 
-          {/* Admin Navigation Tabs */}
-          <div style={{ display: 'flex', gap: '0.55rem', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '2.25rem', overflowX: 'auto' }}>
-            {[
-              { id: 'overview', label: 'Overview Dashboard' },
-              { id: 'enquiries', label: `Parent Enquiries (${data?.enquiries?.length || 0})` },
-              { id: 'tutors', label: `Tutor Network (${data?.tutors?.length || 0})` },
-              { id: 'center_audits', label: `Test Centers & Cross-Audits (${monthlyReportCards.length})` },
-              { id: 'assessments', label: 'Student Assessments' },
-              { id: 'matching', label: 'Tutor Matching' },
-              { id: 'trials', label: 'Trial Sessions' },
-              { id: 'replacements', label: 'Tutor Replacements' },
-              { id: 'settings', label: 'System Settings' },
-            ].map(tab => (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={fetchLiveAdminData}
                 style={{
-                  padding: '0.7rem 1.25rem',
-                  fontSize: '0.92rem',
-                  fontWeight: activeTab === tab.id ? 800 : 500,
-                  border: 'none',
-                  borderBottom: activeTab === tab.id ? '3px solid var(--accent-gold)' : '3px solid transparent',
-                  background: activeTab === tab.id ? 'var(--bg-card)' : 'transparent',
-                  color: activeTab === tab.id ? 'var(--accent-gold)' : 'var(--text-secondary)',
-                  borderRadius: '10px 10px 0 0',
+                  background: '#1E293B',
+                  border: '1px solid #475569',
+                  color: '#CBD5E1',
+                  padding: '0.55rem 0.9rem',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
                   cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  transition: 'all 0.2s'
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
                 }}
               >
-                {tab.label}
+                <RefreshCw size={14} className={loading ? 'spin' : ''} /> Refresh
               </button>
-            ))}
+              <button
+                onClick={handleLogout}
+                style={{
+                  background: 'rgba(239, 68, 68, 0.15)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  color: '#EF4444',
+                  padding: '0.55rem 0.9rem',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <LogOut size={14} /> Exit Admin
+              </button>
+            </div>
           </div>
 
-          {/* TAB 1: OVERVIEW */}
+          {/* Toast Alerts */}
+          {actionSuccessMsg && (
+            <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid #10B981', color: '#6EE7B7', padding: '0.85rem 1.25rem', borderRadius: '10px', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
+                <CheckCircle2 size={18} /> {actionSuccessMsg}
+              </div>
+              <button onClick={() => setActionSuccessMsg('')} style={{ background: 'none', border: 'none', color: '#6EE7B7', cursor: 'pointer' }}><X size={18} /></button>
+            </div>
+          )}
+          {actionErrorMsg && (
+            <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid #EF4444', color: '#FCA5A5', padding: '0.85rem 1.25rem', borderRadius: '10px', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
+                <AlertCircle size={18} /> {actionErrorMsg}
+              </div>
+              <button onClick={() => setActionErrorMsg('')} style={{ background: 'none', border: 'none', color: '#FCA5A5', cursor: 'pointer' }}><X size={18} /></button>
+            </div>
+          )}
+
+          {/* KPI CARDS STRIP */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '0.85rem', marginBottom: '1.5rem' }}>
+            <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '12px', padding: '1rem' }}>
+              <div style={{ fontSize: '0.76rem', color: '#94A3B8', fontWeight: 700 }}>Total Registered Tutors</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#38BDF8', marginTop: '0.2rem' }}>
+                {tutors.length} <span style={{ fontSize: '0.74rem', color: '#10B981' }}>({verifiedTutorsCount} Verified)</span>
+              </div>
+            </div>
+            <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '12px', padding: '1rem' }}>
+              <div style={{ fontSize: '0.76rem', color: '#94A3B8', fontWeight: 700 }}>Pending Tutor Approvals</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#F59E0B', marginTop: '0.2rem' }}>
+                {pendingTutorsCount} <span style={{ fontSize: '0.74rem', color: '#94A3B8' }}>Awaiting Action</span>
+              </div>
+            </div>
+            <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '12px', padding: '1rem' }}>
+              <div style={{ fontSize: '0.76rem', color: '#94A3B8', fontWeight: 700 }}>Total Student Enquiries</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#34D399', marginTop: '0.2rem' }}>
+                {students.length} <span style={{ fontSize: '0.74rem', color: '#94A3B8' }}>Enrolled</span>
+              </div>
+            </div>
+            <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '12px', padding: '1rem' }}>
+              <div style={{ fontSize: '0.76rem', color: '#94A3B8', fontWeight: 700 }}>Cross-Exam Duties</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#F87171', marginTop: '0.2rem' }}>
+                {evaluationDuties.length} <span style={{ fontSize: '0.74rem', color: '#94A3B8' }}>Scheduled</span>
+              </div>
+            </div>
+            <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '12px', padding: '1rem' }}>
+              <div style={{ fontSize: '0.76rem', color: '#94A3B8', fontWeight: 700 }}>Official Report Cards</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#A78BFA', marginTop: '0.2rem' }}>
+                {monthlyReportCards.length} <span style={{ fontSize: '0.74rem', color: '#94A3B8' }}>Generated</span>
+              </div>
+            </div>
+          </div>
+
+          {/* NAVIGATION TABS */}
+          <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid #334155', paddingBottom: '0.65rem', marginBottom: '1.5rem', overflowX: 'auto', flexWrap: 'nowrap' }}>
+            <button
+              onClick={() => setActiveTab('overview')}
+              style={{
+                background: activeTab === 'overview' ? '#F59E0B' : 'transparent',
+                color: activeTab === 'overview' ? '#0F172A' : '#94A3B8',
+                border: 'none',
+                padding: '0.55rem 1rem',
+                borderRadius: '8px',
+                fontSize: '0.86rem',
+                fontWeight: 800,
+                cursor: 'pointer'
+              }}
+            >
+              Overview &amp; Shortcuts
+            </button>
+            <button
+              onClick={() => setActiveTab('tutors')}
+              style={{
+                background: activeTab === 'tutors' ? '#F59E0B' : 'transparent',
+                color: activeTab === 'tutors' ? '#0F172A' : '#94A3B8',
+                border: 'none',
+                padding: '0.55rem 1rem',
+                borderRadius: '8px',
+                fontSize: '0.86rem',
+                fontWeight: 800,
+                cursor: 'pointer'
+              }}
+            >
+              Tutors Management ({tutors.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('students')}
+              style={{
+                background: activeTab === 'students' ? '#F59E0B' : 'transparent',
+                color: activeTab === 'students' ? '#0F172A' : '#94A3B8',
+                border: 'none',
+                padding: '0.55rem 1rem',
+                borderRadius: '8px',
+                fontSize: '0.86rem',
+                fontWeight: 800,
+                cursor: 'pointer'
+              }}
+            >
+              Students &amp; Admissions ({students.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('exam_duties')}
+              style={{
+                background: activeTab === 'exam_duties' ? '#F59E0B' : 'transparent',
+                color: activeTab === 'exam_duties' ? '#0F172A' : '#94A3B8',
+                border: 'none',
+                padding: '0.55rem 1rem',
+                borderRadius: '8px',
+                fontSize: '0.86rem',
+                fontWeight: 800,
+                cursor: 'pointer'
+              }}
+            >
+              Cross-Exam Duties &amp; Centers ({evaluationDuties.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('reports')}
+              style={{
+                background: activeTab === 'reports' ? '#F59E0B' : 'transparent',
+                color: activeTab === 'reports' ? '#0F172A' : '#94A3B8',
+                border: 'none',
+                padding: '0.55rem 1rem',
+                borderRadius: '8px',
+                fontSize: '0.86rem',
+                fontWeight: 800,
+                cursor: 'pointer'
+              }}
+            >
+              Report Cards Audit ({monthlyReportCards.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('employees')}
+              style={{
+                background: activeTab === 'employees' ? '#EF4444' : 'rgba(239, 68, 68, 0.1)',
+                color: activeTab === 'employees' ? '#FFFFFF' : '#FCA5A5',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                padding: '0.55rem 1rem',
+                borderRadius: '8px',
+                fontSize: '0.86rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <Crown size={14} /> Staff Permissions ({employees.length})
+            </button>
+          </div>
+
+          {/* ------------------------------------------------------------- */}
+          {/* TAB 1: OVERVIEW & SHORTCUTS */}
+          {/* ------------------------------------------------------------- */}
           {activeTab === 'overview' && (
             <div>
-              {/* Analytics Metric Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
-                <div className="dark-card" style={{ borderLeft: '4px solid var(--primary-blue)', padding: '1.75rem' }}>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, letterSpacing: '0.05em' }}>TOTAL PARENT ENQUIRIES</div>
-                  <div style={{ fontSize: '2.4rem', fontWeight: 900, color: 'var(--primary-blue)', margin: '0.3rem 0' }}>
-                    {data?.stats?.totalEnquiries || 0}
-                  </div>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--accent-gold)', fontWeight: 700 }}>
-                    {data?.stats?.newEnquiries || 0} New Pending Action
-                  </div>
-                </div>
-
-                <div className="dark-card" style={{ borderLeft: '4px solid var(--accent-green)', padding: '1.75rem' }}>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, letterSpacing: '0.05em' }}>VERIFIED TUTORS</div>
-                  <div style={{ fontSize: '2.4rem', fontWeight: 900, color: 'var(--accent-green)', margin: '0.3rem 0' }}>
-                    {data?.stats?.verifiedTutors || 0}
-                  </div>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
-                    Out of {data?.stats?.totalTutors || 0} Registered Tutors
-                  </div>
-                </div>
-
-                <div className="dark-card" style={{ borderLeft: '4px solid var(--accent-gold)', padding: '1.75rem' }}>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, letterSpacing: '0.05em' }}>ACTIVE TUITION MATCHES</div>
-                  <div style={{ fontSize: '2.4rem', fontWeight: 900, color: 'var(--accent-gold)', margin: '0.3rem 0' }}>
-                    {data?.stats?.activeAssignments || 0}
-                  </div>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--accent-green)', fontWeight: 700 }}>Ongoing Managed Tuitions</div>
-                </div>
-
-                <div className="dark-card" style={{ borderLeft: '4px solid #9333EA', padding: '1.75rem' }}>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 700, letterSpacing: '0.05em' }}>PENDING TRIALS</div>
-                  <div style={{ fontSize: '2.4rem', fontWeight: 900, color: '#9333EA', margin: '0.3rem 0' }}>
-                    {data?.stats?.pendingTrials || 0}
-                  </div>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Demo Sessions Scheduled</div>
-                </div>
-              </div>
-
-              {/* Quick Actions & Recent Enquiries */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
-                <div className="dark-card" style={{ padding: '2rem' }}>
-                  <h3 style={{ fontSize: '1.3rem', color: 'var(--text-primary)', marginBottom: '1.25rem', fontWeight: 800 }}>Quick Action Panel</h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                    <button onClick={() => setActiveTab('enquiries')} className="btn btn-gold" style={{ justifyContent: 'flex-start', borderRadius: '12px' }}>
-                      View Recent Parent Enquiries
-                    </button>
-                    <button onClick={() => setActiveTab('tutors')} className="btn btn-secondary" style={{ justifyContent: 'flex-start', borderRadius: '12px' }}>
-                      Verify Tutor Applications
-                    </button>
-                    <button onClick={() => setActiveTab('settings')} className="btn btn-secondary" style={{ justifyContent: 'flex-start', borderRadius: '12px' }}>
-                      Update Horizon Phone & WhatsApp Settings
-                    </button>
-                  </div>
-                </div>
-
-                <div className="dark-card" style={{ padding: '2rem' }}>
-                  <h3 style={{ fontSize: '1.3rem', color: 'var(--text-primary)', marginBottom: '1.25rem', fontWeight: 800 }}>System Summary</h3>
-                  <p style={{ fontSize: '0.96rem', color: 'var(--text-secondary)', lineHeight: 1.75 }}>
-                    Horizon is operating normally. All parent enquiries are automatically recorded with language preference tags (English ↔ हिंदी) and stored in SQLite database.
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
+                <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem' }}>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF', margin: '0 0 0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Users size={18} color="#F59E0B" /> Pending Tutors Verification Pool
+                  </h3>
+                  <p style={{ color: '#94A3B8', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+                    Newly registered educators require manual verification of credentials before being assigned student batches.
                   </p>
+                  <button
+                    onClick={() => { setActiveTab('tutors'); setStatusFilter('PENDING'); }}
+                    style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)', color: '#0F172A', border: 'none', padding: '0.65rem 1.2rem', borderRadius: '8px', fontWeight: 800, fontSize: '0.84rem', cursor: 'pointer' }}
+                  >
+                    Review {pendingTutorsCount} Pending Tutors →
+                  </button>
+                </div>
+
+                <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem' }}>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF', margin: '0 0 0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ShieldAlert size={18} color="#EF4444" /> Cross-Examination Duty Allocations
+                  </h3>
+                  <p style={{ color: '#94A3B8', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+                    Independent cross-examiners are paired with student batches to eliminate teacher bias during monthly evaluations.
+                  </p>
+                  <button
+                    onClick={() => { setActiveTab('exam_duties'); setShowCreateDutyModal(true); }}
+                    style={{ background: 'linear-gradient(135deg, #EF4444, #DC2626)', color: '#FFFFFF', border: 'none', padding: '0.65rem 1.2rem', borderRadius: '8px', fontWeight: 800, fontSize: '0.84rem', cursor: 'pointer' }}
+                  >
+                    + Assign New Exam Duty
+                  </button>
+                </div>
+
+                <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '16px', padding: '1.5rem' }}>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF', margin: '0 0 0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Crown size={18} color="#F59E0B" /> Staff Access Management
+                  </h3>
+                  <p style={{ color: '#94A3B8', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+                    Only Owner ({OWNER_EMAIL}) has authority to permit coordinators into this management system.
+                  </p>
+                  <button
+                    onClick={() => setActiveTab('employees')}
+                    style={{ background: '#334155', color: '#F1F5F9', border: '1px solid #475569', padding: '0.65rem 1.2rem', borderRadius: '8px', fontWeight: 800, fontSize: '0.84rem', cursor: 'pointer' }}
+                  >
+                    Manage Staff Permissions ({employees.length})
+                  </button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* TAB 2: PARENT ENQUIRIES */}
-          {activeTab === 'enquiries' && (
-            <div>
-              {/* Search & Filter Controls */}
-              <div className="dark-card" style={{ marginBottom: '1.75rem', padding: '1.35rem' }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'var(--bg-input)', padding: '0.6rem 1.1rem', borderRadius: '10px', border: '1px solid var(--border-color)', flex: 1, minWidth: '240px' }}>
-                    <Search size={18} color="var(--text-secondary)" />
-                    <input
-                      type="text"
-                      placeholder="Search student, parent, area, or subject..."
-                      style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '0.92rem', color: 'var(--text-primary)' }}
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    <select className="form-select" style={{ width: 'auto', fontSize: '0.88rem' }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                      <option value="ALL">All Statuses</option>
-                      <option value="NEW">NEW</option>
-                      <option value="CONTACTED">CONTACTED</option>
-                      <option value="ASSESSMENT_SCHEDULED">ASSESSMENT_SCHEDULED</option>
-                      <option value="ASSESSMENT_COMPLETED">ASSESSMENT_COMPLETED</option>
-                      <option value="MATCHING">MATCHING</option>
-                      <option value="TRIAL">TRIAL</option>
-                      <option value="CONVERTED">CONVERTED</option>
-                      <option value="CANCELLED">CANCELLED</option>
-                    </select>
-
-                    <select className="form-select" style={{ width: 'auto', fontSize: '0.88rem' }} value={langFilter} onChange={(e) => setLangFilter(e.target.value)}>
-                      <option value="ALL">All Languages</option>
-                      <option value="hi">हिंदी (Hindi Preferred)</option>
-                      <option value="en">English Preferred</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Enquiries Table */}
-              <div className="dark-card" style={{ padding: '0', overflowX: 'auto', borderRadius: '16px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.92rem' }}>
-                  <thead>
-                    <tr style={{ background: 'var(--bg-input)', borderBottom: '2px solid var(--border-color)', textAlign: 'left' }}>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>ID</th>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>Student Details</th>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>Parent Contact & Language</th>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>Location</th>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>Status</th>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredEnquiries.map((enq: any) => (
-                      <tr key={enq.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                        <td style={{ padding: '1rem 1.15rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
-                          #{enq.id}
-                        </td>
-                        <td style={{ padding: '1rem 1.15rem' }}>
-                          <div style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{enq.student_name}</div>
-                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.84rem' }}>
-                            {enq.class_level} • {enq.board} ({enq.school_medium || 'English'} Medium)
-                          </div>
-                          <div style={{ color: 'var(--primary-blue)', fontSize: '0.84rem', fontWeight: 700 }}>
-                            {enq.subjects}
-                          </div>
-                        </td>
-                        <td style={{ padding: '1rem 1.15rem' }}>
-                          <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{enq.parent_name}</div>
-                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.84rem' }}>{enq.parent_phone}</div>
-                          
-                          {/* PREFERRED LANGUAGE HIGHLIGHT */}
-                          <div style={{ marginTop: '5px' }}>
-                            {enq.preferred_language === 'hi' ? (
-                              <span className="badge badge-gold" style={{ fontSize: '0.75rem' }}>
-                                Preferred: हिंदी (Hindi)
-                              </span>
-                            ) : (
-                              <span className="badge badge-blue" style={{ fontSize: '0.75rem' }}>
-                                Preferred: English
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td style={{ padding: '1rem 1.15rem' }}>
-                          <div style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{enq.area}</div>
-                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.82rem' }}>{enq.city} ({enq.pincode})</div>
-                        </td>
-                        <td style={{ padding: '1rem 1.15rem' }}>
-                          <select
-                            value={enq.status}
-                            onChange={(e) => updateEnquiryStatus(enq.id, e.target.value)}
-                            style={{
-                              padding: '0.4rem 0.75rem',
-                              borderRadius: '8px',
-                              fontWeight: 700,
-                              fontSize: '0.82rem',
-                              border: '1px solid var(--border-color)',
-                              background: 'var(--bg-input)',
-                              color: 'var(--text-primary)'
-                            }}
-                          >
-                            <option value="NEW">NEW</option>
-                            <option value="CONTACTED">CONTACTED</option>
-                            <option value="ASSESSMENT_SCHEDULED">ASSESSMENT_SCHEDULED</option>
-                            <option value="ASSESSMENT_COMPLETED">ASSESSMENT_COMPLETED</option>
-                            <option value="MATCHING">MATCHING</option>
-                            <option value="TRIAL">TRIAL</option>
-                            <option value="CONVERTED">CONVERTED</option>
-                            <option value="CANCELLED">CANCELLED</option>
-                          </select>
-                        </td>
-                        <td style={{ padding: '1rem 1.15rem' }}>
-                          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                            <a href={`tel:${enq.parent_phone}`} className="btn btn-secondary" style={{ padding: '0.35rem 0.65rem', fontSize: '0.78rem', borderRadius: '8px' }} title="Call Parent">
-                              <Phone size={12} /> Call
-                            </a>
-                            <a
-                              href={`https://wa.me/${enq.parent_phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(enq.preferred_language === 'hi' ? `नमस्ते ${enq.parent_name} जी, मैं Horizon से संपर्क कर रहा हूँ।` : `Hello ${enq.parent_name}, I am calling from Horizon.`)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="btn btn-whatsapp"
-                              style={{ padding: '0.35rem 0.65rem', fontSize: '0.78rem', borderRadius: '8px' }}
-                              title="WhatsApp Parent"
-                            >
-                              <MessageCircle size={12} /> WA
-                            </a>
-                            <button
-                              onClick={() => { setSelectedEnquiry(enq); setAssessmentModalOpen(true); }}
-                              className="btn btn-secondary"
-                              style={{ padding: '0.35rem 0.65rem', fontSize: '0.78rem', borderRadius: '8px' }}
-                            >
-                              Assess
-                            </button>
-                            <button
-                              onClick={() => { setSelectedEnquiry(enq); setMatchingModalOpen(true); }}
-                              className="btn btn-gold"
-                              style={{ padding: '0.35rem 0.65rem', fontSize: '0.78rem', borderRadius: '8px' }}
-                            >
-                              Match
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: TUTOR NETWORK */}
+          {/* ------------------------------------------------------------- */}
+          {/* TAB 2: TUTORS MANAGEMENT */}
+          {/* ------------------------------------------------------------- */}
           {activeTab === 'tutors' && (
             <div>
-              <div className="dark-card" style={{ padding: '0', overflowX: 'auto', borderRadius: '16px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.92rem' }}>
-                  <thead>
-                    <tr style={{ background: 'var(--bg-input)', borderBottom: '2px solid var(--border-color)', textAlign: 'left' }}>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>Tutor ID & Name</th>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>Qualification & College</th>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>Subjects & Classes</th>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>Location</th>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>Verification Status</th>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(data?.tutors || []).map((tut: any) => (
-                      <tr key={tut.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                        <td style={{ padding: '1rem 1.15rem' }}>
-                          <div style={{ fontWeight: 900, color: 'var(--accent-gold)', fontSize: '0.84rem' }}>{tut.tutor_code}</div>
-                          <div style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{tut.full_name}</div>
-                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.82rem' }}>{tut.phone}</div>
-                        </td>
-                        <td style={{ padding: '1rem 1.15rem' }}>
-                          <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{tut.highest_qualification}</div>
-                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.82rem' }}>{tut.college} ({tut.graduation_year})</div>
-                        </td>
-                        <td style={{ padding: '1rem 1.15rem' }}>
-                          <div style={{ color: 'var(--primary-blue)', fontWeight: 700 }}>{tut.subjects}</div>
-                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.82rem' }}>{tut.classes} ({tut.boards})</div>
-                        </td>
-                        <td style={{ padding: '1rem 1.15rem' }}>
-                          <div style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{tut.area}</div>
-                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.82rem' }}>{tut.city}</div>
-                        </td>
-                        <td style={{ padding: '1rem 1.15rem' }}>
-                          <select
-                            value={tut.verification_status}
-                            onChange={(e) => updateTutorStatus(tut.id, e.target.value)}
-                            style={{
-                              padding: '0.4rem 0.75rem',
-                              borderRadius: '8px',
-                              fontWeight: 700,
-                              fontSize: '0.82rem',
-                              border: '1px solid var(--border-color)',
-                              background: 'var(--bg-input)',
-                              color: 'var(--text-primary)'
-                            }}
-                          >
-                            <option value="APPLIED">APPLIED</option>
-                            <option value="UNDER_REVIEW">UNDER_REVIEW</option>
-                            <option value="VERIFIED">VERIFIED</option>
-                            <option value="AVAILABLE">AVAILABLE</option>
-                            <option value="ASSIGNED">ASSIGNED</option>
-                            <option value="ACTIVE">ACTIVE</option>
-                          </select>
-                        </td>
-                        <td style={{ padding: '1rem 1.15rem' }}>
-                          <a href={`/tutor-verify/${tut.tutor_code}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary" style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', borderRadius: '8px' }}>
-                            QR Verify Link
-                          </a>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: STUDENT ASSESSMENTS */}
-          {activeTab === 'assessments' && (
-            <div className="dark-card" style={{ padding: '2.25rem' }}>
-              <h3 style={{ fontSize: '1.35rem', color: 'var(--text-primary)', marginBottom: '1.5rem', fontWeight: 800 }}>Recorded Student Assessments</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                {(data?.assessments || []).map((ass: any) => (
-                  <div key={ass.id} style={{ border: '1px solid var(--border-color)', borderRadius: '14px', padding: '1.5rem', background: 'var(--bg-input)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                      <h4 style={{ color: 'var(--accent-gold)', fontSize: '1.15rem', fontWeight: 800 }}>{ass.student_name} ({ass.class_level}) — {ass.subject}</h4>
-                      <span style={{ fontSize: '0.84rem', color: 'var(--text-secondary)' }}>Date: {ass.assessment_date}</span>
-                    </div>
-                    <div style={{ fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: 1.7 }}>
-                      <p><strong style={{ color: 'var(--text-primary)' }}>Strengths:</strong> <span style={{ color: 'var(--text-secondary)' }}>{ass.strengths || 'N/A'}</span></p>
-                      <p><strong style={{ color: 'var(--text-primary)' }}>Weaknesses:</strong> <span style={{ color: 'var(--text-secondary)' }}>{ass.weaknesses || 'N/A'}</span></p>
-                      <p><strong style={{ color: 'var(--text-primary)' }}>Topics Needing Attention:</strong> <span style={{ color: 'var(--text-secondary)' }}>{ass.topics_attention || 'N/A'}</span></p>
-                      <p><strong style={{ color: 'var(--text-primary)' }}>Recommendations:</strong> <span style={{ color: 'var(--text-secondary)' }}>{ass.recommendations || 'N/A'}</span></p>
-                    </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', flex: 1, maxWidth: '600px' }}>
+                  <div style={{ position: 'relative', width: '100%', maxWidth: '340px' }}>
+                    <Search size={16} color="#94A3B8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                    <input
+                      type="text"
+                      placeholder="Search tutor by name, email, or subject..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      style={{ width: '100%', padding: '0.65rem 1rem 0.65rem 2.4rem', background: '#1E293B', border: '1px solid #334155', borderRadius: '8px', color: '#FFF', fontSize: '0.85rem' }}
+                    />
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 5: MATCHING & ASSIGNMENTS */}
-          {activeTab === 'matching' && (
-            <div className="dark-card" style={{ padding: '2.25rem' }}>
-              <h3 style={{ fontSize: '1.35rem', color: 'var(--text-primary)', marginBottom: '1.5rem', fontWeight: 800 }}>Active Assignments & Matches</h3>
-              <div style={{ overflowX: 'auto', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.92rem' }}>
-                  <thead>
-                    <tr style={{ background: 'var(--bg-input)', borderBottom: '2px solid var(--border-color)', textAlign: 'left' }}>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>Student</th>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>Matched Tutor</th>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>Subject & Schedule</th>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>Package Price</th>
-                      <th style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(data?.assignments || []).map((asg: any) => (
-                      <tr key={asg.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                        <td style={{ padding: '1rem 1.15rem', fontWeight: 800, color: 'var(--text-primary)' }}>{asg.student_name} ({asg.class_level})</td>
-                        <td style={{ padding: '1rem 1.15rem', color: 'var(--text-primary)' }}>{asg.tutor_name} ({asg.tutor_code})</td>
-                        <td style={{ padding: '1rem 1.15rem', color: 'var(--text-secondary)' }}>{asg.subject} • {asg.schedule}</td>
-                        <td style={{ padding: '1rem 1.15rem', fontWeight: 800, color: 'var(--accent-green)' }}>{asg.package_price}</td>
-                        <td style={{ padding: '1rem 1.15rem' }}>
-                          <span className="badge badge-blue">{asg.status}</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 6: SETTINGS */}
-          {activeTab === 'settings' && (
-            <div className="dark-card" style={{ maxWidth: '650px', padding: '2.5rem' }}>
-              <h3 style={{ fontSize: '1.35rem', color: 'var(--text-primary)', marginBottom: '1.5rem', fontWeight: 800 }}>System Settings & Business Config</h3>
-              <form onSubmit={handleSaveConfig}>
-                <div className="form-group">
-                  <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Horizon Contact Phone Number</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={configPhone}
-                    onChange={(e) => setConfigPhone(e.target.value)}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>WhatsApp Number (e.g. +91 9162162128)</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={configWhatsapp}
-                    onChange={(e) => setConfigWhatsapp(e.target.value)}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Admin Email for Notifications</label>
-                  <input
-                    type="email"
-                    className="form-input"
-                    value={configEmail}
-                    onChange={(e) => setConfigEmail(e.target.value)}
-                  />
-                </div>
-
-                <button type="submit" className="btn btn-gold" style={{ padding: '1rem 1.8rem', marginTop: '0.5rem', borderRadius: '30px' }}>
-                  Save Configuration
-                </button>
-              </form>
-            </div>
-          )}
-
-          {/* TAB 9: TEST CENTERS & CROSS-EVALUATION AUDITS */}
-          {activeTab === 'center_audits' && (
-            <div>
-              {/* Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '1rem' }}>
-                <div>
-                  <h2 style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Building2 size={24} color="var(--accent-gold)" /> Monthly Test Centers &amp; Cross-Audits
-                  </h2>
-                  <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', margin: '0.2rem 0 0' }}>
-                    Strict anti-bias evaluation control: Independent cross-tutors assigned to testing hubs with 1-day evaluation windows.
-                  </p>
-                </div>
-              </div>
-
-              {/* Section A: Allocated Test Centers */}
-              <div className="dark-card" style={{ padding: '1.75rem', borderRadius: '18px', marginBottom: '2rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--accent-gold)', margin: 0 }}>
-                    1. Verified Examination Centers
-                  </h3>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
-                  {(testCenters.length > 0 ? testCenters : [
-                    {
-                      id: 'cen-1',
-                      center_name: 'Horizon Central Assessment Hub #1',
-                      center_code: 'CEN-PUR-01',
-                      location_address: 'Line Bazar Road, Near Govt Medical College, Purnia',
-                      coordinator_name: 'Academic Director Piyush',
-                      contact_number: '+91 9162162128',
-                      capacity: 60
-                    }
-                  ]).map((center) => (
-                    <div
-                      key={center.id}
-                      style={{
-                        background: 'var(--bg-input)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '12px',
-                        padding: '1.25rem'
-                      }}
+                  <div style={{ display: 'flex', gap: '0.4rem' }}>
+                    <button
+                      onClick={() => setStatusFilter('ALL')}
+                      style={{ background: statusFilter === 'ALL' ? '#F59E0B' : '#1E293B', color: statusFilter === 'ALL' ? '#000' : '#CBD5E1', border: 'none', padding: '0.5rem 0.8rem', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                        <span style={{ padding: '2px 8px', borderRadius: '6px', background: 'var(--accent-gold)', color: '#000', fontSize: '0.72rem', fontWeight: 900 }}>
-                          {center.center_code}
-                        </span>
-                        <span style={{ fontSize: '0.75rem', color: '#10B981', fontWeight: 700 }}>
-                          Capacity: {center.capacity || 50} Students
-                        </span>
-                      </div>
-                      <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 6px' }}>
-                        {center.center_name}
-                      </h4>
-                      <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                        <MapPin size={14} color="#38BDF8" />
-                        <span>{center.location_address}</span>
-                      </div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)', paddingTop: '6px', marginTop: '6px' }}>
-                        Coordinator: <strong style={{ color: 'var(--text-primary)' }}>{center.coordinator_name}</strong> ({center.contact_number})
-                      </div>
-                    </div>
-                  ))}
+                      All ({tutors.length})
+                    </button>
+                    <button
+                      onClick={() => setStatusFilter('VERIFIED')}
+                      style={{ background: statusFilter === 'VERIFIED' ? '#10B981' : '#1E293B', color: statusFilter === 'VERIFIED' ? '#000' : '#CBD5E1', border: 'none', padding: '0.5rem 0.8rem', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      Verified ({verifiedTutorsCount})
+                    </button>
+                    <button
+                      onClick={() => setStatusFilter('PENDING')}
+                      style={{ background: statusFilter === 'PENDING' ? '#EF4444' : '#1E293B', color: statusFilter === 'PENDING' ? '#FFF' : '#CBD5E1', border: 'none', padding: '0.5rem 0.8rem', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      Pending ({pendingTutorsCount})
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Section B: Master Progress Report Cards List */}
-              <div className="dark-card" style={{ padding: '1.75rem', borderRadius: '18px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
-                  <div>
-                    <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--accent-gold)', margin: 0 }}>
-                      2. Official Monthly Progress Report Cards (Single-Page Audits)
-                    </h3>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: '2px 0 0' }}>
-                      All verified reports generated by independent cross-examiners and visible in Student &amp; Parent portals.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="table-responsive">
-                  <table className="admin-table">
-                    <thead>
+              <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '16px', overflowX: 'auto', boxShadow: '0 8px 30px rgba(0,0,0,0.3)' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
+                  <thead>
+                    <tr style={{ background: '#0F172A', borderBottom: '1px solid #334155', color: '#94A3B8' }}>
+                      <th style={{ padding: '1rem' }}>Tutor Profile</th>
+                      <th style={{ padding: '1rem' }}>College &amp; Qualification</th>
+                      <th style={{ padding: '1rem' }}>Subjects &amp; Exp</th>
+                      <th style={{ padding: '1rem' }}>Contact</th>
+                      <th style={{ padding: '1rem' }}>Verification Status</th>
+                      <th style={{ padding: '1rem', textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredTutors.length === 0 ? (
                       <tr>
-                        <th>STUDENT &amp; CLASS</th>
-                        <th>TEACHING TUTOR</th>
-                        <th>CROSS-EXAMINER &amp; CENTER</th>
-                        <th>MONTH</th>
-                        <th>OVERALL SCORE</th>
-                        <th>AUDIT STATUS</th>
-                        <th>OFFICIAL PDF</th>
+                        <td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: '#94A3B8' }}>
+                          No tutors found matching the filter criteria.
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {(monthlyReportCards.length > 0 ? monthlyReportCards : [
-                        {
-                          id: 'rep-sample-001',
-                          report_code: 'REP-202609-001',
-                          student_name: 'Aaryan Sharma',
-                          class_grade: 'Class 7th • CBSE',
-                          assigned_tutor_name: 'Harshit Patel',
-                          evaluator_tutor_name: 'Vikash Kumar (Cross-Examiner)',
-                          test_center_name: 'Horizon Central Hub #1',
-                          assessment_month: 'September, 2026',
-                          overall_percentage: 86.5,
-                          grade: 'Grade A+ Outstanding',
-                          status: 'VERIFIED'
-                        }
-                      ]).map((rep) => (
-                        <tr key={rep.id}>
-                          <td>
-                            <strong style={{ color: 'var(--text-primary)', fontSize: '0.92rem' }}>{rep.student_name}</strong>
-                            <div style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>{rep.class_grade}</div>
+                    ) : (
+                      filteredTutors.map((tutor) => {
+                        const isVerified = tutor.verification_status === 'VERIFIED' || tutor.status === 'VERIFIED' || tutor.status === 'verified';
+                        return (
+                          <tr key={tutor.id || tutor.email} style={{ borderBottom: '1px solid #334155' }}>
+                            <td style={{ padding: '1rem' }}>
+                              <div style={{ fontWeight: 800, color: '#FFFFFF', fontSize: '0.92rem' }}>{tutor.full_name}</div>
+                              <div style={{ color: '#94A3B8', fontSize: '0.78rem' }}>{tutor.email}</div>
+                            </td>
+                            <td style={{ padding: '1rem' }}>
+                              <div style={{ color: '#38BDF8', fontWeight: 700 }}>{tutor.college || 'Institution'}</div>
+                              <div style={{ color: '#94A3B8', fontSize: '0.78rem' }}>{tutor.degree_status || 'Degree Status'}</div>
+                            </td>
+                            <td style={{ padding: '1rem' }}>
+                              <div style={{ color: '#FDE68A', fontWeight: 600 }}>{tutor.subjects || 'General'}</div>
+                              <div style={{ color: '#94A3B8', fontSize: '0.78rem' }}>{tutor.experience_years || '1+ yr'} • {tutor.medium_preference || 'Bilingual'}</div>
+                            </td>
+                            <td style={{ padding: '1rem' }}>
+                              <div style={{ color: '#E2E8F0' }}>{tutor.phone || 'N/A'}</div>
+                            </td>
+                            <td style={{ padding: '1rem' }}>
+                              {isVerified ? (
+                                <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10B981', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '0.2rem 0.6rem', borderRadius: '14px', fontSize: '0.72rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                  <ShieldCheck size={12} /> Verified Tutor
+                                </span>
+                              ) : (
+                                <span style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#F59E0B', border: '1px solid rgba(245, 158, 11, 0.35)', padding: '0.2rem 0.6rem', borderRadius: '14px', fontSize: '0.72rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                  <Clock size={12} /> Pending Approval
+                                </span>
+                              )}
+                            </td>
+                            <td style={{ padding: '1rem', textAlign: 'right' }}>
+                              <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+                                <button
+                                  onClick={() => handleToggleTutorVerification(tutor)}
+                                  style={{
+                                    background: isVerified ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                                    color: isVerified ? '#EF4444' : '#10B981',
+                                    border: `1px solid ${isVerified ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
+                                    padding: '0.4rem 0.8rem',
+                                    borderRadius: '6px',
+                                    fontSize: '0.76rem',
+                                    fontWeight: 800,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  {isVerified ? 'Revoke Verification' : 'Verify Tutor ✓'}
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setSelectedTutorId(tutor.id || tutor.email);
+                                    setShowAssignTutorModal(true);
+                                  }}
+                                  style={{
+                                    background: '#334155',
+                                    color: '#F1F5F9',
+                                    border: '1px solid #475569',
+                                    padding: '0.4rem 0.8rem',
+                                    borderRadius: '6px',
+                                    fontSize: '0.76rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Assign Student
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ------------------------------------------------------------- */}
+          {/* TAB 3: STUDENTS & ADMISSIONS */}
+          {/* ------------------------------------------------------------- */}
+          {activeTab === 'students' && (
+            <div>
+              <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '16px', overflowX: 'auto', boxShadow: '0 8px 30px rgba(0,0,0,0.3)' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
+                  <thead>
+                    <tr style={{ background: '#0F172A', borderBottom: '1px solid #334155', color: '#94A3B8' }}>
+                      <th style={{ padding: '1rem' }}>Student &amp; Parent</th>
+                      <th style={{ padding: '1rem' }}>Class &amp; Board</th>
+                      <th style={{ padding: '1rem' }}>Contact &amp; Location</th>
+                      <th style={{ padding: '1rem' }}>Assigned Tutor</th>
+                      <th style={{ padding: '1rem' }}>Assessment Status</th>
+                      <th style={{ padding: '1rem', textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {students.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: '#94A3B8' }}>
+                          No students registered in database yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      students.map((stu) => (
+                        <tr key={stu.id} style={{ borderBottom: '1px solid #334155' }}>
+                          <td style={{ padding: '1rem' }}>
+                            <div style={{ fontWeight: 800, color: '#FFFFFF', fontSize: '0.92rem' }}>{stu.student_name}</div>
+                            <div style={{ color: '#94A3B8', fontSize: '0.78rem' }}>Parent: {stu.parent_name || 'N/A'}</div>
                           </td>
-                          <td>
-                            <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{rep.assigned_tutor_name}</div>
-                            <div style={{ fontSize: '0.74rem', color: 'var(--accent-gold)' }}>Regular Faculty (No Edit Access)</div>
+                          <td style={{ padding: '1rem' }}>
+                            <div style={{ color: '#38BDF8', fontWeight: 700 }}>{stu.class_level || 'Class 9'} ({stu.board || 'CBSE'})</div>
+                            <div style={{ color: '#94A3B8', fontSize: '0.78rem' }}>{stu.school_medium || 'Bilingual'}</div>
                           </td>
-                          <td>
-                            <div style={{ fontWeight: 700, color: '#38BDF8' }}>{rep.evaluator_tutor_name}</div>
-                            <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>{rep.test_center_name || 'Center #1'}</div>
+                          <td style={{ padding: '1rem' }}>
+                            <div style={{ color: '#E2E8F0' }}>{stu.phone}</div>
+                            <div style={{ color: '#64748B', fontSize: '0.78rem' }}>{stu.address || 'Purnia'}</div>
                           </td>
-                          <td>
-                            <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{rep.assessment_month}</span>
+                          <td style={{ padding: '1rem' }}>
+                            {stu.assigned_tutor_name ? (
+                              <span style={{ color: '#10B981', fontWeight: 800 }}>✓ {stu.assigned_tutor_name}</span>
+                            ) : (
+                              <span style={{ color: '#F59E0B', fontSize: '0.78rem', fontStyle: 'italic' }}>Unassigned</span>
+                            )}
                           </td>
-                          <td>
-                            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: '#10B981', fontFamily: 'monospace' }}>
-                              {rep.overall_percentage}%
-                            </div>
-                            <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{rep.grade}</div>
-                          </td>
-                          <td>
-                            <span className="badge badge-success">
-                              ✓ {rep.status || 'VERIFIED'}
+                          <td style={{ padding: '1rem' }}>
+                            <span style={{ padding: '0.2rem 0.6rem', borderRadius: '12px', background: 'rgba(56, 189, 248, 0.15)', color: '#38BDF8', fontSize: '0.74rem', fontWeight: 700 }}>
+                              {stu.test_status || 'Pending Assessment'}
                             </span>
                           </td>
-                          <td>
+                          <td style={{ padding: '1rem', textAlign: 'right' }}>
+                            <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+                              <button
+                                onClick={() => {
+                                  setSelectedStudentForAssign(stu);
+                                  setShowAssignTutorModal(true);
+                                }}
+                                style={{ background: 'linear-gradient(135deg, #059669, #047857)', color: '#FFF', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.76rem', fontWeight: 800, cursor: 'pointer' }}
+                              >
+                                Assign Tutor
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSelectedStudentForTest(stu);
+                                  setShowScheduleTestModal(true);
+                                }}
+                                style={{ background: '#334155', color: '#F1F5F9', border: '1px solid #475569', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.76rem', fontWeight: 700, cursor: 'pointer' }}
+                              >
+                                Schedule Test
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ------------------------------------------------------------- */}
+          {/* TAB 4: CROSS-EXAM DUTIES & CENTERS */}
+          {/* ------------------------------------------------------------- */}
+          {activeTab === 'exam_duties' && (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FFFFFF', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ShieldAlert size={20} color="#EF4444" /> Independent Cross-Exam Duties &amp; Testing Center Allocations
+                  </h3>
+                  <p style={{ color: '#94A3B8', fontSize: '0.84rem', margin: '0.25rem 0 0' }}>
+                    Assign which teacher evaluates which student and at which center. Only the appointed cross-examiner can edit the report card.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowCreateDutyModal(true)}
+                  style={{
+                    background: 'linear-gradient(135deg, #EF4444, #DC2626)',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    padding: '0.65rem 1.25rem',
+                    borderRadius: '8px',
+                    fontWeight: 800,
+                    fontSize: '0.86rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 15px rgba(239, 68, 68, 0.35)'
+                  }}
+                >
+                  <Plus size={16} /> + Assign New Exam Duty
+                </button>
+              </div>
+
+              <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '16px', overflowX: 'auto', boxShadow: '0 8px 30px rgba(0,0,0,0.3)' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
+                  <thead>
+                    <tr style={{ background: '#0F172A', borderBottom: '1px solid #334155', color: '#94A3B8' }}>
+                      <th style={{ padding: '1rem' }}>Duty Code</th>
+                      <th style={{ padding: '1rem' }}>Exam Center</th>
+                      <th style={{ padding: '1rem' }}>Cross-Examiner Tutor</th>
+                      <th style={{ padding: '1rem' }}>Student Assigned</th>
+                      <th style={{ padding: '1rem' }}>Date &amp; Status</th>
+                      <th style={{ padding: '1rem', textAlign: 'right' }}>Report Portal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {evaluationDuties.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: '#94A3B8' }}>
+                          No cross-exam duties scheduled yet. Click "+ Assign New Exam Duty" above to create one.
+                        </td>
+                      </tr>
+                    ) : (
+                      evaluationDuties.map((duty) => {
+                        const studentName = (duty.student_names && duty.student_names[0]) || 'Student';
+                        return (
+                          <tr key={duty.id} style={{ borderBottom: '1px solid #334155' }}>
+                            <td style={{ padding: '1rem' }}>
+                              <span style={{ padding: '3px 8px', borderRadius: '6px', background: '#D97706', color: '#000', fontSize: '0.74rem', fontWeight: 900 }}>
+                                {duty.duty_code}
+                              </span>
+                            </td>
+                            <td style={{ padding: '1rem' }}>
+                              <div style={{ fontWeight: 800, color: '#FFF' }}>{duty.center_name}</div>
+                              <div style={{ color: '#94A3B8', fontSize: '0.76rem' }}>{duty.center_address}</div>
+                            </td>
+                            <td style={{ padding: '1rem' }}>
+                              <div style={{ color: '#38BDF8', fontWeight: 800 }}>{duty.evaluator_tutor_name}</div>
+                              <div style={{ color: '#64748B', fontSize: '0.76rem' }}>{duty.evaluator_tutor_phone || 'PCE Purnia'}</div>
+                            </td>
+                            <td style={{ padding: '1rem' }}>
+                              <div style={{ color: '#FDE68A', fontWeight: 700 }}>{studentName}</div>
+                            </td>
+                            <td style={{ padding: '1rem' }}>
+                              <div style={{ color: '#CBD5E1' }}>{duty.evaluation_date}</div>
+                              <span style={{ padding: '1px 6px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.2)', color: '#EF4444', fontSize: '0.68rem', fontWeight: 800 }}>
+                                {duty.status || 'ACTIVE_TODAY'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '1rem', textAlign: 'right' }}>
+                              <Link
+                                href={`/report-card/fill?student=${encodeURIComponent(studentName)}&duty=${duty.id}`}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                                  color: '#000',
+                                  padding: '0.4rem 0.8rem',
+                                  borderRadius: '6px',
+                                  fontSize: '0.76rem',
+                                  fontWeight: 800,
+                                  textDecoration: 'none'
+                                }}
+                              >
+                                <span>Fill Report Card</span> <ExternalLink size={12} />
+                              </Link>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ------------------------------------------------------------- */}
+          {/* TAB 5: REPORT CARDS AUDIT */}
+          {/* ------------------------------------------------------------- */}
+          {activeTab === 'reports' && (
+            <div>
+              <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '16px', overflowX: 'auto', boxShadow: '0 8px 30px rgba(0,0,0,0.3)' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
+                  <thead>
+                    <tr style={{ background: '#0F172A', borderBottom: '1px solid #334155', color: '#94A3B8' }}>
+                      <th style={{ padding: '1rem' }}>Report Code</th>
+                      <th style={{ padding: '1rem' }}>Student Name</th>
+                      <th style={{ padding: '1rem' }}>Assessment Month</th>
+                      <th style={{ padding: '1rem' }}>Evaluator Examiner</th>
+                      <th style={{ padding: '1rem' }}>Score &amp; Grade</th>
+                      <th style={{ padding: '1rem', textAlign: 'right' }}>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {monthlyReportCards.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ padding: '3rem', textAlign: 'center', color: '#94A3B8' }}>
+                          No monthly report cards generated yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      monthlyReportCards.map((rep) => (
+                        <tr key={rep.id} style={{ borderBottom: '1px solid #334155' }}>
+                          <td style={{ padding: '1rem' }}>
+                            <span style={{ padding: '2px 6px', borderRadius: '4px', background: '#0284C7', color: '#FFF', fontSize: '0.74rem', fontWeight: 800 }}>
+                              {rep.report_code || 'REP-LOCK'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '1rem' }}>
+                            <div style={{ fontWeight: 800, color: '#FFF' }}>{rep.student_name}</div>
+                            <div style={{ color: '#94A3B8', fontSize: '0.76rem' }}>{rep.class_grade}</div>
+                          </td>
+                          <td style={{ padding: '1rem', color: '#FDE68A', fontWeight: 700 }}>
+                            {rep.assessment_month}
+                          </td>
+                          <td style={{ padding: '1rem', color: '#38BDF8', fontWeight: 600 }}>
+                            {rep.evaluator_tutor_name}
+                          </td>
+                          <td style={{ padding: '1rem' }}>
+                            <div style={{ color: '#10B981', fontWeight: 800 }}>{rep.overall_percentage || '86'}%</div>
+                            <div style={{ color: '#94A3B8', fontSize: '0.74rem' }}>{rep.grade || 'Grade A'}</div>
+                          </td>
+                          <td style={{ padding: '1rem', textAlign: 'right' }}>
                             <Link
-                              href={`/report-card/${rep.id || 'sample'}`}
-                              target="_blank"
+                              href={`/report-card/${rep.id}`}
                               style={{
-                                padding: '6px 12px',
-                                borderRadius: '6px',
-                                background: 'linear-gradient(135deg, var(--accent-gold), #D97706)',
-                                color: '#000',
-                                fontWeight: 800,
-                                fontSize: '0.78rem',
-                                textDecoration: 'none',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '4px'
+                                gap: '4px',
+                                background: '#334155',
+                                color: '#FFF',
+                                padding: '0.4rem 0.8rem',
+                                borderRadius: '6px',
+                                fontSize: '0.76rem',
+                                fontWeight: 700,
+                                textDecoration: 'none'
                               }}
                             >
-                              <Printer size={13} />
-                              <span>View / Print PDF</span>
+                              <Printer size={13} /> View A4 PDF
                             </Link>
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ------------------------------------------------------------- */}
+          {/* TAB 6: STAFF & ADMIN PERMISSIONS (OWNER CONTROLLED) */}
+          {/* ------------------------------------------------------------- */}
+          {activeTab === 'employees' && (
+            <div>
+              <div style={{
+                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%)',
+                border: '1px solid rgba(239, 68, 68, 0.35)',
+                borderRadius: '16px',
+                padding: '1.5rem',
+                marginBottom: '1.5rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '1rem'
+              }}>
+                <div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#FFFFFF', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Crown size={22} color="#F59E0B" /> Staff Access &amp; Permission Control
+                  </h3>
+                  <p style={{ color: '#CBD5E1', fontSize: '0.85rem', margin: '0.35rem 0 0' }}>
+                    Supreme Authority: <strong style={{ color: '#FDE68A' }}>{OWNER_EMAIL}</strong>. As host of the system, only the Owner can admit or revoke staff members.
+                  </p>
                 </div>
+
+                {isOwner && (
+                  <button
+                    onClick={() => setShowAddEmployeeModal(true)}
+                    style={{
+                      background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                      color: '#0F172A',
+                      border: 'none',
+                      padding: '0.65rem 1.25rem',
+                      borderRadius: '8px',
+                      fontWeight: 900,
+                      fontSize: '0.86rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      boxShadow: '0 4px 15px rgba(245, 158, 11, 0.35)'
+                    }}
+                  >
+                    <UserPlus size={16} /> + Admit New Staff Member
+                  </button>
+                )}
+              </div>
+
+              <div style={{ background: '#1E293B', border: '1px solid #334155', borderRadius: '16px', overflowX: 'auto', boxShadow: '0 8px 30px rgba(0,0,0,0.3)' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
+                  <thead>
+                    <tr style={{ background: '#0F172A', borderBottom: '1px solid #334155', color: '#94A3B8' }}>
+                      <th style={{ padding: '1rem' }}>Employee / Admin</th>
+                      <th style={{ padding: '1rem' }}>Designated Role</th>
+                      <th style={{ padding: '1rem' }}>Permission Status</th>
+                      <th style={{ padding: '1rem' }}>Authorized By</th>
+                      <th style={{ padding: '1rem', textAlign: 'right' }}>Owner Controls</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {employees.map((emp) => {
+                      const isSuperOwner = emp.email.toLowerCase() === OWNER_EMAIL.toLowerCase();
+                      return (
+                        <tr key={emp.email} style={{ borderBottom: '1px solid #334155' }}>
+                          <td style={{ padding: '1rem' }}>
+                            <div style={{ fontWeight: 800, color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              {emp.name}
+                              {isSuperOwner && <Crown size={14} color="#F59E0B" />}
+                            </div>
+                            <div style={{ color: '#94A3B8', fontSize: '0.78rem' }}>{emp.email}</div>
+                          </td>
+                          <td style={{ padding: '1rem' }}>
+                            <span style={{ color: isSuperOwner ? '#F59E0B' : '#38BDF8', fontWeight: 800 }}>
+                              {emp.role}
+                            </span>
+                          </td>
+                          <td style={{ padding: '1rem' }}>
+                            {emp.status === 'active' ? (
+                              <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10B981', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.74rem', fontWeight: 800 }}>
+                                ● Active / Permitted
+                              </span>
+                            ) : (
+                              <span style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#EF4444', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.74rem', fontWeight: 800 }}>
+                                ✕ Access Revoked
+                              </span>
+                            )}
+                          </td>
+                          <td style={{ padding: '1rem', color: '#94A3B8', fontSize: '0.80rem' }}>
+                            {emp.added_by}
+                          </td>
+                          <td style={{ padding: '1rem', textAlign: 'right' }}>
+                            {isSuperOwner ? (
+                              <span style={{ color: '#F59E0B', fontSize: '0.78rem', fontWeight: 800 }}>Permanent Owner</span>
+                            ) : isOwner ? (
+                              <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+                                <button
+                                  onClick={() => handleToggleEmployeeStatus(emp.email)}
+                                  style={{
+                                    background: emp.status === 'active' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                                    color: emp.status === 'active' ? '#EF4444' : '#10B981',
+                                    border: 'none',
+                                    padding: '0.4rem 0.8rem',
+                                    borderRadius: '6px',
+                                    fontSize: '0.76rem',
+                                    fontWeight: 800,
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  {emp.status === 'active' ? 'Revoke Access' : 'Admit / Re-enable'}
+                                </button>
+                                <button
+                                  onClick={() => handleRemoveEmployee(emp.email)}
+                                  style={{
+                                    background: '#334155',
+                                    color: '#F87171',
+                                    border: '1px solid #475569',
+                                    padding: '0.4rem 0.6rem',
+                                    borderRadius: '6px',
+                                    fontSize: '0.76rem',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            ) : (
+                              <span style={{ color: '#64748B', fontSize: '0.76rem' }}>Owner Only</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}
@@ -928,93 +1570,304 @@ export default function AdminDashboardPage() {
         </div>
       </main>
 
-      {/* ASSESSMENT MODAL */}
-      {assessmentModalOpen && selectedEnquiry && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999, padding: '1rem' }}>
-          <div className="dark-card" style={{ maxWidth: '600px', width: '100%', maxHeight: '90vh', overflowY: 'auto', padding: '2.5rem', borderRadius: '24px' }}>
-            <h3 style={{ fontSize: '1.35rem', color: 'var(--accent-gold)', marginBottom: '1.25rem', fontWeight: 800 }}>
-              Record Diagnostic Assessment: {selectedEnquiry.student_name}
-            </h3>
+      {/* ------------------------------------------------------------- */}
+      {/* MODAL 1: ASSIGN TUTOR TO STUDENT */}
+      {/* ------------------------------------------------------------- */}
+      {showAssignTutorModal && selectedStudentForAssign && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+          <div style={{ background: '#1E293B', border: '1px solid #475569', borderRadius: '16px', maxWidth: '480px', width: '100%', padding: '2rem', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FFF', margin: 0 }}>
+                Assign Tutor to {selectedStudentForAssign.student_name}
+              </h3>
+              <button onClick={() => setShowAssignTutorModal(false)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
 
-            <form onSubmit={handleSaveAssessment}>
-              <div className="form-group">
-                <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Subject</label>
-                <input type="text" className="form-input" value={assessSubject || selectedEnquiry.subjects} onChange={(e) => setAssessSubject(e.target.value)} />
+            <form onSubmit={handleAssignTutorSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ fontSize: '0.80rem', fontWeight: 700, color: '#CBD5E1', display: 'block', marginBottom: '0.35rem' }}>Select Verified Tutor</label>
+                <select
+                  value={selectedTutorId}
+                  onChange={(e) => setSelectedTutorId(e.target.value)}
+                  required
+                  style={{ width: '100%', padding: '0.75rem', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', color: '#FFF', fontSize: '0.85rem' }}
+                >
+                  <option value="">-- Choose Tutor --</option>
+                  {tutors.map((t) => (
+                    <option key={t.id || t.email} value={t.id || t.email}>
+                      {t.full_name} ({t.college || 'PCE Purnia'}) • {t.subjects || 'General'}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div className="form-group">
-                <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Strengths</label>
-                <input type="text" className="form-input" placeholder="e.g. Number systems, basic calculation speed" value={assessStrengths} onChange={(e) => setAssessStrengths(e.target.value)} />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Weaknesses / Needs Attention</label>
-                <input type="text" className="form-input" placeholder="e.g. Geometry proofs, word problem application" value={assessWeaknesses} onChange={(e) => setAssessWeaknesses(e.target.value)} />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Recommended Focus</label>
-                <textarea className="form-textarea" placeholder="e.g. Geometry fundamentals + chapter test practice" value={assessRecs} onChange={(e) => setAssessRecs(e.target.value)} />
-              </div>
-
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
-                <button type="button" onClick={() => setAssessmentModalOpen(false)} className="btn btn-secondary" style={{ borderRadius: '24px' }}>Cancel</button>
-                <button type="submit" className="btn btn-gold" style={{ borderRadius: '24px' }}>Save Assessment Record</button>
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
+                <button
+                  type="submit"
+                  style={{ flex: 1, background: 'linear-gradient(135deg, #059669, #047857)', color: '#FFF', border: 'none', padding: '0.8rem', borderRadius: '8px', fontWeight: 800, cursor: 'pointer' }}
+                >
+                  Confirm &amp; Assign Tutor
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAssignTutorModal(false)}
+                  style={{ background: '#334155', color: '#CBD5E1', border: 'none', padding: '0.8rem 1.25rem', borderRadius: '8px', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* MATCHING MODAL */}
-      {matchingModalOpen && selectedEnquiry && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999, padding: '1rem' }}>
-          <div className="dark-card" style={{ maxWidth: '600px', width: '100%', maxHeight: '90vh', overflowY: 'auto', padding: '2.5rem', borderRadius: '24px' }}>
-            <h3 style={{ fontSize: '1.35rem', color: 'var(--accent-gold)', marginBottom: '0.5rem', fontWeight: 800 }}>
-              Match Verified Tutor: {selectedEnquiry.student_name}
-            </h3>
-            <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
-              Requirement: {selectedEnquiry.class_level} ({selectedEnquiry.board}) • {selectedEnquiry.subjects} • Location: {selectedEnquiry.area}
-            </p>
+      {/* ------------------------------------------------------------- */}
+      {/* MODAL 2: ASSIGN NEW CROSS-EXAM DUTY */}
+      {/* ------------------------------------------------------------- */}
+      {showCreateDutyModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+          <div style={{ background: '#1E293B', border: '1px solid #475569', borderRadius: '16px', maxWidth: '520px', width: '100%', padding: '2rem', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FFF', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ShieldAlert size={20} color="#EF4444" /> Assign Cross-Exam Duty
+              </h3>
+              <button onClick={() => setShowCreateDutyModal(false)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
 
-            <form onSubmit={handleCreateAssignment}>
-              <div className="form-group">
-                <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Select Verified Tutor</label>
-                <select className="form-select" value={selectedTutorId} onChange={(e) => setSelectedTutorId(e.target.value)} required>
-                  <option value="">-- Choose Verified Tutor --</option>
-                  {(data?.tutors || []).map((tut: any) => (
-                    <option key={tut.id} value={tut.id}>
-                      {tut.tutor_code} — {tut.full_name} ({tut.highest_qualification}, {tut.area}) [{tut.verification_status}]
+            <form onSubmit={handleCreateDutySubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ fontSize: '0.80rem', fontWeight: 700, color: '#CBD5E1', display: 'block', marginBottom: '0.35rem' }}>Select Student to be Tested</label>
+                <select
+                  value={newDutyForm.student_name}
+                  onChange={(e) => {
+                    const stu = students.find(s => s.student_name === e.target.value);
+                    setNewDutyForm(prev => ({
+                      ...prev,
+                      student_name: e.target.value,
+                      student_id: stu?.id || `stu_${e.target.value.toLowerCase().replace(/\s+/g, '_')}`,
+                      class_grade: stu?.class_level || 'Class 9'
+                    }));
+                  }}
+                  required
+                  style={{ width: '100%', padding: '0.75rem', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', color: '#FFF', fontSize: '0.85rem' }}
+                >
+                  <option value="">-- Choose Student --</option>
+                  {students.map((s) => (
+                    <option key={s.id} value={s.student_name}>
+                      {s.student_name} ({s.class_level || 'Class 9'} • {s.board || 'CBSE'})
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                <div className="form-group">
-                  <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Trial Session Date</label>
-                  <input type="date" className="form-input" value={trialDate} onChange={(e) => setTrialDate(e.target.value)} required />
-                </div>
-                <div className="form-group">
-                  <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Trial Session Time</label>
-                  <input type="text" className="form-input" value={trialTime} onChange={(e) => setTrialTime(e.target.value)} />
-                </div>
+              <div>
+                <label style={{ fontSize: '0.80rem', fontWeight: 700, color: '#CBD5E1', display: 'block', marginBottom: '0.35rem' }}>Select Cross-Examiner (Evaluator Teacher)</label>
+                <select
+                  value={newDutyForm.evaluator_tutor_name}
+                  onChange={(e) => {
+                    const tut = tutors.find(t => t.full_name === e.target.value);
+                    setNewDutyForm(prev => ({
+                      ...prev,
+                      evaluator_tutor_name: e.target.value,
+                      evaluator_tutor_id: tut?.id || tut?.user_id || `tut_${e.target.value.toLowerCase().replace(/\s+/g, '_')}`,
+                      evaluator_tutor_phone: tut?.phone || '+91 9162162128'
+                    }));
+                  }}
+                  required
+                  style={{ width: '100%', padding: '0.75rem', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', color: '#FFF', fontSize: '0.85rem' }}
+                >
+                  <option value="">-- Choose Teacher --</option>
+                  {tutors.map((t) => (
+                    <option key={t.id || t.email} value={t.full_name}>
+                      {t.full_name} ({t.college || 'PCE Purnia'}) • {t.subjects || 'General'}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                <div className="form-group">
-                  <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Package Name</label>
-                  <input type="text" className="form-input" value={packageName} onChange={(e) => setPackageName(e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Package Price</label>
-                  <input type="text" className="form-input" value={packagePrice} onChange={(e) => setPackagePrice(e.target.value)} />
-                </div>
+              <div>
+                <label style={{ fontSize: '0.80rem', fontWeight: 700, color: '#CBD5E1', display: 'block', marginBottom: '0.35rem' }}>Assessment Center</label>
+                <select
+                  value={newDutyForm.center_name}
+                  onChange={(e) => {
+                    const cen = testCenters.find(c => c.center_name === e.target.value);
+                    setNewDutyForm(prev => ({
+                      ...prev,
+                      center_name: e.target.value,
+                      center_address: cen?.location_address || 'Purnia, Bihar'
+                    }));
+                  }}
+                  style={{ width: '100%', padding: '0.75rem', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', color: '#FFF', fontSize: '0.85rem' }}
+                >
+                  {testCenters.map((c) => (
+                    <option key={c.id} value={c.center_name}>
+                      {c.center_name} ({c.area_city || 'Purnia'})
+                    </option>
+                  ))}
+                  <option value="Home Assessment (Supervised Home Visit)">Home Assessment (Supervised Home Visit)</option>
+                </select>
               </div>
 
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
-                <button type="button" onClick={() => setMatchingModalOpen(false)} className="btn btn-secondary" style={{ borderRadius: '24px' }}>Cancel</button>
-                <button type="submit" className="btn btn-gold" style={{ borderRadius: '24px' }}>Assign Tutor & Schedule Trial</button>
+              <div>
+                <label style={{ fontSize: '0.80rem', fontWeight: 700, color: '#CBD5E1', display: 'block', marginBottom: '0.35rem' }}>Evaluation Date</label>
+                <input
+                  type="date"
+                  value={newDutyForm.evaluation_date}
+                  onChange={(e) => setNewDutyForm(prev => ({ ...prev, evaluation_date: e.target.value }))}
+                  required
+                  style={{ width: '100%', padding: '0.75rem', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', color: '#FFF', fontSize: '0.85rem' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.80rem', fontWeight: 700, color: '#CBD5E1', display: 'block', marginBottom: '0.35rem' }}>Evaluation Notes / Guidelines</label>
+                <textarea
+                  value={newDutyForm.notes}
+                  onChange={(e) => setNewDutyForm(prev => ({ ...prev, notes: e.target.value }))}
+                  rows={2}
+                  style={{ width: '100%', padding: '0.75rem', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', color: '#FFF', fontSize: '0.85rem' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                <button
+                  type="submit"
+                  style={{ flex: 1, background: 'linear-gradient(135deg, #EF4444, #DC2626)', color: '#FFF', border: 'none', padding: '0.8rem', borderRadius: '8px', fontWeight: 800, cursor: 'pointer' }}
+                >
+                  Confirm &amp; Issue Duty
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCreateDutyModal(false)}
+                  style={{ background: '#334155', color: '#CBD5E1', border: 'none', padding: '0.8rem 1.25rem', borderRadius: '8px', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------- */}
+      {/* MODAL 3: ADMIT NEW STAFF / EMPLOYEE (OWNER ONLY) */}
+      {/* ------------------------------------------------------------- */}
+      {showAddEmployeeModal && isOwner && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+          <div style={{ background: '#1E293B', border: '1px solid #475569', borderRadius: '16px', maxWidth: '460px', width: '100%', padding: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FFF', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Crown size={20} color="#F59E0B" /> Admit Staff into Admin
+              </h3>
+              <button onClick={() => setShowAddEmployeeModal(false)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
+
+            <p style={{ color: '#94A3B8', fontSize: '0.82rem', marginBottom: '1.25rem' }}>
+              Only employees admitted by {OWNER_EMAIL} can access the administrative controls.
+            </p>
+
+            <form onSubmit={handleAddEmployee} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ fontSize: '0.80rem', fontWeight: 700, color: '#CBD5E1', display: 'block', marginBottom: '0.35rem' }}>Staff Email Address</label>
+                <input
+                  type="email"
+                  value={newEmployeeForm.email}
+                  onChange={(e) => setNewEmployeeForm(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="e.g. coordinator@horizon.edu"
+                  required
+                  style={{ width: '100%', padding: '0.75rem', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', color: '#FFF', fontSize: '0.85rem' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.80rem', fontWeight: 700, color: '#CBD5E1', display: 'block', marginBottom: '0.35rem' }}>Staff Full Name</label>
+                <input
+                  type="text"
+                  value={newEmployeeForm.name}
+                  onChange={(e) => setNewEmployeeForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="e.g. Vikramaditya Singh"
+                  required
+                  style={{ width: '100%', padding: '0.75rem', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', color: '#FFF', fontSize: '0.85rem' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.80rem', fontWeight: 700, color: '#CBD5E1', display: 'block', marginBottom: '0.35rem' }}>Designated Role</label>
+                <select
+                  value={newEmployeeForm.role}
+                  onChange={(e) => setNewEmployeeForm(prev => ({ ...prev, role: e.target.value }))}
+                  style={{ width: '100%', padding: '0.75rem', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', color: '#FFF', fontSize: '0.85rem' }}
+                >
+                  <option value="Academic Coordinator">Academic Coordinator</option>
+                  <option value="Exam Duty Manager">Exam Duty Manager</option>
+                  <option value="Academic Counselor">Academic Counselor</option>
+                  <option value="Center Supervisor">Center Supervisor</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
+                <button
+                  type="submit"
+                  style={{ flex: 1, background: 'linear-gradient(135deg, #F59E0B, #D97706)', color: '#0F172A', border: 'none', padding: '0.8rem', borderRadius: '8px', fontWeight: 900, cursor: 'pointer' }}
+                >
+                  Admit &amp; Grant Access
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddEmployeeModal(false)}
+                  style={{ background: '#334155', color: '#CBD5E1', border: 'none', padding: '0.8rem 1.25rem', borderRadius: '8px', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------- */}
+      {/* MODAL 4: SCHEDULE TEST FOR STUDENT */}
+      {/* ------------------------------------------------------------- */}
+      {showScheduleTestModal && selectedStudentForTest && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+          <div style={{ background: '#1E293B', border: '1px solid #475569', borderRadius: '16px', maxWidth: '440px', width: '100%', padding: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FFF', margin: 0 }}>
+                Schedule Diagnostic Assessment
+              </h3>
+              <button onClick={() => setShowScheduleTestModal(false)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
+
+            <p style={{ color: '#94A3B8', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+              Student: <strong style={{ color: '#FFF' }}>{selectedStudentForTest.student_name}</strong>
+            </p>
+
+            <form onSubmit={handleScheduleTestSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ fontSize: '0.80rem', fontWeight: 700, color: '#CBD5E1', display: 'block', marginBottom: '0.35rem' }}>Test Date &amp; Time</label>
+                <input
+                  type="datetime-local"
+                  value={testScheduleDate}
+                  onChange={(e) => setTestScheduleDate(e.target.value)}
+                  required
+                  style={{ width: '100%', padding: '0.75rem', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', color: '#FFF', fontSize: '0.85rem' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
+                <button
+                  type="submit"
+                  style={{ flex: 1, background: 'linear-gradient(135deg, #38BDF8, #0284C7)', color: '#0F172A', border: 'none', padding: '0.8rem', borderRadius: '8px', fontWeight: 800, cursor: 'pointer' }}
+                >
+                  Save Schedule
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowScheduleTestModal(false)}
+                  style={{ background: '#334155', color: '#CBD5E1', border: 'none', padding: '0.8rem 1.25rem', borderRadius: '8px', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
               </div>
             </form>
           </div>
@@ -1022,6 +1875,6 @@ export default function AdminDashboardPage() {
       )}
 
       <Footer />
-    </div>
+    </>
   );
 }

@@ -38,8 +38,20 @@ export interface TutorProfile {
   rating?: number;
   phone?: string;
   email?: string;
+  status?: string;
+  verification_status?: 'VERIFIED' | 'PENDING' | 'REJECTED' | string;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface AdminEmployee {
+  id?: string;
+  email: string;
+  name: string;
+  role: string;
+  status: 'active' | 'pending' | 'revoked';
+  added_by: string;
+  created_at?: string;
 }
 
 export interface StudentEnquiry {

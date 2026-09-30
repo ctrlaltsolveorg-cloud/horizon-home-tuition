@@ -60,107 +60,36 @@ export default function TutorDashboard() {
 
   // Tutor Profile State
   const [tutorProfile, setTutorProfile] = useState<any>({
-    full_name: 'PIYUSH KUMAR PATEL',
-    college: 'PCE PURNIA',
-    degree_status: 'B.Tech/BS: 3rd sem with 7.2 CGPA',
-    experience_years: '3+ years teaching experience',
-    medium_preference: 'Hindi medium only',
-    subjects: 'Mathematics, Science, Foundation Physics',
-    bio_and_custom_notes: 'Dedicated educator specialized in CBSE and Bihar State Board Hindi-medium learners with personalized doubt clearing.',
-    phone: '+91 9162162128',
-    email: 'piyushkumarsihari@gmail.com',
-    rating: 5.0
+    full_name: 'Tutor',
+    college: 'Institution / College',
+    degree_status: 'Degree / Qualification',
+    experience_years: '1+ years teaching experience',
+    medium_preference: 'Hindi / English',
+    subjects: 'General Subjects',
+    bio_and_custom_notes: '',
+    phone: '',
+    email: '',
+    status: 'PENDING',
+    verification_status: 'PENDING',
+    rating: null
   });
 
   // Edit Form State
   const [editForm, setEditForm] = useState<any>({
-    full_name: 'PIYUSH KUMAR PATEL',
-    college: 'PCE PURNIA',
-    degree_status: 'B.Tech/BS: 3rd sem with 7.2 CGPA',
-    experience_years: '3+ years teaching experience',
-    medium_preference: 'Hindi medium only',
-    subjects: 'Mathematics, Science, Foundation Physics',
-    phone: '+91 9162162128',
-    email: 'piyushkumarsihari@gmail.com',
-    bio_and_custom_notes: 'Dedicated educator specialized in CBSE and Bihar State Board Hindi-medium learners with personalized doubt clearing.'
+    full_name: 'Tutor',
+    college: 'Institution / College',
+    degree_status: 'Degree / Qualification',
+    experience_years: '1+ years teaching experience',
+    medium_preference: 'Hindi / English',
+    subjects: 'General Subjects',
+    phone: '',
+    email: '',
+    bio_and_custom_notes: ''
   });
 
   // Students Lists
-  const [activeStudents, setActiveStudents] = useState<StudentAssignment[]>([
-    {
-      id: 'stud-1',
-      student_name: 'Aarav Sharma',
-      parent_name: 'Rajesh Sharma',
-      phone: '+91 98765 43210',
-      class_grade: 'Class 10',
-      board: 'CBSE',
-      medium: 'Hindi / Bilingual',
-      subjects: 'Mathematics & Science',
-      status: 'active',
-      start_date: '2026-06-01',
-      schedule_days: 'Mon, Wed, Fri (5:00 PM - 6:30 PM)',
-      monthly_fee: 4500,
-      attendance_percent: 96,
-      academic_score: '88%',
-      location: 'Bhattai Bazar, Purnia'
-    },
-    {
-      id: 'stud-2',
-      student_name: 'Rohan Verma',
-      parent_name: 'Sanjay Verma',
-      phone: '+91 98111 22334',
-      class_grade: 'Class 9',
-      board: 'CBSE',
-      medium: 'Hindi medium only',
-      subjects: 'Mathematics & Foundation Physics',
-      status: 'active',
-      start_date: '2026-07-15',
-      schedule_days: 'Tue, Thu, Sat (4:00 PM - 5:30 PM)',
-      monthly_fee: 4000,
-      attendance_percent: 92,
-      academic_score: '84%',
-      location: 'Navratan Hatta, Purnia'
-    }
-  ]);
-
-  const [pastStudents, setPastStudents] = useState<StudentAssignment[]>([
-    {
-      id: 'stud-past-1',
-      student_name: 'Ananya Singh',
-      parent_name: 'Mahesh Singh',
-      phone: '+91 94312 34567',
-      class_grade: 'Class 10 (Board Completed)',
-      board: 'CBSE',
-      medium: 'Bilingual',
-      subjects: 'Full Science & Mathematics',
-      status: 'completed',
-      start_date: '2025-04-01',
-      end_date: '2026-03-31',
-      schedule_days: '6 Days / Week (Special Batch)',
-      monthly_fee: 5500,
-      attendance_percent: 98,
-      academic_score: '94.6% in 10th Boards',
-      location: 'Line Bazar, Purnia'
-    },
-    {
-      id: 'stud-past-2',
-      student_name: 'Vikas Jha',
-      parent_name: 'Anil Jha',
-      phone: '+91 91234 56789',
-      class_grade: 'Class 8 (Promoted to 9th)',
-      board: 'Bihar State Board',
-      medium: 'Hindi medium only',
-      subjects: 'All Core Subjects',
-      status: 'completed',
-      start_date: '2025-08-01',
-      end_date: '2026-03-15',
-      schedule_days: 'Mon to Fri (6:00 PM - 7:30 PM)',
-      monthly_fee: 3500,
-      attendance_percent: 95,
-      academic_score: '89% Annual Exam',
-      location: 'Madhubani, Purnia'
-    }
-  ]);
+  const [activeStudents, setActiveStudents] = useState<StudentAssignment[]>([]);
+  const [pastStudents, setPastStudents] = useState<StudentAssignment[]>([]);
 
   // Form states for add student modal
   const [newStudentForm, setNewStudentForm] = useState({
@@ -188,152 +117,221 @@ export default function TutorDashboard() {
     try {
       setLoading(true);
 
-      // 1. Tutor Profile
+      // 1. Tutor Profile - Load dynamically for THIS specific user
       if (user) {
-        const { data: tpData } = await supabase
-          .from('tutor_profiles')
-          .select('*')
-          .or(`user_id.eq.${user.id},email.eq.${user.email}`)
-          .maybeSingle();
+        const meta = user.profileData || {};
+        let currentProfile: any = {
+          full_name: user.name || meta.full_name || 'Tutor',
+          college: meta.college || 'Institution / College',
+          degree_status: meta.degree_status || 'Degree / Qualification',
+          experience_years: meta.experience_years || '1+ years teaching experience',
+          medium_preference: meta.medium_preference || 'Hindi / English',
+          subjects: meta.subjects || 'General Subjects',
+          bio_and_custom_notes: meta.bio || '',
+          phone: user.phone || meta.phone || '',
+          email: user.email || '',
+          status: 'PENDING',
+          verification_status: 'PENDING',
+          rating: null
+        };
 
-        if (tpData) {
-          const merged = {
-            ...tpData,
-            full_name: tpData.full_name || user.name || 'PIYUSH KUMAR PATEL',
-            college: tpData.college || 'PCE PURNIA',
-            degree_status: tpData.degree_status || 'B.Tech/BS: 3rd sem with 7.2 CGPA',
-            experience_years: tpData.experience_years || '3+ years teaching experience',
-            medium_preference: tpData.medium_preference || 'Hindi medium only',
-            subjects: tpData.subjects || 'Mathematics, Science, Foundation Physics',
-            phone: tpData.phone || user.phone || '+91 9162162128',
-            email: tpData.email || user.email || 'piyushkumarsihari@gmail.com',
-            rating: tpData.rating || 5.0
-          };
-          setTutorProfile(merged);
-          setEditForm(merged);
+        try {
+          const { data: tpData } = await supabase
+            .from('tutor_profiles')
+            .select('*')
+            .or(`user_id.eq.${user.id},email.eq.${user.email}`)
+            .maybeSingle();
+
+          if (tpData) {
+            currentProfile = {
+              ...currentProfile,
+              ...tpData,
+              full_name: tpData.full_name || currentProfile.full_name,
+              college: tpData.college || currentProfile.college,
+              degree_status: tpData.degree_status || currentProfile.degree_status,
+              experience_years: tpData.experience_years || currentProfile.experience_years,
+              medium_preference: tpData.medium_preference || currentProfile.medium_preference,
+              subjects: tpData.subjects || currentProfile.subjects,
+              phone: tpData.phone || currentProfile.phone,
+              email: tpData.email || currentProfile.email,
+              status: tpData.status || tpData.verification_status || 'PENDING',
+              verification_status: tpData.verification_status || tpData.status || 'PENDING',
+              rating: tpData.rating || null
+            };
+          } else if (!user.isDemo && user.email) {
+            // Upsert initial profile into tutor_profiles table in Supabase
+            await supabase.from('tutor_profiles').upsert({
+              user_id: user.id,
+              full_name: currentProfile.full_name,
+              college: currentProfile.college,
+              degree_status: currentProfile.degree_status,
+              experience_years: currentProfile.experience_years,
+              medium_preference: currentProfile.medium_preference,
+              subjects: currentProfile.subjects,
+              phone: currentProfile.phone,
+              email: currentProfile.email,
+              status: 'PENDING',
+              verification_status: 'PENDING',
+              rating: null,
+              updated_at: new Date().toISOString()
+            });
+          }
+        } catch (tpErr) {
+          console.warn('Error reading tutor profile from Supabase:', tpErr);
         }
+
+        setTutorProfile(currentProfile);
+        setEditForm(currentProfile);
       }
 
-      // 2. Active & Past Students
-      const { data: studentsData } = await supabase
-        .from('student_assignments')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // 2. Active & Past Students strictly assigned to THIS tutor
+      let assignedStudents: any[] = [];
+      try {
+        const { data: studentsData } = await supabase
+          .from('student_assignments')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (studentsData && studentsData.length > 0) {
-        setActiveStudents(studentsData.filter((s: StudentAssignment) => s.status === 'active'));
-        setPastStudents(studentsData.filter((s: StudentAssignment) => s.status === 'completed'));
+        const myTutorName = (user?.name || tutorProfile.full_name || '').toLowerCase().trim();
+
+        if (studentsData && studentsData.length > 0) {
+          assignedStudents = studentsData.filter((s: any) => {
+            if (user?.id && s.tutor_id === user.id) return true;
+            if (user?.email && s.tutor_email === user.email) return true;
+            if (myTutorName && (s.tutor_name || '').toLowerCase().includes(myTutorName)) return true;
+            return false;
+          });
+        }
+
+        // Also check student_enquiries where this tutor has been assigned
+        if (user?.id || user?.name) {
+          const { data: enquiryAssignments } = await supabase
+            .from('student_enquiries')
+            .select('*')
+            .or(`assigned_teacher_id.eq.${user?.id},assigned_tutor_name.ilike.%${user?.name || ''}%`);
+
+          if (enquiryAssignments && enquiryAssignments.length > 0) {
+            enquiryAssignments.forEach((enq: any) => {
+              if (!assignedStudents.find((s: any) => s.id === enq.id || s.student_name === enq.student_name)) {
+                assignedStudents.push({
+                  id: enq.id,
+                  student_name: enq.student_name,
+                  parent_name: enq.parent_name,
+                  phone: enq.phone,
+                  class_grade: enq.class_level || 'Class 9',
+                  board: enq.board || 'CBSE',
+                  medium: enq.school_medium || 'Hindi / Bilingual',
+                  subjects: 'Enrolled Curriculum',
+                  status: 'active',
+                  start_date: new Date(enq.created_at || Date.now()).toISOString().split('T')[0],
+                  schedule_days: 'Weekly Home Tuition Batch',
+                  monthly_fee: enq.fee_amount || 4500,
+                  attendance_percent: 100,
+                  academic_score: enq.test_score || 'Diagnostic Enrolled',
+                  location: enq.address || 'Purnia'
+                });
+              }
+            });
+          }
+        }
+      } catch (stuErr) {
+        console.warn('Error fetching student assignments:', stuErr);
       }
 
-      // 3. Cross-Evaluation Duties
-      const { data: dutiesData } = await supabase
-        .from('evaluation_duties')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (dutiesData && dutiesData.length > 0) {
-        setEvaluationDuties(dutiesData);
-      } else {
-        setEvaluationDuties([
+      if (assignedStudents.length > 0) {
+        setActiveStudents(assignedStudents.filter((s: any) => s.status === 'active'));
+        setPastStudents(assignedStudents.filter((s: any) => s.status === 'completed'));
+      } else if (user?.isDemo) {
+        // Only Instant Demo mode shows seeded mock students
+        setActiveStudents([
           {
-            id: 'duty-live-01',
-            duty_code: 'DUTY-PUR-0924',
-            evaluation_date: new Date().toISOString().split('T')[0],
-            center_id: 'cen-01',
-            center_name: 'Horizon Academic Assessment Center (Center #1)',
-            center_address: 'Line Bazar Near Max Hospital, Purnia, Bihar',
-            evaluator_tutor_id: user?.id || 'tutor-01',
-            evaluator_tutor_name: tutorProfile.full_name || 'Vikash Kumar (Cross-Examiner)',
-            evaluator_college: 'PCE Purnia',
-            evaluator_tutor_phone: '+91 9162162128',
-            student_ids: ['std-aaryan-01', 'std-rohit-02'],
-            student_names: ['Aaryan Sharma', 'Rohit Kumar'],
-            status: 'ACTIVE_TODAY',
-            notes: 'Independent evaluation duty for September 2026. Regular teaching tutor is prohibited from evaluating.'
+            id: 'demo-stud-1',
+            student_name: 'Aarav Sharma',
+            parent_name: 'Rajesh Sharma',
+            phone: '+91 98765 43210',
+            class_grade: 'Class 10',
+            board: 'CBSE',
+            medium: 'Hindi / Bilingual',
+            subjects: 'Mathematics & Science',
+            status: 'active',
+            start_date: '2026-06-01',
+            schedule_days: 'Mon, Wed, Fri (5:00 PM - 6:30 PM)',
+            monthly_fee: 4500,
+            attendance_percent: 96,
+            academic_score: '88%',
+            location: 'Bhattai Bazar, Purnia'
           }
         ]);
-      }
-
-      // 4. Official Monthly Report Cards
-      const { data: reportCardsData } = await supabase
-        .from('monthly_report_cards')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (reportCardsData && reportCardsData.length > 0) {
-        setMonthlyReportCards(reportCardsData);
+        setPastStudents([]);
       } else {
-        setMonthlyReportCards([
-          {
-            id: 'rep-sample-001',
-            report_code: 'REP-202609-001',
-            student_id: 'std-aaryan-01',
-            student_name: 'Aaryan Sharma',
-            parent_name: 'Suresh Sharma',
-            class_grade: 'Class 7th • CBSE/ICSE',
-            assessment_month: 'September, 2026',
-            assigned_tutor_name: 'Harshit Patel',
-            assigned_tutor_contact: '+91 9162162128',
-            evaluator_tutor_name: 'Vikash Kumar (Certified Cross-Examiner)',
-            test_center_name: 'Horizon Academic Assessment Center',
-            hindi_passage_length_time: '160 Words • 1m 25s',
-            hindi_speed_wpm: '113 WPM (Good)',
-            hindi_comprehension_qs: '4.0 / 5.0 Correct (1 Error)',
-            hindi_fluency: '8.50 / 10.00',
-            english_passage_length_time: '175 Words • 1m 35s',
-            english_speed_wpm: '110 WPM (Optimal)',
-            english_comprehension_qs: '5.0 / 5.0 Correct (0 Error)',
-            english_fluency: '9.00 / 10.00',
-            math_ch1_name: 'Ch 1: Integers, Number Line & Rules',
-            math_ch1_marks: '9.50 / 10.00',
-            math_ch1_status: 'Cleared',
-            math_ch2_name: 'Ch 2: Fractions, Decimals & Problem Sums',
-            math_ch2_marks: '8.50 / 10.00',
-            math_ch2_status: 'Cleared',
-            science_ch1_name: 'Ch 1: Nutrition in Plants (Modes & Photosynthesis)',
-            science_ch1_marks: '9.00 / 10.00',
-            science_ch1_status: 'Cleared',
-            science_ch2_name: 'Ch 2: Nutrition in Animals (Digestive Organs)',
-            science_ch2_marks: '7.50 / 10.00',
-            science_ch2_status: 'Revision',
-            sst_ch1_name: 'Ch 1: Tracing Changes Through a Thousand Years',
-            sst_ch1_marks: '8.50 / 10.00',
-            sst_ch1_status: 'Cleared',
-            sst_ch2_name: 'Ch 2: Our Environment & Earth Interior Layers',
-            sst_ch2_marks: '8.00 / 10.00',
-            sst_ch2_status: 'Cleared',
-            lang_eng_name: 'English (Ch 1-2): Three Questions & The Squirrel',
-            lang_eng_marks: '9.00 / 10.00',
-            lang_eng_status: 'Cleared',
-            lang_hindi_name: 'Hindi (Ch 1-2): हम पंछी उन्मुक्त गगन के & दादी माँ',
-            lang_hindi_marks: '8.50 / 10.00',
-            lang_hindi_status: 'Cleared',
-            manners_max: 10,
-            manners_score: 9.50,
-            manners_obs: 'Polite, attentive; follows homework schedules obediently.',
-            confidence_max: 10,
-            confidence_score: 8.50,
-            confidence_obs: 'Answers without shyness; asks doubts with clarity.',
-            english_usage_max: 10,
-            english_usage_score: 8.00,
-            english_usage_obs: '~65% English words used actively during tuition hours.',
-            mental_math_score: '9.0 / 10.00',
-            mental_math_obs: 'Fast oral tables up to 19; prompt mental addition without rough notebook dependence.',
-            logical_aptitude_score: '8.5 / 10.00',
-            logical_aptitude_obs: 'Solved 4/5 pattern-finding and critical reasoning puzzles during weekly aptitude rounds.',
-            homework_score: '9.5 / 10.00',
-            homework_obs: '96% daily homework completion rate on time without needing repeated follow-ups.',
-            neatness_score: '8.0 / 10.00',
-            neatness_obs: 'Clean margin maintenance; neat step-by-step working. Science diagram labeling can improve.',
-            overall_percentage: 86.5,
-            grade: 'Grade A+ Outstanding',
-            next_month_target: 'Next two chapters in all subjects',
-            focus_recommendation: 'Daily 15m English book reading at home',
-            status: 'VERIFIED'
-          }
-        ]);
+        setActiveStudents([]);
+        setPastStudents([]);
       }
 
+      // 3. Cross-Evaluation Duties assigned to THIS tutor
+      try {
+        const { data: dutiesData } = await supabase
+          .from('evaluation_duties')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (dutiesData && dutiesData.length > 0) {
+          const myTutorName = (user?.name || tutorProfile.full_name || '').toLowerCase().trim();
+          const myDuties = dutiesData.filter((d: any) => {
+            if (user?.id && d.evaluator_tutor_id === user.id) return true;
+            if (user?.email && d.evaluator_tutor_email === user.email) return true;
+            if (myTutorName && (d.evaluator_tutor_name || '').toLowerCase().includes(myTutorName)) return true;
+            return false;
+          });
+          setEvaluationDuties(myDuties);
+        } else if (user?.isDemo) {
+          setEvaluationDuties([
+            {
+              id: 'duty-demo-01',
+              duty_code: 'DUTY-PUR-0924',
+              evaluation_date: new Date().toISOString().split('T')[0],
+              center_id: 'cen-01',
+              center_name: 'Horizon Academic Assessment Center (Center #1)',
+              center_address: 'Line Bazar Near Max Hospital, Purnia, Bihar',
+              evaluator_tutor_id: user?.id || 'tutor-01',
+              evaluator_tutor_name: user?.name || 'Tutor',
+              evaluator_college: 'PCE Purnia',
+              evaluator_tutor_phone: '+91 9162162128',
+              student_ids: ['std-aaryan-01'],
+              student_names: ['Aaryan Sharma'],
+              status: 'ACTIVE_TODAY',
+              notes: 'Independent evaluation duty. Regular teaching tutor is prohibited from evaluating.'
+            }
+          ]);
+        } else {
+          setEvaluationDuties([]);
+        }
+      } catch (dutyErr) {
+        console.warn('Error fetching duties:', dutyErr);
+        setEvaluationDuties([]);
+      }
+
+      // 4. Official Monthly Report Cards for this tutor or their students
+      try {
+        const { data: reportCardsData } = await supabase
+          .from('monthly_report_cards')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (reportCardsData && reportCardsData.length > 0) {
+          const myTutorName = (user?.name || tutorProfile.full_name || '').toLowerCase().trim();
+          const myReports = reportCardsData.filter((r: any) => {
+            if (user?.id && (r.evaluator_tutor_id === user.id || r.regular_tutor_id === user.id)) return true;
+            if (myTutorName && ((r.evaluator_tutor_name || '').toLowerCase().includes(myTutorName) || (r.assigned_tutor_name || '').toLowerCase().includes(myTutorName))) return true;
+            return false;
+          });
+          setMonthlyReportCards(myReports);
+        } else {
+          setMonthlyReportCards([]);
+        }
+      } catch (repErr) {
+        setMonthlyReportCards([]);
+      }
     } catch (err: any) {
       console.warn('Live Supabase data loaded with local fallbacks:', err.message);
     } finally {
@@ -525,27 +523,46 @@ export default function TutorDashboard() {
                 <h1 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.55rem)', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
                   {tutorProfile.full_name}
                 </h1>
-                <span style={{
-                  background: 'rgba(16, 185, 129, 0.15)',
-                  color: '#10B981',
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
-                  padding: '0.15rem 0.55rem',
-                  borderRadius: '20px',
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.3rem'
-                }}>
-                  <ShieldCheck size={12} /> Verified Tutor
-                </span>
+                {(tutorProfile.verification_status === 'VERIFIED' || tutorProfile.status === 'VERIFIED' || tutorProfile.status === 'verified') ? (
+                  <span style={{
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    color: '#10B981',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    padding: '0.2rem 0.65rem',
+                    borderRadius: '20px',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem'
+                  }}>
+                    <ShieldCheck size={13} /> Verified Tutor
+                  </span>
+                ) : (
+                  <span style={{
+                    background: 'rgba(245, 158, 11, 0.15)',
+                    color: '#F59E0B',
+                    border: '1px solid rgba(245, 158, 11, 0.35)',
+                    padding: '0.2rem 0.65rem',
+                    borderRadius: '20px',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem'
+                  }}>
+                    <Clock size={13} /> Under Verification (Awaiting Admin Review)
+                  </span>
+                )}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginTop: '0.25rem', color: '#94A3B8', fontSize: '0.80rem', flexWrap: 'wrap' }}>
                 <span style={{ color: '#38BDF8', fontWeight: 700 }}>{tutorProfile.college}</span>
                 <span>•</span>
                 <span>{tutorProfile.degree_status}</span>
                 <span>•</span>
-                <span style={{ color: '#F59E0B', fontWeight: 700 }}>Rating: {tutorProfile.rating || 5.0} / 5.0</span>
+                <span style={{ color: '#F59E0B', fontWeight: 700 }}>
+                  {tutorProfile.rating ? `Rating: ${tutorProfile.rating} / 5.0` : 'New Registered Tutor'}
+                </span>
               </div>
             </div>
           </div>
@@ -591,7 +608,28 @@ export default function TutorDashboard() {
           </div>
         </div>
 
-        {/* 2. TOP METRICS STRIP (4 Clean KPI Cards) */}
+        {/* Pending Verification Notice Banner */}
+        {!(tutorProfile.verification_status === 'VERIFIED' || tutorProfile.status === 'VERIFIED' || tutorProfile.status === 'verified') && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.08) 100%)',
+            border: '1px solid rgba(245, 158, 11, 0.35)',
+            borderRadius: '14px',
+            padding: '1rem 1.25rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.85rem',
+            color: '#FDE68A',
+            fontSize: '0.86rem',
+            lineHeight: 1.5,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+          }}>
+            <Clock size={22} color="#F59E0B" style={{ flexShrink: 0 }} />
+            <div>
+              <strong style={{ color: '#FBBF24' }}>Profile Under Verification:</strong> Welcome, <strong>{tutorProfile.full_name}</strong>! Your registration has been submitted to the HORIZON Academic Council. Once verified by the Admin (<strong>piyushkumarsihari@gmail.com</strong>), you will be granted the <strong>Verified Tutor</strong> badge and home-tuition batches will be allocated to your portal.
+            </div>
+          </div>
+        )}
         <div className="tutor-metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: '0.75rem', marginBottom: '1.5rem' }}>
           
           <div 
@@ -812,7 +850,28 @@ export default function TutorDashboard() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '1.25rem' }}>
-              {activeStudents.map((student) => (
+              {activeStudents.length === 0 ? (
+                <div style={{
+                  gridColumn: '1 / -1',
+                  background: '#1E293B',
+                  border: '1px dashed #475569',
+                  borderRadius: '16px',
+                  padding: '3rem 2rem',
+                  textAlign: 'center'
+                }}>
+                  <Users size={44} color="#F59E0B" style={{ margin: '0 auto 0.75rem', opacity: 0.8 }} />
+                  <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF', marginBottom: '0.4rem' }}>
+                    No Students Assigned Yet
+                  </h4>
+                  <p style={{ color: '#94A3B8', maxWidth: '480px', margin: '0 auto 1.25rem', fontSize: '0.86rem', lineHeight: 1.6 }}>
+                    Welcome to HORIZON, {tutorProfile.full_name}! Once your tutor profile is verified by the Admin, home tuition batches matched to your subjects ({tutorProfile.subjects || 'General'}) will appear here.
+                  </p>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(245, 158, 11, 0.1)', color: '#F59E0B', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '0.5rem 1rem', borderRadius: '30px', fontSize: '0.80rem', fontWeight: 700 }}>
+                    <Clock size={14} /> Student allocation is in progress by Admin
+                  </div>
+                </div>
+              ) : (
+                activeStudents.map((student) => (
                 <div
                   key={student.id}
                   style={{
@@ -905,7 +964,7 @@ export default function TutorDashboard() {
                     </a>
                   </div>
                 </div>
-              ))}
+              )))}
             </div>
           </div>
         )}
@@ -923,7 +982,25 @@ export default function TutorDashboard() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '1.25rem' }}>
-              {pastStudents.map((student) => (
+              {pastStudents.length === 0 ? (
+                <div style={{
+                  gridColumn: '1 / -1',
+                  background: '#1E293B',
+                  border: '1px dashed #475569',
+                  borderRadius: '16px',
+                  padding: '3rem 2rem',
+                  textAlign: 'center'
+                }}>
+                  <GraduationCap size={44} color="#60A5FA" style={{ margin: '0 auto 0.75rem', opacity: 0.8 }} />
+                  <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF', marginBottom: '0.4rem' }}>
+                    No Past Students History
+                  </h4>
+                  <p style={{ color: '#94A3B8', maxWidth: '480px', margin: '0 auto', fontSize: '0.86rem', lineHeight: 1.6 }}>
+                    As you conduct and complete home tuition sessions, records of your graduated learners will be permanently cataloged here.
+                  </p>
+                </div>
+              ) : (
+                pastStudents.map((student) => (
                 <div
                   key={student.id}
                   style={{
@@ -964,7 +1041,7 @@ export default function TutorDashboard() {
                     <MapPin size={13} /> {student.location || 'Purnia'} • Verified Horizon Home Tuition Completion
                   </div>
                 </div>
-              ))}
+              )))}
             </div>
           </div>
         )}
@@ -999,7 +1076,24 @@ export default function TutorDashboard() {
             </div>
 
             <div style={{ display: 'grid', gap: '1.25rem' }}>
-              {evaluationDuties.map((duty) => (
+              {evaluationDuties.length === 0 ? (
+                <div style={{
+                  background: '#1E293B',
+                  border: '1px dashed #475569',
+                  borderRadius: '16px',
+                  padding: '3rem 2rem',
+                  textAlign: 'center'
+                }}>
+                  <ShieldAlert size={44} color="#94A3B8" style={{ margin: '0 auto 0.75rem', opacity: 0.8 }} />
+                  <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF', marginBottom: '0.4rem' }}>
+                    No Cross-Exam Duties Assigned Today
+                  </h4>
+                  <p style={{ color: '#94A3B8', maxWidth: '520px', margin: '0 auto', fontSize: '0.86rem', lineHeight: 1.6 }}>
+                    Independent examination duties are scheduled by HORIZON Admin during monthly assessment cycles. When a duty is assigned to you, the center details and assigned students will be shown here.
+                  </p>
+                </div>
+              ) : (
+                evaluationDuties.map((duty) => (
                 <div
                   key={duty.id}
                   style={{
@@ -1128,7 +1222,7 @@ export default function TutorDashboard() {
                     Note: "{duty.notes || 'Independent evaluation session. Regular tutor is prohibited from grading their own assigned batch.'}"
                   </div>
                 </div>
-              ))}
+              )))}
             </div>
           </div>
         )}
@@ -1168,7 +1262,24 @@ export default function TutorDashboard() {
             </div>
 
             <div style={{ display: 'grid', gap: '1.25rem' }}>
-              {monthlyReportCards.map((rep) => (
+              {monthlyReportCards.length === 0 ? (
+                <div style={{
+                  background: '#1E293B',
+                  border: '1px dashed #475569',
+                  borderRadius: '16px',
+                  padding: '3rem 2rem',
+                  textAlign: 'center'
+                }}>
+                  <Award size={44} color="#94A3B8" style={{ margin: '0 auto 0.75rem', opacity: 0.8 }} />
+                  <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF', marginBottom: '0.4rem' }}>
+                    No Monthly Progress Reports Yet
+                  </h4>
+                  <p style={{ color: '#94A3B8', maxWidth: '520px', margin: '0 auto', fontSize: '0.86rem', lineHeight: 1.6 }}>
+                    Official single-page evaluation reports will appear here once cross-examiner tests are completed and locked in the database.
+                  </p>
+                </div>
+              ) : (
+                monthlyReportCards.map((rep) => (
                 <div
                   key={rep.id}
                   style={{
@@ -1255,7 +1366,7 @@ export default function TutorDashboard() {
                     </div>
                   </div>
                 </div>
-              ))}
+              )))}
             </div>
           </div>
         )}
