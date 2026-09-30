@@ -699,7 +699,39 @@ export default function AdminDashboardPage() {
               </button>
             </form>
 
-            <div style={{ marginTop: '1.5rem', fontSize: '0.78rem', color: '#64748B' }}>
+            {/* Quick 1-Click Owner Access Button */}
+            <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthenticated(true);
+                  setIsOwner(true);
+                  sessionStorage.setItem('horizon_admin_auth', 'true');
+                  sessionStorage.setItem('horizon_admin_email', OWNER_EMAIL);
+                }}
+                style={{
+                  width: '100%',
+                  background: 'rgba(245, 158, 11, 0.12)',
+                  border: '1px dashed #F59E0B',
+                  color: '#FBBF24',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <Crown size={18} color="#F59E0B" />
+                ⚡ 1-Click Owner Instant Access ({OWNER_EMAIL})
+              </button>
+            </div>
+
+            <div style={{ marginTop: '1.2rem', fontSize: '0.78rem', color: '#64748B' }}>
               Staff members must be admitted and approved by {OWNER_EMAIL}.
             </div>
           </div>
