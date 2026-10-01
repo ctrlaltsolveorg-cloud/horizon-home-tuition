@@ -8,6 +8,11 @@ export const metadata: Metadata = {
   title: 'HORIZON — Home Tuition for Classes 5–12 | CBSE, ICSE, State Boards',
   description: 'Personalised home tuition for Classes 5–12 with academic assessment, verified tutor matching, progress monitoring, and parent support. Delhi NCR.',
   keywords: ['Home Tuition', 'Home Tutor', 'Classes 5-12', 'CBSE Home Tutor', 'ICSE Home Tutor', 'Horizon Tuitions'],
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/favicon.ico',
+    apple: '/icon.svg',
+  },
 };
 
 export const viewport: Viewport = {
