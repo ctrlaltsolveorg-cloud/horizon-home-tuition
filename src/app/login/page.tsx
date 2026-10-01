@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
 import { useAuth, UserRole, DEMO_USERS } from '@/context/AuthContext';
 import { 
   GraduationCap, 
@@ -25,7 +26,9 @@ import {
   Clock,
   Languages,
   BookMarked,
-  MapPin
+  MapPin,
+  Sparkles,
+  Star
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -39,10 +42,57 @@ export default function LoginPage() {
     signInWithOtp, 
     signInWithGoogle,
     resetPassword, 
+    updatePassword,
+    isRecoveryMode,
+    setIsRecoveryMode,
     loginAs, 
     loading: authLoading, 
     user 
   } = useAuth();
+
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+
+  // Automatically detect password reset link arrival on mount
+  useEffect(() => {
+    async function checkRecoveryParams() {
+      if (typeof window === 'undefined') return;
+
+      const hash = window.location.hash || '';
+      const search = window.location.search || '';
+      const params = new URLSearchParams(search);
+      const code = params.get('code');
+      const tokenHash = params.get('token_hash');
+      const type = params.get('type') || '';
+
+      if (
+        hash.includes('type=recovery') ||
+        hash.includes('access_token=') ||
+        type === 'recovery' ||
+        Boolean(code) ||
+        Boolean(tokenHash)
+      ) {
+        setIsRecoveryMode(true);
+
+        if (code) {
+          try {
+            await supabase.auth.exchangeCodeForSession(code);
+          } catch (e) {
+            console.warn('PKCE exchange error:', e);
+          }
+        }
+        if (tokenHash) {
+          try {
+            await supabase.auth.verifyOtp({ token_hash: tokenHash, type: (type as any) || 'recovery' });
+          } catch (e) {
+            console.warn('OTP verify error:', e);
+          }
+        }
+      }
+    }
+
+    checkRecoveryParams();
+  }, [setIsRecoveryMode]);
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<AuthTab>('signin');
@@ -190,17 +240,46 @@ export default function LoginPage() {
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) {
-      setErrorMsg('Please enter your email address above to receive reset instructions.');
+      setErrorMsg('Please enter your email address to receive password reset instructions.');
       return;
     }
 
     setIsSubmitting(true);
     setErrorMsg('');
-    const res = await resetPassword(email);
+    setSuccessMsg('');
+    const res = await resetPassword(email.trim().toLowerCase());
     if (res.success) {
-      setSuccessMsg(`Password reset instructions sent to ${email}.`);
+      setSuccessMsg(`Password reset link sent to ${email}! Please check your Gmail (Inbox and Spam/Junk folder) and click the link to set your new password.`);
     } else {
       setErrorMsg(res.error || 'Failed to send password reset email.');
+    }
+    setIsSubmitting(false);
+  };
+
+  // Handle Set New Password in Recovery Mode
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPassword || newPassword.length < 6) {
+      setErrorMsg('Password must be at least 6 characters long.');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setErrorMsg('Passwords do not match. Please verify.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    const res = await updatePassword(newPassword);
+    if (res.success) {
+      setSuccessMsg('Your password has been updated successfully! You can now sign in.');
+      setIsRecoveryMode(false);
+      setActiveTab('signin');
+      setPassword(newPassword);
+    } else {
+      setErrorMsg(res.error || 'Failed to update password.');
     }
     setIsSubmitting(false);
   };
@@ -239,51 +318,134 @@ export default function LoginPage() {
     <>
       <Navbar />
       <main style={{
-        minHeight: '90vh',
-        background: 'radial-gradient(ellipse at top, rgba(37, 99, 235, 0.05), transparent 70%), var(--bg-primary)',
-        padding: '3rem 1rem 5rem'
+        position: 'relative',
+        minHeight: '92vh',
+        background: 'radial-gradient(circle at 75% 25%, rgba(245, 158, 11, 0.16) 0%, rgba(15, 23, 42, 0) 55%), radial-gradient(circle at 18% 75%, rgba(59, 130, 246, 0.14) 0%, rgba(0,0,0,0) 60%), var(--bg-main)',
+        color: 'var(--text-primary)',
+        padding: 'clamp(2.5rem, 5vw, 4rem) 1rem 5.5rem',
+        overflow: 'hidden',
+        transition: 'background 0.3s ease'
       }}>
-        <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
+        {/* Subtle Ambient Dot Grid Pattern from Landing Hero */}
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundImage: 'radial-gradient(rgba(148, 163, 184, 0.14) 1px, transparent 1px)',
+          backgroundSize: '36px 36px',
+          opacity: 0.45,
+          pointerEvents: 'none'
+        }} />
+
+        {/* Ambient Halo Glow Orbs */}
+        <div style={{
+          position: 'absolute',
+          top: '5%',
+          right: '8%',
+          width: '420px',
+          height: '420px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(245, 158, 11, 0.14) 0%, transparent 70%)',
+          filter: 'blur(70px)',
+          pointerEvents: 'none'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '12%',
+          left: '5%',
+          width: '380px',
+          height: '380px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%)',
+          filter: 'blur(70px)',
+          pointerEvents: 'none'
+        }} />
+
+        <div style={{ maxWidth: '1160px', margin: '0 auto', position: 'relative', zIndex: 2 }}>
           
-          {/* Header Banner */}
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          {/* Header Banner — Matching Landing Page Hero Style */}
+          <div style={{ textAlign: 'center', marginBottom: '2.8rem' }}>
+            {/* Golden Badge Pill */}
             <div style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '6px 14px',
-              borderRadius: '999px',
-              background: 'rgba(37, 99, 235, 0.08)',
-              border: '1px solid rgba(37, 99, 235, 0.2)',
-              color: 'var(--primary)',
-              fontSize: '0.82rem',
-              fontWeight: 700,
-              marginBottom: '0.9rem',
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase'
+              gap: '0.5rem',
+              padding: '0.45rem 1rem',
+              borderRadius: '30px',
+              background: 'var(--accent-gold-light)',
+              border: '1px solid rgba(245, 158, 11, 0.35)',
+              backdropFilter: 'blur(12px)',
+              marginBottom: '1.25rem',
+              boxShadow: '0 4px 15px rgba(245, 158, 11, 0.12)'
             }}>
-              <ShieldCheck size={15} /> Official Academic Portal
+              <Sparkles size={15} color="#F59E0B" />
+              <span style={{ fontSize: 'clamp(0.72rem, 2.5vw, 0.8rem)', fontWeight: 800, color: 'var(--accent-gold)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                OFFICIAL ACADEMIC PORTAL • CLASSES 5–12
+              </span>
             </div>
+
+            {/* Headline with Serif Italic Gold Accent */}
             <h1 style={{
-              fontSize: 'clamp(1.85rem, 4vw, 2.75rem)',
-              fontWeight: 800,
-              color: 'var(--text-primary)',
-              marginBottom: '0.5rem',
-              letterSpacing: '-0.02em'
+              fontFamily: 'var(--font-heading)',
+              fontSize: 'clamp(2.1rem, 4.8vw, 3.5rem)',
+              fontWeight: 900,
+              lineHeight: 1.15,
+              marginBottom: '0.85rem',
+              letterSpacing: '-0.02em',
+              color: 'var(--text-primary)'
             }}>
-              HORIZON Home Tuition Portal
+              HORIZON{' '}
+              <span style={{
+                fontFamily: 'serif',
+                fontStyle: 'italic',
+                fontWeight: 400,
+                background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                paddingRight: '0.25rem'
+              }}>
+                Academic Portal
+              </span>
             </h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.02rem', maxWidth: '620px', margin: '0 auto', lineHeight: '1.6' }}>
+
+            <p style={{
+              fontSize: 'clamp(0.95rem, 1.5vw, 1.12rem)',
+              color: 'var(--text-secondary)',
+              maxWidth: '680px',
+              margin: '0 auto 1.5rem',
+              lineHeight: 1.65
+            }}>
               Sign in to manage your student diagnostic records, tutor accreditation, weekly sessions, and academic progress reports.
             </p>
+
+            {/* Trust Metrics Pill Strip */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '1rem',
+              padding: '0.5rem 1.4rem',
+              background: 'rgba(20, 22, 27, 0.72)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '30px',
+              backdropFilter: 'blur(12px)',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              boxShadow: 'var(--shadow-sm)'
+            }}>
+              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)' }}>100% Background-Verified</span>
+              <span style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
+              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--accent-gold)' }}>4.9 ★ Parent Rated</span>
+              <span style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
+              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--accent-green)' }}>CBSE • ICSE • State Boards</span>
+            </div>
           </div>
 
           {/* Active Session Notice */}
           {user && (
             <div style={{
-              background: 'var(--card-bg)',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
-              borderRadius: '14px',
+              background: 'rgba(20, 22, 27, 0.85)',
+              border: '1px solid rgba(16, 185, 129, 0.35)',
+              backdropFilter: 'blur(16px)',
+              borderRadius: '16px',
               padding: '1rem 1.4rem',
               marginBottom: '2rem',
               display: 'flex',
@@ -291,13 +453,13 @@ export default function LoginPage() {
               justifyContent: 'space-between',
               flexWrap: 'wrap',
               gap: '1rem',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.03)'
+              boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <CheckCircle2 size={20} color="#10b981" />
                 <div>
                   <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>
-                    Active Session: <span style={{ color: '#059669' }}>{user.name}</span> ({user.role === 'teacher' ? 'Tutor' : user.role === 'admin' ? 'Admin' : 'Student/Parent'})
+                    Active Session: <span style={{ color: 'var(--accent-gold)' }}>{user.name}</span> ({user.role === 'teacher' ? 'Tutor' : user.role === 'admin' ? 'Admin' : 'Student/Parent'})
                   </div>
                   <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
                     {user.email} {user.isDemo && '• [Test Session]'}
@@ -306,14 +468,11 @@ export default function LoginPage() {
               </div>
               <Link
                 href={user.role === 'teacher' ? '/tutor-dashboard' : user.role === 'admin' ? '/admin' : '/student-dashboard'}
+                className="btn btn-gold"
                 style={{
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  background: 'var(--primary)',
-                  color: '#ffffff',
-                  fontWeight: 600,
+                  padding: '8px 18px',
+                  borderRadius: '30px',
                   fontSize: '0.85rem',
-                  textDecoration: 'none',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px'
@@ -328,28 +487,31 @@ export default function LoginPage() {
           {/* Main Grid: Authentication Area & Quick Demo Access */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
-            gap: '2rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 330px), 1fr))',
+            gap: '2.2rem',
             alignItems: 'start'
           }}>
 
-            {/* Left Card: Core Authentication Tabs */}
+            {/* Left Card: Core Authentication Tabs with Organic Glassmorphism */}
             <div style={{
-              background: 'var(--card-bg)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '20px',
-              padding: '2.2rem',
-              boxShadow: '0 10px 32px rgba(0,0,0,0.04)'
+              background: 'rgba(20, 22, 27, 0.78)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(245, 158, 11, 0.22)',
+              borderRadius: '24px',
+              padding: 'clamp(1.5rem, 3.5vw, 2.4rem)',
+              boxShadow: '0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
             }}>
               
-              {/* Tab Selector */}
+              {/* Tab Selector (Hidden during password recovery) */}
+              {!isRecoveryMode && (
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr 1fr',
                 gap: '6px',
-                background: 'var(--bg-primary)',
-                padding: '4px',
-                borderRadius: '12px',
+                background: 'rgba(11, 12, 14, 0.9)',
+                padding: '5px',
+                borderRadius: '14px',
                 marginBottom: '1.75rem',
                 border: '1px solid var(--border-color)'
               }}>
@@ -358,18 +520,19 @@ export default function LoginPage() {
                   onClick={() => { setActiveTab('signin'); setErrorMsg(''); setSuccessMsg(''); }}
                   style={{
                     padding: '9px 12px',
-                    borderRadius: '8px',
+                    borderRadius: '10px',
                     fontSize: '0.88rem',
-                    fontWeight: activeTab === 'signin' ? 700 : 500,
-                    background: activeTab === 'signin' ? 'var(--card-bg)' : 'transparent',
-                    color: activeTab === 'signin' ? 'var(--primary)' : 'var(--text-secondary)',
+                    fontWeight: activeTab === 'signin' ? 800 : 500,
+                    background: activeTab === 'signin' ? 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' : 'transparent',
+                    color: activeTab === 'signin' ? '#0B0C0E' : 'var(--text-secondary)',
                     border: 'none',
-                    boxShadow: activeTab === 'signin' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+                    boxShadow: activeTab === 'signin' ? '0 4px 14px rgba(245, 158, 11, 0.35)' : 'none',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '6px'
+                    gap: '6px',
+                    transition: 'all 0.2s ease'
                   }}
                 >
                   <LogIn size={15} />
@@ -381,18 +544,19 @@ export default function LoginPage() {
                   onClick={() => { setActiveTab('signup'); setErrorMsg(''); setSuccessMsg(''); }}
                   style={{
                     padding: '9px 12px',
-                    borderRadius: '8px',
+                    borderRadius: '10px',
                     fontSize: '0.88rem',
-                    fontWeight: activeTab === 'signup' ? 700 : 500,
-                    background: activeTab === 'signup' ? 'var(--card-bg)' : 'transparent',
-                    color: activeTab === 'signup' ? 'var(--primary)' : 'var(--text-secondary)',
+                    fontWeight: activeTab === 'signup' ? 800 : 500,
+                    background: activeTab === 'signup' ? 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' : 'transparent',
+                    color: activeTab === 'signup' ? '#0B0C0E' : 'var(--text-secondary)',
                     border: 'none',
-                    boxShadow: activeTab === 'signup' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+                    boxShadow: activeTab === 'signup' ? '0 4px 14px rgba(245, 158, 11, 0.35)' : 'none',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '6px'
+                    gap: '6px',
+                    transition: 'all 0.2s ease'
                   }}
                 >
                   <UserPlus size={15} />
@@ -404,24 +568,26 @@ export default function LoginPage() {
                   onClick={() => { setActiveTab('magiclink'); setErrorMsg(''); setSuccessMsg(''); }}
                   style={{
                     padding: '9px 12px',
-                    borderRadius: '8px',
+                    borderRadius: '10px',
                     fontSize: '0.88rem',
-                    fontWeight: activeTab === 'magiclink' ? 700 : 500,
-                    background: activeTab === 'magiclink' ? 'var(--card-bg)' : 'transparent',
-                    color: activeTab === 'magiclink' ? 'var(--primary)' : 'var(--text-secondary)',
+                    fontWeight: activeTab === 'magiclink' ? 800 : 500,
+                    background: activeTab === 'magiclink' ? 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' : 'transparent',
+                    color: activeTab === 'magiclink' ? '#0B0C0E' : 'var(--text-secondary)',
                     border: 'none',
-                    boxShadow: activeTab === 'magiclink' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+                    boxShadow: activeTab === 'magiclink' ? '0 4px 14px rgba(245, 158, 11, 0.35)' : 'none',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '6px'
+                    gap: '6px',
+                    transition: 'all 0.2s ease'
                   }}
                 >
                   <Zap size={15} />
                   <span>Magic Link</span>
                 </button>
               </div>
+              )}
 
               {/* Status Notifications */}
               {errorMsg && (
@@ -477,8 +643,120 @@ export default function LoginPage() {
                 </div>
               )}
 
-              {/* ==================== TAB 1: SIGN IN ==================== */}
-              {activeTab === 'signin' && (
+              {/* ==================== PASSWORD RECOVERY MODE FORM ==================== */}
+              {isRecoveryMode ? (
+                <form onSubmit={handleUpdatePassword} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                  <div style={{
+                    padding: '12px 14px',
+                    borderRadius: '12px',
+                    background: 'rgba(245, 158, 11, 0.1)',
+                    border: '1px solid rgba(245, 158, 11, 0.35)',
+                    color: 'var(--accent-gold)'
+                  }}>
+                    <div style={{ fontWeight: 800, fontSize: '0.96rem', marginBottom: '4px' }}>
+                      🔑 Reset Your Password
+                    </div>
+                    <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                      Create a new password below to regain full access to your account.
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.86rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
+                      New Password (minimum 6 characters)
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <Lock size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                      <input
+                        type="password"
+                        required
+                        placeholder="Enter your new password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="form-input"
+                        style={{
+                          width: '100%',
+                          padding: '11px 14px 11px 40px',
+                          borderRadius: '10px',
+                          border: '1px solid var(--border-color)',
+                          background: 'rgba(16, 18, 23, 0.9)',
+                          color: 'var(--text-primary)',
+                          fontSize: '0.95rem'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.86rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
+                      Confirm New Password
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <Lock size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                      <input
+                        type="password"
+                        required
+                        placeholder="Re-enter your new password"
+                        value={confirmNewPassword}
+                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                        className="form-input"
+                        style={{
+                          width: '100%',
+                          padding: '11px 14px 11px 40px',
+                          borderRadius: '10px',
+                          border: '1px solid var(--border-color)',
+                          background: 'rgba(16, 18, 23, 0.9)',
+                          color: 'var(--text-primary)',
+                          fontSize: '0.95rem'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    style={{
+                      width: '100%',
+                      padding: '13px 20px',
+                      borderRadius: '12px',
+                      background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                      color: '#0B0C0E',
+                      border: 'none',
+                      fontWeight: 800,
+                      fontSize: '0.96rem',
+                      cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 6px 20px rgba(245, 158, 11, 0.35)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    <Lock size={16} />
+                    <span>{isSubmitting ? 'Saving Password...' : 'Save & Update Password'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsRecoveryMode(false)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-secondary)',
+                      fontSize: '0.84rem',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      padding: '6px'
+                    }}
+                  >
+                    Cancel and return to Sign In
+                  </button>
+                </form>
+              ) : (
+                <>
+                {/* ==================== TAB 1: SIGN IN ==================== */}
+                {activeTab === 'signin' && (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   
 
@@ -520,9 +798,9 @@ export default function LoginPage() {
                         style={{
                           background: 'none',
                           border: 'none',
-                          color: 'var(--primary)',
-                          fontSize: '0.8rem',
-                          fontWeight: 600,
+                          color: 'var(--accent-gold)',
+                          fontSize: '0.82rem',
+                          fontWeight: 700,
                           cursor: 'pointer'
                         }}
                       >
@@ -543,7 +821,7 @@ export default function LoginPage() {
                           padding: '11px 42px 11px 40px',
                           borderRadius: '10px',
                           border: '1px solid var(--border-color)',
-                          background: 'var(--bg-primary)',
+                          background: 'rgba(16, 18, 23, 0.9)',
                           color: 'var(--text-primary)',
                           fontSize: '0.95rem'
                         }}
@@ -571,35 +849,63 @@ export default function LoginPage() {
 
                   {showForgotPassword && (
                     <div style={{
-                      padding: '12px',
-                      borderRadius: '10px',
-                      background: 'rgba(37, 99, 235, 0.05)',
-                      border: '1px dashed rgba(37, 99, 235, 0.25)',
+                      padding: '14px 16px',
+                      borderRadius: '12px',
+                      background: 'rgba(245, 158, 11, 0.08)',
+                      border: '1px dashed rgba(245, 158, 11, 0.4)',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '8px'
+                      gap: '10px'
                     }}>
-                      <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                        Enter your email above and click below to receive a password reset link:
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 600 }}>
+                        Forgot your password?
+                      </div>
+                      <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                        Enter your registered email address above. We will send a secure link to your Gmail to create a new password.
                       </div>
                       <button
                         type="button"
                         onClick={handleForgotPassword}
                         disabled={isSubmitting}
                         style={{
-                          padding: '8px 12px',
-                          borderRadius: '6px',
-                          background: 'var(--primary)',
-                          color: '#fff',
+                          padding: '9px 16px',
+                          borderRadius: '8px',
+                          background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                          color: '#0B0C0E',
                           border: 'none',
-                          fontSize: '0.82rem',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          alignSelf: 'flex-start'
+                          fontSize: '0.84rem',
+                          fontWeight: 800,
+                          cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                          alignSelf: 'flex-start',
+                          boxShadow: '0 3px 10px rgba(245, 158, 11, 0.3)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
                         }}
                       >
-                        {isSubmitting ? 'Sending...' : 'Send Password Reset Email'}
+                        <Send size={14} />
+                        <span>{isSubmitting ? 'Sending Link...' : 'Send Password Reset Link to Gmail'}</span>
                       </button>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Already clicked the link or have a token?</span>
+                        <button
+                          type="button"
+                          onClick={() => { setIsRecoveryMode(true); setShowForgotPassword(false); }}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--accent-gold)',
+                            fontSize: '0.8rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            textDecoration: 'underline',
+                            padding: 0
+                          }}
+                        >
+                          Click here to enter new password
+                        </button>
+                      </div>
                     </div>
                   )}
 
@@ -609,19 +915,20 @@ export default function LoginPage() {
                     style={{
                       width: '100%',
                       padding: '12px 18px',
-                      borderRadius: '10px',
-                      background: 'var(--primary)',
-                      color: '#ffffff',
+                      borderRadius: '12px',
+                      background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                      color: '#0B0C0E',
                       border: 'none',
-                      fontWeight: 700,
-                      fontSize: '0.95rem',
+                      fontWeight: 800,
+                      fontSize: '0.96rem',
                       cursor: isSubmitting ? 'not-allowed' : 'pointer',
                       marginTop: '0.5rem',
-                      boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+                      boxShadow: '0 6px 20px rgba(245, 158, 11, 0.35)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '8px'
+                      gap: '8px',
+                      transition: 'all 0.25s ease'
                     }}
                   >
                     <LogIn size={17} />
@@ -1176,20 +1483,25 @@ export default function LoginPage() {
                     disabled={isSubmitting || authLoading}
                     style={{
                       width: '100%',
-                      padding: '12px 18px',
-                      borderRadius: '10px',
-                      background: selectedRole === 'teacher' ? '#059669' : 'var(--primary)',
-                      color: '#ffffff',
+                      padding: '13px 20px',
+                      borderRadius: '12px',
+                      background: selectedRole === 'teacher' 
+                        ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' 
+                        : 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                      color: selectedRole === 'teacher' ? '#ffffff' : '#0B0C0E',
                       border: 'none',
-                      fontWeight: 700,
-                      fontSize: '0.95rem',
+                      fontWeight: 800,
+                      fontSize: '0.96rem',
                       cursor: isSubmitting ? 'not-allowed' : 'pointer',
                       marginTop: '0.5rem',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                      boxShadow: selectedRole === 'teacher'
+                        ? '0 6px 22px rgba(16, 185, 129, 0.35)'
+                        : '0 6px 22px rgba(245, 158, 11, 0.35)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '8px'
+                      gap: '8px',
+                      transition: 'all 0.25s ease'
                     }}
                   >
                     <UserPlus size={17} />
@@ -1229,7 +1541,7 @@ export default function LoginPage() {
                           padding: '11px 14px 11px 40px',
                           borderRadius: '10px',
                           border: '1px solid var(--border-color)',
-                          background: 'var(--bg-primary)',
+                          background: 'rgba(16, 18, 23, 0.9)',
                           color: 'var(--text-primary)',
                           fontSize: '0.95rem'
                         }}
@@ -1242,20 +1554,21 @@ export default function LoginPage() {
                     disabled={isSubmitting || authLoading}
                     style={{
                       width: '100%',
-                      padding: '12px 18px',
-                      borderRadius: '10px',
-                      background: 'var(--primary)',
-                      color: '#ffffff',
+                      padding: '13px 20px',
+                      borderRadius: '12px',
+                      background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                      color: '#0B0C0E',
                       border: 'none',
-                      fontWeight: 700,
-                      fontSize: '0.95rem',
+                      fontWeight: 800,
+                      fontSize: '0.96rem',
                       cursor: isSubmitting ? 'not-allowed' : 'pointer',
                       marginTop: '0.5rem',
-                      boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+                      boxShadow: '0 6px 22px rgba(245, 158, 11, 0.35)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '8px'
+                      gap: '8px',
+                      transition: 'all 0.25s ease'
                     }}
                   >
                     <Send size={16} />
@@ -1263,43 +1576,59 @@ export default function LoginPage() {
                   </button>
                 </form>
               )}
+              </>
+              )}
 
               {/* Bottom Quick Links */}
               <div style={{
-                marginTop: '1.5rem',
-                paddingTop: '1.2rem',
+                marginTop: '1.75rem',
+                paddingTop: '1.25rem',
                 borderTop: '1px solid var(--border-color)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                fontSize: '0.82rem',
+                fontSize: '0.85rem',
                 color: 'var(--text-secondary)',
                 flexWrap: 'wrap',
                 gap: '8px'
               }}>
                 <span>Need a verified home tutor?</span>
-                <Link href="/book-assessment" style={{ color: 'var(--primary)', fontWeight: 700, textDecoration: 'none' }}>
-                  Book Free Assessment →
+                <Link href="/book-assessment" style={{ color: 'var(--accent-gold)', fontWeight: 800, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <span>Book Free Assessment</span>
+                  <ArrowRight size={14} />
                 </Link>
               </div>
 
             </div>
 
-            {/* Right Column: Instant Role Demo Access (Clean & Executive) */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+            {/* Right Column: Instant Role Demo Access (Matching 3D Portal / Hero Sandbox) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               
               <div style={{
-                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(37, 99, 235, 0.05))',
-                border: '1px solid rgba(245, 158, 11, 0.25)',
-                borderRadius: '16px',
-                padding: '1.2rem 1.4rem',
+                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(59, 130, 246, 0.08))',
+                border: '1px solid rgba(245, 158, 11, 0.3)',
+                borderRadius: '20px',
+                padding: '1.3rem 1.5rem',
+                backdropFilter: 'blur(16px)',
+                boxShadow: '0 12px 32px rgba(0,0,0,0.35)',
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: '12px'
               }}>
-                <Zap size={20} color="#f59e0b" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: 'rgba(245, 158, 11, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
+                  <Zap size={20} color="#F59E0B" />
+                </div>
                 <div>
-                  <h3 style={{ fontSize: '0.98rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '3px' }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px' }}>
                     1-Click Instant Role Sandbox
                   </h3>
                   <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: '1.5', margin: 0 }}>
@@ -1308,7 +1637,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Role Cards */}
+              {/* Role Cards with Hero Aesthetic */}
               {(['teacher', 'student_parent', 'admin'] as UserRole[]).map((r) => {
                 const info = roleInfo[r];
                 const Icon = info.icon;
@@ -1316,33 +1645,37 @@ export default function LoginPage() {
                 return (
                   <div
                     key={r}
+                    className="role-sandbox-card"
                     style={{
-                      background: 'var(--card-bg)',
+                      background: 'rgba(20, 22, 27, 0.78)',
+                      backdropFilter: 'blur(20px)',
+                      WebkitBackdropFilter: 'blur(20px)',
                       border: '1px solid var(--border-color)',
-                      borderRadius: '16px',
-                      padding: '1.3rem',
-                      boxShadow: '0 4px 14px rgba(0,0,0,0.02)',
+                      borderRadius: '18px',
+                      padding: '1.35rem',
+                      boxShadow: '0 10px 28px rgba(0,0,0,0.35)',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '0.8rem'
+                      gap: '0.85rem'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '9px',
-                          background: `${info.color}15`,
+                          width: '38px',
+                          height: '38px',
+                          borderRadius: '10px',
+                          background: `${info.color}18`,
+                          border: `1px solid ${info.color}35`,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           color: info.color
                         }}>
-                          <Icon size={19} />
+                          <Icon size={20} />
                         </div>
                         <div>
-                          <h4 style={{ fontSize: '0.98rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                          <h4 style={{ fontSize: '0.98rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
                             {info.title}
                           </h4>
                           <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
@@ -1354,9 +1687,10 @@ export default function LoginPage() {
                       <span style={{
                         fontSize: '0.72rem',
                         fontWeight: 700,
-                        padding: '3px 8px',
-                        borderRadius: '6px',
+                        padding: '3px 9px',
+                        borderRadius: '20px',
                         background: `${info.color}15`,
+                        border: `1px solid ${info.color}30`,
                         color: info.color
                       }}>
                         {info.badge}
@@ -1364,13 +1698,15 @@ export default function LoginPage() {
                     </div>
 
                     <div style={{
-                      background: 'var(--bg-primary)',
+                      background: 'rgba(11, 12, 14, 0.85)',
+                      border: '1px solid var(--border-color)',
                       padding: '8px 12px',
-                      borderRadius: '8px',
+                      borderRadius: '10px',
                       fontSize: '0.82rem',
                       color: 'var(--text-secondary)',
                       display: 'flex',
-                      justifyContent: 'space-between'
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
                     }}>
                       <span>Demo Profile:</span>
                       <strong style={{ color: 'var(--text-primary)' }}>{info.demoName}</strong>
@@ -1383,18 +1719,23 @@ export default function LoginPage() {
                       style={{
                         width: '100%',
                         padding: '10px 14px',
-                        borderRadius: '9px',
-                        background: info.color,
+                        borderRadius: '10px',
+                        background: r === 'teacher' 
+                          ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)'
+                          : r === 'admin' 
+                            ? 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)'
+                            : 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
                         color: '#ffffff',
                         border: 'none',
                         fontWeight: 700,
-                        fontSize: '0.86rem',
+                        fontSize: '0.88rem',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '6px',
-                        boxShadow: `0 3px 10px ${info.color}30`
+                        boxShadow: `0 4px 14px ${info.color}35`,
+                        transition: 'all 0.25s ease'
                       }}
                     >
                       <span>Launch as {info.demoName}</span>
@@ -1412,9 +1753,26 @@ export default function LoginPage() {
       </main>
 
       <style jsx global>{`
+        .form-input {
+          transition: all 0.2s ease !important;
+        }
+        .form-input:focus {
+          border-color: #F59E0B !important;
+          box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22) !important;
+          outline: none !important;
+          background: rgba(22, 24, 30, 0.98) !important;
+        }
         .form-input::placeholder {
           color: var(--text-tertiary, #94a3b8) !important;
-          opacity: 0.8 !important;
+          opacity: 0.75 !important;
+        }
+        .role-sandbox-card {
+          transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease !important;
+        }
+        .role-sandbox-card:hover {
+          transform: translateY(-2px);
+          border-color: rgba(245, 158, 11, 0.35) !important;
+          box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45) !important;
         }
       `}</style>
 

@@ -58,6 +58,9 @@ interface AuthContextType {
   signInWithOtp: (email: string) => Promise<AuthResponse>;
   signInWithGoogle: (preferredRole?: UserRole) => Promise<AuthResponse>;
   resetPassword: (email: string) => Promise<AuthResponse>;
+  updatePassword: (newPassword: string) => Promise<AuthResponse>;
+  isRecoveryMode: boolean;
+  setIsRecoveryMode: (val: boolean) => void;
   updateProfile: (profileData: {
     name?: string;
     phone?: string;
@@ -119,9 +122,24 @@ export const DEMO_USERS: Record<UserRole, AuthUser> = {
   }
 };
 
+export const getAuthRedirectUrl = (path: string = '/login'): string => {
+  const prodUrl = 'https://horizon-home-tuition.vercel.app';
+  if (typeof window !== 'undefined') {
+    // If the user is currently on the deployed website, redirect back to this deployment
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return `${window.location.origin}${path}`;
+    }
+  }
+  // If requested during local development, use the live production URL in emails
+  // so that when the email is opened on a mobile device or other computer, it opens the real portal
+  // instead of crashing with "localhost refused to connect"!
+  return `${prodUrl}${path}`;
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -198,11 +216,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initAuth();
 
+    // Detect password recovery in URL hash or search params on mount
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash || '';
+      const search = window.location.search || '';
+      const searchParams = new URLSearchParams(search);
+
+      if (
+        hash.includes('type=recovery') ||
+        hash.includes('access_token=') ||
+        searchParams.get('type') === 'recovery' ||
+        searchParams.has('code') ||
+        searchParams.has('token_hash')
+      ) {
+        setIsRecoveryMode(true);
+      }
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (!mounted) return;
       setSession(newSession);
 
-      if (event === 'SIGNED_IN' && newSession?.user) {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecoveryMode(true);
+      } else if (event === 'SIGNED_IN' && newSession?.user) {
         const profile = await fetchProfile(newSession.user.id);
         const authUser = buildAuthUser(newSession.user, profile);
         setUser(authUser);
@@ -341,7 +378,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
         options: {
           data: userMetadata,
-          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/login` : undefined
+          emailRedirectTo: getAuthRedirectUrl('/login')
         }
       });
 
@@ -353,71 +390,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           };
         }
         if (error.message.toLowerCase().includes('rate limit')) {
-          console.warn('Supabase email rate limit encountered. Falling back to direct instant registration.');
-          const fallbackId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
-            ? crypto.randomUUID() 
-            : `user_${Date.now()}`;
-          
-          await supabase.from('profiles').upsert({
-            id: fallbackId,
-            email: cleanEmail,
-            role: metadata.role,
-            full_name: metadata.fullName.trim(),
-            phone: metadata.phone?.trim() || '',
-            updated_at: new Date().toISOString()
-          });
-
-          if (metadata.role === 'teacher') {
-            await supabase.from('tutor_profiles').upsert({
-              id: fallbackId,
-              user_id: fallbackId,
-              full_name: metadata.fullName.trim(),
-              college: metadata.college?.trim() || 'PCE Purnia',
-              degree_status: metadata.degreeStatus?.trim() || 'Degree / Qualification',
-              experience_years: metadata.experienceYears?.trim() || '1+ years',
-              medium_preference: metadata.mediumPreference?.trim() || 'English / Hindi',
-              subjects: metadata.subjects?.trim() || 'General Subjects',
-              bio_and_custom_notes: metadata.bio?.trim() || '',
-              phone: metadata.phone?.trim() || '',
-              email: cleanEmail,
-              rating: 5.0,
-              updated_at: new Date().toISOString()
-            });
-          } else if (metadata.role === 'student_parent') {
-            await supabase.from('student_enquiries').insert([{
-              student_id: fallbackId,
-              student_name: metadata.fullName.trim(),
-              parent_name: metadata.parentName?.trim() || metadata.fullName.trim(),
-              phone: metadata.phone?.trim() || '',
-              email: cleanEmail,
-              class_level: metadata.classLevel || 'Class 9',
-              board: metadata.board || 'CBSE',
-              school_medium: metadata.schoolMedium || 'English Medium',
-              address: metadata.address?.trim() || '',
-              test_status: 'Assessment Scheduled',
-              fee_status: 'pending'
-            }]);
-          }
-
-          const authUser: AuthUser = {
-            id: fallbackId,
-            email: cleanEmail,
-            name: metadata.fullName.trim(),
-            role: metadata.role,
-            phone: metadata.phone?.trim() || '',
-            profileData: userMetadata,
-            isDemo: false
+          return {
+            success: false,
+            error: 'Supabase email rate limit exceeded. Please disable "Confirm email" in Supabase Dashboard (Authentication -> Providers -> Email) to allow unlimited instant registrations.'
           };
-          setUser(authUser);
-          localStorage.setItem('horizon_auth_user', JSON.stringify(authUser));
-
-          if (metadata.role === 'teacher') {
-            router.push('/tutor-dashboard');
-          } else {
-            router.push('/student-dashboard');
-          }
-
-          return { success: true };
         }
         return { success: false, error: error.message };
       }
@@ -426,7 +402,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const userId = data.user.id;
 
         // 1. Upsert into public.profiles
-        await supabase.from('profiles').upsert({
+        const { error: profileError } = await supabase.from('profiles').upsert({
           id: userId,
           email: cleanEmail,
           role: metadata.role,
@@ -434,10 +410,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           phone: metadata.phone?.trim() || '',
           updated_at: new Date().toISOString()
         });
+        if (profileError) {
+          console.error('Failed to upsert to profiles:', profileError);
+        }
 
         // 2. If Teacher: save directly to tutor_profiles with all the details entered during registration!
         if (metadata.role === 'teacher') {
-          await supabase.from('tutor_profiles').upsert({
+          const { error: tutorError } = await supabase.from('tutor_profiles').upsert({
             id: userId,
             user_id: userId,
             full_name: metadata.fullName.trim(),
@@ -450,13 +429,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             phone: metadata.phone?.trim() || '',
             email: cleanEmail,
             rating: 5.0,
+            status: 'verified',
             updated_at: new Date().toISOString()
           });
+          if (tutorError) {
+            console.error('Failed to upsert to tutor_profiles:', tutorError);
+          }
         }
 
         // 3. If Student: create enquiry/student record
         if (metadata.role === 'student_parent') {
-          await supabase.from('student_enquiries').insert([{
+          const { error: studentError } = await supabase.from('student_enquiries').insert([{
             student_id: userId,
             student_name: metadata.fullName.trim(),
             parent_name: metadata.parentName?.trim() || metadata.fullName.trim(),
@@ -469,31 +452,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             test_status: 'Assessment Scheduled',
             fee_status: 'pending'
           }]);
+          if (studentError) {
+            console.error('Failed to insert into student_enquiries:', studentError);
+          }
         }
 
-        // Immediate direct login (whether email confirmation is enabled or disabled)
+        // If email confirmation is disabled, Supabase returns an active session immediately
         if (data.session) {
           setSession(data.session);
-        }
-        const authUser: AuthUser = {
-          id: userId,
-          email: cleanEmail,
-          name: metadata.fullName.trim(),
-          role: metadata.role,
-          phone: metadata.phone?.trim() || '',
-          profileData: userMetadata,
-          isDemo: false
-        };
-        setUser(authUser);
-        localStorage.setItem('horizon_auth_user', JSON.stringify(authUser));
+          const profile = await fetchProfile(userId);
+          const authUser = buildAuthUser(data.user, profile);
+          setUser(authUser);
+          localStorage.setItem('horizon_auth_user', JSON.stringify(authUser));
 
-        if (metadata.role === 'teacher') {
-          router.push('/tutor-dashboard');
+          if (metadata.role === 'teacher') {
+            router.push('/tutor-dashboard');
+          } else {
+            router.push('/student-dashboard');
+          }
+
+          return { success: true };
         } else {
-          router.push('/student-dashboard');
+          // If Supabase still has email confirmation enabled
+          return {
+            success: true,
+            confirmationSent: true,
+            requiresEmailConfirmation: true
+          };
         }
-
-        return { success: true };
       }
 
       return { success: false, error: 'Registration could not be completed.' };
@@ -511,7 +497,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim().toLowerCase(),
         options: {
-          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/student-dashboard` : undefined
+          emailRedirectTo: getAuthRedirectUrl('/student-dashboard')
         }
       });
 
@@ -527,12 +513,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Password Reset
+  // Password Reset Request
   const resetPassword = async (email: string): Promise<AuthResponse> => {
     setLoading(true);
     try {
+      const redirectUrl = getAuthRedirectUrl('/reset-password');
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-        redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/login` : undefined
+        redirectTo: redirectUrl
       });
 
       if (error) {
@@ -542,6 +529,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: true, confirmationSent: true };
     } catch (err: any) {
       return { success: false, error: err.message || 'Failed to send password reset email.' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Set New Password (after clicking reset link)
+  const updatePassword = async (newPassword: string): Promise<AuthResponse> => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      setIsRecoveryMode(false);
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to update password.' };
     } finally {
       setLoading(false);
     }
@@ -601,7 +609,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${origin}/auth/callback`,
+          redirectTo: getAuthRedirectUrl('/auth/callback'),
           queryParams: {
             access_type: 'offline',
             prompt: 'consent'
@@ -789,6 +797,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signInWithOtp,
         signInWithGoogle,
         resetPassword,
+        updatePassword,
+        isRecoveryMode,
+        setIsRecoveryMode,
         updateProfile,
         loginAs,
         logout,
