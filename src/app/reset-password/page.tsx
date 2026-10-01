@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
@@ -13,16 +12,12 @@ import {
   EyeOff, 
   CheckCircle2, 
   AlertCircle, 
-  ArrowRight, 
-  Sparkles, 
-  ShieldCheck, 
   KeyRound,
   LogIn
 } from 'lucide-react';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const { user } = useAuth();
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
