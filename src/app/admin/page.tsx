@@ -325,24 +325,65 @@ export default function AdminDashboardPage() {
   // 4. ACTION: Verify / Revoke Tutor
   const handleToggleTutorVerification = async (tutor: any) => {
     try {
-      const currentStatus = tutor.verification_status || tutor.status;
+      const currentStatus = (tutor.verification_status || tutor.status || '').toUpperCase();
       const newStatus = currentStatus === 'VERIFIED' ? 'PENDING' : 'VERIFIED';
       
-      const { error } = await supabase
+      const tutorId = tutor.user_id || tutor.id;
+      const tutorEmail = (tutor.email || '').toLowerCase().trim();
+
+      // 1. Update existing row in tutor_profiles
+      const { data: updatedRows, error: updateError } = await supabase
         .from('tutor_profiles')
         .update({
           status: newStatus,
           verification_status: newStatus,
-          rating: newStatus === 'VERIFIED' ? (tutor.rating || 5.0) : null
+          rating: newStatus === 'VERIFIED' ? (tutor.rating || 5.0) : null,
+          updated_at: new Date().toISOString()
         })
-        .or(`id.eq.${tutor.id},email.eq.${tutor.email}`);
+        .or(`id.eq.${tutorId},user_id.eq.${tutorId},email.ilike.${tutorEmail}`)
+        .select();
 
-      if (error) {
-        console.warn('Supabase update warning, updating local state:', error);
+      // If no row existed in tutor_profiles yet, upsert it!
+      if (!updatedRows || updatedRows.length === 0) {
+        await supabase
+          .from('tutor_profiles')
+          .upsert({
+            id: tutorId,
+            user_id: tutorId,
+            full_name: tutor.full_name || 'Tutor',
+            email: tutorEmail,
+            phone: tutor.phone || '',
+            college: tutor.college || 'Institution / College',
+            degree_status: tutor.degree_status || 'Degree / Qualification',
+            experience_years: tutor.experience_years || '1+ years',
+            medium_preference: tutor.medium_preference || 'Hindi / English',
+            subjects: tutor.subjects || 'General Subjects',
+            status: newStatus,
+            verification_status: newStatus,
+            rating: newStatus === 'VERIFIED' ? 5.0 : null,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'email' });
       }
 
+      // 2. Also update profiles table
+      try {
+        await supabase
+          .from('profiles')
+          .update({
+            status: newStatus,
+            verification_status: newStatus
+          })
+          .or(`id.eq.${tutorId},email.ilike.${tutorEmail}`);
+      } catch (pErr) {}
+
+      // 3. Cache in localStorage for immediate synchronization across portals
+      try {
+        localStorage.setItem(`horizon_tutor_status_${tutorEmail}`, newStatus);
+        if (tutorId) localStorage.setItem(`horizon_tutor_status_${tutorId}`, newStatus);
+      } catch (lsErr) {}
+
       setTutors(prev => prev.map(t => {
-        if (t.id === tutor.id || t.email === tutor.email) {
+        if ((t.id && t.id === tutorId) || (t.user_id && t.user_id === tutorId) || (t.email && t.email.toLowerCase() === tutorEmail)) {
           return {
             ...t,
             status: newStatus,
@@ -353,7 +394,7 @@ export default function AdminDashboardPage() {
         return t;
       }));
 
-      setActionSuccessMsg(`Tutor ${tutor.full_name} status updated to: ${newStatus}`);
+      setActionSuccessMsg(`Tutor ${tutor.full_name || tutorEmail} status successfully updated to: ${newStatus}!`);
       setTimeout(() => setActionSuccessMsg(''), 4000);
     } catch (e: any) {
       setActionErrorMsg(`Failed to update tutor status: ${e.message}`);
@@ -363,21 +404,30 @@ export default function AdminDashboardPage() {
   // 5. ACTION: Assign Tutor to Student
   const handleAssignTutorSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedStudentForAssign || !selectedTutorId) return;
+    if (!selectedStudentForAssign || !selectedTutorId) {
+      setActionErrorMsg('Please select both a student and a verified tutor.');
+      return;
+    }
 
     try {
-      const tutorObj = tutors.find(t => t.id === selectedTutorId || t.email === selectedTutorId);
+      const tutorObj = tutors.find(t => (t.id && t.id === selectedTutorId) || (t.user_id && t.user_id === selectedTutorId) || (t.email && t.email === selectedTutorId));
       const tutorName = tutorObj ? tutorObj.full_name : 'Assigned Tutor';
+      const tutorEmail = (tutorObj?.email || '').toLowerCase().trim();
+      const tutorId = tutorObj?.id || tutorObj?.user_id || selectedTutorId;
+
+      const studentName = selectedStudentForAssign.student_name;
+      const studentEmail = (selectedStudentForAssign.email || '').toLowerCase().trim();
+      const studentPhone = selectedStudentForAssign.phone || '';
 
       // 1. Insert into student_assignments
-      const assignmentPayload: Partial<StudentAssignment> = {
-        student_name: selectedStudentForAssign.student_name,
-        parent_name: selectedStudentForAssign.parent_name,
-        phone: selectedStudentForAssign.phone,
-        class_grade: selectedStudentForAssign.class_level || 'Class 9',
+      const assignmentPayload: any = {
+        student_name: studentName,
+        parent_name: selectedStudentForAssign.parent_name || 'Parent',
+        phone: studentPhone,
+        class_grade: selectedStudentForAssign.class_level || selectedStudentForAssign.class_grade || 'Class 9',
         board: selectedStudentForAssign.board || 'CBSE',
         medium: selectedStudentForAssign.school_medium || 'Hindi / Bilingual',
-        subjects: 'Complete Board Syllabus',
+        subjects: selectedStudentForAssign.subjects || 'Complete Board Syllabus',
         status: 'active',
         start_date: new Date().toISOString().split('T')[0],
         schedule_days: 'Mon, Wed, Fri (5:00 PM - 6:30 PM)',
@@ -385,22 +435,55 @@ export default function AdminDashboardPage() {
         attendance_percent: 100,
         academic_score: 'Diagnostic Enrolled',
         location: selectedStudentForAssign.address || 'Purnia',
-        tutor_id: tutorObj?.id || tutorObj?.user_id || selectedTutorId
+        tutor_id: tutorId,
+        tutor_name: tutorName,
+        tutor_email: tutorEmail
       };
 
-      await supabase.from('student_assignments').insert([assignmentPayload]);
+      try {
+        await supabase.from('student_assignments').insert([assignmentPayload]);
+      } catch (assignErr) {
+        console.warn('student_assignments insert:', assignErr);
+      }
 
       // 2. Update student_enquiries
-      await supabase
-        .from('student_enquiries')
-        .update({
-          assigned_teacher_id: tutorObj?.id || selectedTutorId,
-          assigned_tutor_name: tutorName,
-          test_status: 'Tutor Assigned • Active'
-        })
-        .eq('id', selectedStudentForAssign.id);
+      try {
+        await supabase
+          .from('student_enquiries')
+          .update({
+            assigned_teacher_id: tutorId,
+            assigned_tutor_name: tutorName,
+            test_status: 'Tutor Assigned • Active'
+          })
+          .or(`id.eq.${selectedStudentForAssign.id},student_name.eq.${studentName}`);
+      } catch (enqErr) {
+        console.warn('student_enquiries update:', enqErr);
+      }
 
-      setActionSuccessMsg(`Assigned Tutor ${tutorName} to student ${selectedStudentForAssign.student_name}!`);
+      // 3. Cache assignment locally in localStorage for cross-portal instant sync
+      try {
+        const storedKey = 'horizon_live_student_assignments';
+        const existing = JSON.parse(localStorage.getItem(storedKey) || '[]');
+        const updated = [assignmentPayload, ...existing.filter((a: any) => a.student_name !== studentName || a.tutor_id !== tutorId)];
+        localStorage.setItem(storedKey, JSON.stringify(updated));
+
+        // Tutor-specific & Student-specific caches
+        const tutorKey = `horizon_tutor_students_${tutorEmail}`;
+        const existingForTutor = JSON.parse(localStorage.getItem(tutorKey) || '[]');
+        localStorage.setItem(tutorKey, JSON.stringify([assignmentPayload, ...existingForTutor.filter((a: any) => a.student_name !== studentName)]));
+        if (tutorId) {
+          localStorage.setItem(`horizon_tutor_students_${tutorId}`, JSON.stringify([assignmentPayload]));
+        }
+
+        // Student-specific cache so student portal immediately knows their tutor!
+        const cleanNameKey = studentName.toLowerCase().replace(/\s+/g, '_');
+        localStorage.setItem(`horizon_assigned_tutor_for_${cleanNameKey}`, JSON.stringify(tutorObj || { full_name: tutorName, email: tutorEmail }));
+        if (studentEmail) {
+          localStorage.setItem(`horizon_assigned_tutor_for_${studentEmail}`, JSON.stringify(tutorObj || { full_name: tutorName, email: tutorEmail }));
+        }
+      } catch (cacheErr) {}
+
+      setActionSuccessMsg(`Successfully assigned Tutor ${tutorName} to student ${studentName}!`);
       setShowAssignTutorModal(false);
       fetchLiveAdminData();
       setTimeout(() => setActionSuccessMsg(''), 4000);
@@ -1166,7 +1249,10 @@ export default function AdminDashboardPage() {
                                 </button>
                                 <button
                                   onClick={() => {
-                                    setSelectedTutorId(tutor.id || tutor.email);
+                                    setSelectedTutorId(tutor.id || tutor.user_id || tutor.email);
+                                    if (students.length > 0 && !selectedStudentForAssign) {
+                                      setSelectedStudentForAssign(students[0]);
+                                    }
                                     setShowAssignTutorModal(true);
                                   }}
                                   style={{
@@ -1605,19 +1691,43 @@ export default function AdminDashboardPage() {
       {/* ------------------------------------------------------------- */}
       {/* MODAL 1: ASSIGN TUTOR TO STUDENT */}
       {/* ------------------------------------------------------------- */}
-      {showAssignTutorModal && selectedStudentForAssign && (
+      {showAssignTutorModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
           <div style={{ background: '#1E293B', border: '1px solid #475569', borderRadius: '16px', maxWidth: '480px', width: '100%', padding: '2rem', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#FFF', margin: 0 }}>
-                Assign Tutor to {selectedStudentForAssign.student_name}
+                {selectedStudentForAssign ? `Assign Tutor to ${selectedStudentForAssign.student_name}` : 'Assign Student to Tutor'}
               </h3>
               <button onClick={() => setShowAssignTutorModal(false)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}><X size={20} /></button>
             </div>
 
             <form onSubmit={handleAssignTutorSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label style={{ fontSize: '0.80rem', fontWeight: 700, color: '#CBD5E1', display: 'block', marginBottom: '0.35rem' }}>Select Verified Tutor</label>
+                <label style={{ fontSize: '0.80rem', fontWeight: 700, color: '#CBD5E1', display: 'block', marginBottom: '0.35rem' }}>
+                  Select Enrolled Student
+                </label>
+                <select
+                  value={selectedStudentForAssign?.id || ''}
+                  onChange={(e) => {
+                    const st = students.find(s => s.id === e.target.value);
+                    setSelectedStudentForAssign(st || null);
+                  }}
+                  required
+                  style={{ width: '100%', padding: '0.75rem', background: '#0F172A', border: '1px solid #334155', borderRadius: '8px', color: '#FFF', fontSize: '0.85rem' }}
+                >
+                  <option value="">-- Choose Student --</option>
+                  {students.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.student_name} ({s.class_level || s.class_grade || 'Class 9'} • {s.board || 'CBSE'}) {s.parent_name ? `• Parent: ${s.parent_name}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.80rem', fontWeight: 700, color: '#CBD5E1', display: 'block', marginBottom: '0.35rem' }}>
+                  Select Verified Tutor
+                </label>
                 <select
                   value={selectedTutorId}
                   onChange={(e) => setSelectedTutorId(e.target.value)}
@@ -1626,7 +1736,7 @@ export default function AdminDashboardPage() {
                 >
                   <option value="">-- Choose Tutor --</option>
                   {tutors.map((t) => (
-                    <option key={t.id || t.email} value={t.id || t.email}>
+                    <option key={t.id || t.email} value={t.id || t.user_id || t.email}>
                       {t.full_name} ({t.college || 'PCE Purnia'}) • {t.subjects || 'General'}
                     </option>
                   ))}

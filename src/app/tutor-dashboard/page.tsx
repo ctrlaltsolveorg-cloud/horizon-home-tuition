@@ -119,30 +119,40 @@ export default function TutorDashboard() {
 
       // 1. Tutor Profile - Load dynamically for THIS specific user
       if (user) {
-        const meta = user.profileData || {};
+        const cleanEmail = (user.email || '').toLowerCase().trim();
+        const userId = user.id;
+
+        // Check local cache first so admin verification reflects immediately across tabs
+        const cachedStatus = 
+          localStorage.getItem(`horizon_tutor_status_${cleanEmail}`) ||
+          (userId ? localStorage.getItem(`horizon_tutor_status_${userId}`) : null);
+
         let currentProfile: any = {
-          full_name: user.name || meta.full_name || 'Tutor',
-          college: meta.college || 'Institution / College',
-          degree_status: meta.degree_status || 'Degree / Qualification',
-          experience_years: meta.experience_years || '1+ years teaching experience',
-          medium_preference: meta.medium_preference || 'Hindi / English',
-          subjects: meta.subjects || 'General Subjects',
-          bio_and_custom_notes: meta.bio || '',
-          phone: user.phone || meta.phone || '',
-          email: user.email || '',
-          status: 'PENDING',
-          verification_status: 'PENDING',
-          rating: null
+          full_name: user.name || 'Tutor',
+          college: 'Institution / College',
+          degree_status: 'Degree / Qualification',
+          experience_years: '1+ years teaching experience',
+          medium_preference: 'Hindi / English',
+          subjects: 'General Subjects',
+          bio_and_custom_notes: '',
+          phone: user.phone || '',
+          email: cleanEmail,
+          status: cachedStatus || 'PENDING',
+          verification_status: cachedStatus || 'PENDING',
+          rating: (cachedStatus === 'VERIFIED' || cachedStatus === 'verified') ? 5.0 : null
         };
 
         try {
           const { data: tpData } = await supabase
             .from('tutor_profiles')
             .select('*')
-            .or(`user_id.eq.${user.id},email.eq.${user.email}`)
+            .or(`user_id.eq.${userId},id.eq.${userId},email.ilike.${cleanEmail}`)
             .maybeSingle();
 
           if (tpData) {
+            const dbStatus = (tpData.verification_status || tpData.status || '').toUpperCase();
+            const finalStatus = (dbStatus === 'VERIFIED' || cachedStatus === 'VERIFIED') ? 'VERIFIED' : (dbStatus || 'PENDING');
+
             currentProfile = {
               ...currentProfile,
               ...tpData,
@@ -154,27 +164,24 @@ export default function TutorDashboard() {
               subjects: tpData.subjects || currentProfile.subjects,
               phone: tpData.phone || currentProfile.phone,
               email: tpData.email || currentProfile.email,
-              status: tpData.status || tpData.verification_status || 'PENDING',
-              verification_status: tpData.verification_status || tpData.status || 'PENDING',
-              rating: tpData.rating || null
+              status: finalStatus,
+              verification_status: finalStatus,
+              rating: tpData.rating || (finalStatus === 'VERIFIED' ? 5.0 : null)
             };
-          } else if (!user.isDemo && user.email) {
-            // Upsert initial profile into tutor_profiles table in Supabase
-            await supabase.from('tutor_profiles').upsert({
-              user_id: user.id,
-              full_name: currentProfile.full_name,
-              college: currentProfile.college,
-              degree_status: currentProfile.degree_status,
-              experience_years: currentProfile.experience_years,
-              medium_preference: currentProfile.medium_preference,
-              subjects: currentProfile.subjects,
-              phone: currentProfile.phone,
-              email: currentProfile.email,
-              status: 'PENDING',
-              verification_status: 'PENDING',
-              rating: null,
-              updated_at: new Date().toISOString()
-            });
+          } else {
+            // Also check profiles table
+            const { data: profData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', userId)
+              .maybeSingle();
+
+            if (profData) {
+              const pStatus = ((profData as any).verification_status || (profData as any).status || cachedStatus || 'PENDING').toUpperCase();
+              currentProfile.status = pStatus;
+              currentProfile.verification_status = pStatus;
+              if (pStatus === 'VERIFIED') currentProfile.rating = 5.0;
+            }
           }
         } catch (tpErr) {
           console.warn('Error reading tutor profile from Supabase:', tpErr);
@@ -187,28 +194,55 @@ export default function TutorDashboard() {
       // 2. Active & Past Students strictly assigned to THIS tutor
       let assignedStudents: any[] = [];
       try {
+        const myEmail = (user?.email || '').toLowerCase().trim();
+        const myId = user?.id || '';
+        const myTutorName = (user?.name || tutorProfile.full_name || '').toLowerCase().trim();
+
+        // 1. Check local storage assignments first for immediate cross-tab sync
+        try {
+          const cachedByEmail = JSON.parse(localStorage.getItem(`horizon_tutor_students_${myEmail}`) || '[]');
+          const cachedById = myId ? JSON.parse(localStorage.getItem(`horizon_tutor_students_${myId}`) || '[]') : [];
+          const allLiveAssignments = JSON.parse(localStorage.getItem('horizon_live_student_assignments') || '[]');
+
+          [...cachedByEmail, ...cachedById, ...allLiveAssignments].forEach((a: any) => {
+            if (a && !assignedStudents.find((s: any) => s.student_name === a.student_name)) {
+              const matches = (
+                (myId && a.tutor_id === myId) ||
+                (myEmail && (a.tutor_email || '').toLowerCase() === myEmail) ||
+                (myTutorName && a.tutor_name && a.tutor_name.toLowerCase().includes(myTutorName))
+              );
+              if (matches) {
+                assignedStudents.push(a);
+              }
+            }
+          });
+        } catch (e) {}
+
+        // 2. Query student_assignments table in Supabase
         const { data: studentsData } = await supabase
           .from('student_assignments')
           .select('*')
           .order('created_at', { ascending: false });
 
-        const myTutorName = (user?.name || tutorProfile.full_name || '').toLowerCase().trim();
-
         if (studentsData && studentsData.length > 0) {
-          assignedStudents = studentsData.filter((s: any) => {
-            if (user?.id && s.tutor_id === user.id) return true;
-            if (user?.email && s.tutor_email === user.email) return true;
-            if (myTutorName && (s.tutor_name || '').toLowerCase().includes(myTutorName)) return true;
-            return false;
+          studentsData.forEach((s: any) => {
+            const matchesTutor = (
+              (myId && s.tutor_id === myId) ||
+              (myEmail && (s.tutor_email || '').toLowerCase() === myEmail) ||
+              (myTutorName && (s.tutor_name || '').toLowerCase().includes(myTutorName))
+            );
+            if (matchesTutor && !assignedStudents.find((ex: any) => ex.id === s.id || ex.student_name === s.student_name)) {
+              assignedStudents.push(s);
+            }
           });
         }
 
-        // Also check student_enquiries where this tutor has been assigned
-        if (user?.id || user?.name) {
+        // 3. Also check student_enquiries where this tutor has been assigned
+        if (myId || myTutorName) {
           const { data: enquiryAssignments } = await supabase
             .from('student_enquiries')
             .select('*')
-            .or(`assigned_teacher_id.eq.${user?.id},assigned_tutor_name.ilike.%${user?.name || ''}%`);
+            .or(`assigned_teacher_id.eq.${myId},assigned_tutor_name.ilike.%${myTutorName || ''}%`);
 
           if (enquiryAssignments && enquiryAssignments.length > 0) {
             enquiryAssignments.forEach((enq: any) => {
@@ -523,7 +557,7 @@ export default function TutorDashboard() {
                 <h1 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.55rem)', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
                   {tutorProfile.full_name}
                 </h1>
-                {(tutorProfile.verification_status === 'VERIFIED' || tutorProfile.status === 'VERIFIED' || tutorProfile.status === 'verified') ? (
+                {((tutorProfile.verification_status || '').toUpperCase() === 'VERIFIED' || (tutorProfile.status || '').toUpperCase() === 'VERIFIED') ? (
                   <span style={{
                     background: 'rgba(16, 185, 129, 0.15)',
                     color: '#10B981',
@@ -609,7 +643,7 @@ export default function TutorDashboard() {
         </div>
 
         {/* Pending Verification Notice Banner */}
-        {!(tutorProfile.verification_status === 'VERIFIED' || tutorProfile.status === 'VERIFIED' || tutorProfile.status === 'verified') && (
+        {!((tutorProfile.verification_status || '').toUpperCase() === 'VERIFIED' || (tutorProfile.status || '').toUpperCase() === 'VERIFIED') && (
           <div style={{
             background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.08) 100%)',
             border: '1px solid rgba(245, 158, 11, 0.35)',

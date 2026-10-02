@@ -124,13 +124,104 @@ export default function StudentDashboard() {
           };
         }
 
-        // Fetch assigned teacher
-        const { data: tutorData } = await supabase
-          .from('tutor_profiles')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        // 1. Resolve Assigned Tutor dynamically for THIS student
+        const studentCleanName = (user?.name || enquiryData?.student_name || '').toLowerCase().replace(/\s+/g, '_');
+        const studentEmail = (user?.email || enquiryData?.email || '').toLowerCase().trim();
+        let assignedTutorObj: any = null;
+
+        // Check local storage cache for immediate cross-tab sync
+        try {
+          const cachedTutor = 
+            (studentEmail ? localStorage.getItem(`horizon_assigned_tutor_for_${studentEmail}`) : null) ||
+            (studentCleanName ? localStorage.getItem(`horizon_assigned_tutor_for_${studentCleanName}`) : null);
+          if (cachedTutor) {
+            assignedTutorObj = JSON.parse(cachedTutor);
+          }
+        } catch (e) {}
+
+        // Check student_assignments in Supabase
+        try {
+          const studentQuery = user?.name || enquiryData?.student_name || '';
+          if (studentQuery) {
+            const { data: assignmentRows } = await supabase
+              .from('student_assignments')
+              .select('*')
+              .ilike('student_name', `%${studentQuery}%`)
+              .order('created_at', { ascending: false })
+              .limit(1);
+
+            if (assignmentRows && assignmentRows.length > 0) {
+              const assign = assignmentRows[0];
+              const tutorId = assign.tutor_id;
+              const tutorEmail = (assign.tutor_email || '').toLowerCase().trim();
+              const tutorName = assign.tutor_name;
+
+              // Fetch this specific tutor's live profile
+              const { data: specificTutor } = await supabase
+                .from('tutor_profiles')
+                .select('*')
+                .or(`id.eq.${tutorId},user_id.eq.${tutorId},email.ilike.${tutorEmail},full_name.ilike.%${tutorName || ''}%`)
+                .maybeSingle();
+
+              if (specificTutor) {
+                assignedTutorObj = specificTutor;
+              } else if (tutorName) {
+                assignedTutorObj = {
+                  id: tutorId,
+                  full_name: tutorName,
+                  college: 'Institution / College',
+                  degree_status: 'Accredited Tutor',
+                  subjects: assign.subjects || 'All Subjects',
+                  phone: assign.tutor_phone || '+91 91621 62128',
+                  email: tutorEmail || 'tutor@horizon.edu',
+                  rating: 5.0
+                };
+              }
+            }
+          }
+        } catch (assignErr) {
+          console.warn('Assignment lookup warning:', assignErr);
+        }
+
+        // Check student_enquiries for assigned_teacher_id
+        if (!assignedTutorObj && enquiryData) {
+          const teacherId = enquiryData.assigned_teacher_id;
+          const teacherName = enquiryData.assigned_tutor_name;
+          if (teacherId || teacherName) {
+            try {
+              const { data: specificTutor } = await supabase
+                .from('tutor_profiles')
+                .select('*')
+                .or(`id.eq.${teacherId},user_id.eq.${teacherId},full_name.ilike.%${teacherName || ''}%`)
+                .maybeSingle();
+              if (specificTutor) {
+                assignedTutorObj = specificTutor;
+              } else if (teacherName) {
+                assignedTutorObj = {
+                  id: teacherId,
+                  full_name: teacherName,
+                  college: 'PCE Purnia',
+                  degree_status: 'Accredited Home Tutor',
+                  subjects: 'Assigned Board Curriculum',
+                  rating: 5.0
+                };
+              }
+            } catch (tErr) {}
+          }
+        }
+
+        // Fallback to latest verified tutor
+        if (!assignedTutorObj) {
+          try {
+            const { data: fallbackTutor } = await supabase
+              .from('tutor_profiles')
+              .select('*')
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            if (fallbackTutor) assignedTutorObj = fallbackTutor;
+          } catch (fbErr) {}
+        }
 
         // Fetch monthly reports
         const { data: reportsData } = await supabase
@@ -163,8 +254,8 @@ export default function StudentDashboard() {
           });
         }
 
-        if (tutorData) {
-          setTutor(tutorData);
+        if (assignedTutorObj) {
+          setTutor(assignedTutorObj);
         } else {
           setTutor({
             id: 'demo-tutor-1',
