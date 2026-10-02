@@ -6,12 +6,12 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { 
-  Lock, 
-  Eye, 
-  EyeOff, 
-  CheckCircle2, 
-  AlertCircle, 
+import {
+  Lock,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  AlertCircle,
   KeyRound,
   LogIn
 } from 'lucide-react';
@@ -27,7 +27,6 @@ export default function ResetPasswordPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [hasValidSession, setHasValidSession] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
 
   // Check if session / recovery token exists in Supabase
@@ -48,7 +47,6 @@ export default function ResetPasswordPage() {
               const { data, error } = await supabase.auth.exchangeCodeForSession(code);
               if (!error && data.session) {
                 if (mounted) {
-                  setHasValidSession(true);
                   setCheckingSession(false);
                 }
                 return;
@@ -63,7 +61,6 @@ export default function ResetPasswordPage() {
               const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
               if (!error && data.session) {
                 if (mounted) {
-                  setHasValidSession(true);
                   setCheckingSession(false);
                 }
                 return;
@@ -78,7 +75,6 @@ export default function ResetPasswordPage() {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           if (mounted) {
-            setHasValidSession(true);
             setCheckingSession(false);
           }
           return;
@@ -89,7 +85,6 @@ export default function ResetPasswordPage() {
           const hash = window.location.hash;
           if (hash.includes('access_token=') || hash.includes('type=recovery')) {
             if (mounted) {
-              setHasValidSession(true);
               setCheckingSession(false);
             }
             return;
@@ -97,10 +92,9 @@ export default function ResetPasswordPage() {
         }
 
         // 4. Wait for onAuthStateChange
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, newSession: any) => {
           if (!mounted) return;
           if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && newSession)) {
-            setHasValidSession(true);
             setCheckingSession(false);
           }
         });
@@ -108,7 +102,6 @@ export default function ResetPasswordPage() {
         // 5. Fallback: allow form input anyway so users are never blocked
         setTimeout(() => {
           if (mounted && checkingSession) {
-            setHasValidSession(true);
             setCheckingSession(false);
           }
         }, 1500);
@@ -118,7 +111,6 @@ export default function ResetPasswordPage() {
         };
       } catch (err) {
         if (mounted) {
-          setHasValidSession(true);
           setCheckingSession(false);
         }
       }
@@ -219,7 +211,7 @@ export default function ResetPasswordPage() {
         }} />
 
         <div style={{ maxWidth: '540px', margin: '0 auto', position: 'relative', zIndex: 2 }}>
-          
+
           {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
             <div style={{
@@ -326,7 +318,7 @@ export default function ResetPasswordPage() {
             )}
 
             <form onSubmit={handlePasswordReset} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              
+
               {/* New Password */}
               <div>
                 <label style={{ display: 'block', fontSize: '0.86rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
