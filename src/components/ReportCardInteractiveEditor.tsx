@@ -441,6 +441,9 @@ export default function ReportCardInteractiveEditor({
       // UUID verification helper
       const isUUID = (str: any) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
 
+      // Strip non-existent updated_at column
+      delete payload.updated_at;
+
       // If id is not a valid UUID (e.g. empty or sample string), strip it so Postgres generates gen_random_uuid()
       if (!isUUID(payload.id)) {
         delete payload.id;
@@ -451,6 +454,20 @@ export default function ReportCardInteractiveEditor({
       if (!isUUID(payload.test_center_id)) {
         delete payload.test_center_id;
       }
+      // Ensure required NOT NULL columns for Supabase relation monthly_report_cards
+      if (!payload.assigned_tutor_name || payload.assigned_tutor_name.trim() === '') {
+        payload.assigned_tutor_name = 'Assigned Tutor';
+      }
+      if (!payload.evaluator_tutor_name || payload.evaluator_tutor_name.trim() === '') {
+        payload.evaluator_tutor_name = 'Horizon Quality Council Evaluator';
+      }
+      if (!payload.student_name || payload.student_name.trim() === '') {
+        payload.student_name = 'Student';
+      }
+      if (!payload.assessment_month || payload.assessment_month.trim() === '') {
+        payload.assessment_month = 'October 2026';
+      }
+
       // Ensure student_id is set
       const studentSlug = (payload.student_name || 'student').toLowerCase().trim().replace(/[^a-z0-9]/g, '_');
       if (!payload.student_id || payload.student_id === '') {

@@ -201,12 +201,21 @@ export default function AdminDashboardPage() {
         };
         const key = (t.email || t.id).toLowerCase();
         tutorsMap.set(key, normalized);
+        if (t.user_id) {
+          tutorsMap.set(t.user_id.toLowerCase(), normalized);
+        }
       });
       (userProfilesData || []).forEach((u: any) => {
         const key = u.email.toLowerCase();
         if (tutorsMap.has(key)) {
           const existing = tutorsMap.get(key);
-          tutorsMap.set(key, { ...u, ...existing });
+          tutorsMap.set(key, {
+            ...u,
+            ...existing,
+            id: existing.id || u.id,
+            user_id: u.id,
+            is_verified: existing.is_verified
+          });
         } else {
           tutorsMap.set(key, {
             id: u.id,
@@ -226,7 +235,16 @@ export default function AdminDashboardPage() {
           });
         }
       });
-      setTutors(Array.from(tutorsMap.values()));
+      const uniqueTutors: any[] = [];
+      const seenTutorEmails = new Set<string>();
+      for (const t of tutorsMap.values()) {
+        const emailKey = (t.email || t.id).toLowerCase();
+        if (!seenTutorEmails.has(emailKey)) {
+          seenTutorEmails.add(emailKey);
+          uniqueTutors.push(t);
+        }
+      }
+      setTutors(uniqueTutors);
 
       // 2. Fetch Students from student_enquiries
       const { data: enquiriesData } = await supabase
@@ -343,22 +361,53 @@ export default function AdminDashboardPage() {
       const tutorId = tutor.user_id || tutor.id;
       const tutorEmail = (tutor.email || '').toLowerCase().trim();
 
-      // 1. Update existing row in tutor_profiles using the exact Supabase column 'is_verified'
-      const { data: updatedRows, error: updateError } = await supabase
-        .from('tutor_profiles')
-        .update({
-          is_verified: nextIsVerified,
-          rating: nextIsVerified ? (tutor.rating || 5.0) : null,
-          updated_at: new Date().toISOString()
-        })
-        .or(`user_id.eq.${tutorId},id.eq.${tutorId},email.ilike.${tutorEmail}`)
-        .select();
-
-      // If no row existed in tutor_profiles yet, upsert it cleanly
-      if (updateError || !updatedRows || updatedRows.length === 0) {
-        const { error: upsertError } = await supabase
+      // 1. Locate existing row in tutor_profiles
+      let existingId: string | null = null;
+      if (tutor.id && !tutor.id.startsWith('demo-')) {
+        const { data: byId } = await supabase
           .from('tutor_profiles')
-          .upsert({
+          .select('id')
+          .eq('id', tutor.id)
+          .limit(1);
+        if (byId && byId.length > 0) existingId = byId[0].id;
+      }
+      if (!existingId && tutorId) {
+        const { data: byUser } = await supabase
+          .from('tutor_profiles')
+          .select('id')
+          .eq('user_id', tutorId)
+          .limit(1);
+        if (byUser && byUser.length > 0) existingId = byUser[0].id;
+      }
+      if (!existingId && tutorEmail) {
+        const { data: byEmail } = await supabase
+          .from('tutor_profiles')
+          .select('id')
+          .ilike('email', tutorEmail)
+          .limit(1);
+        if (byEmail && byEmail.length > 0) existingId = byEmail[0].id;
+      }
+
+      if (existingId) {
+        // Direct update by primary key id
+        const { error: updErr } = await supabase
+          .from('tutor_profiles')
+          .update({
+            is_verified: nextIsVerified,
+            rating: nextIsVerified ? (tutor.rating || 5.0) : null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingId);
+
+        if (updErr) {
+          console.error('Error updating tutor_profiles:', updErr);
+        }
+      } else {
+        // Direct insert new row without onConflict
+        const { error: insErr } = await supabase
+          .from('tutor_profiles')
+          .insert([{
+            id: tutorId && tutorId.length === 36 ? tutorId : undefined,
             user_id: tutorId,
             full_name: tutor.full_name || 'Tutor',
             email: tutorEmail,
@@ -369,33 +418,19 @@ export default function AdminDashboardPage() {
             medium_preference: tutor.medium_preference || 'Hindi / English',
             subjects: Array.isArray(tutor.subjects) ? tutor.subjects : ['Mathematics', 'Science'],
             is_verified: nextIsVerified,
-            rating: nextIsVerified ? 5.0 : null,
-            updated_at: new Date().toISOString()
-          }, { onConflict: 'email' });
+            rating: nextIsVerified ? 5.0 : null
+          }]);
 
-        if (upsertError) {
-          console.warn('Upsert fallback warning:', upsertError);
+        if (insErr) {
+          console.error('Error inserting tutor_profiles:', insErr);
         }
       }
 
-      // 2. Also try updating profiles table if status column exists
-      try {
-        await supabase
-          .from('profiles')
-          .update({
-            updated_at: new Date().toISOString()
-          })
-          .or(`id.eq.${tutorId},email.ilike.${tutorEmail}`);
-      } catch (pErr) {}
-
-      // 3. Cache in localStorage for immediate synchronization across portals
-      try {
-        localStorage.setItem(`horizon_tutor_status_${tutorEmail}`, newStatus);
-        if (tutorId) localStorage.setItem(`horizon_tutor_status_${tutorId}`, newStatus);
-      } catch (lsErr) {}
-
+      // Update state in Admin Panel immediately
       setTutors(prev => prev.map(t => {
-        if ((t.id && t.id === tutorId) || (t.user_id && t.user_id === tutorId) || (t.email && t.email.toLowerCase() === tutorEmail)) {
+        if ((t.id && (t.id === tutor.id || t.id === existingId)) || 
+            (t.user_id && t.user_id === tutorId) || 
+            (t.email && t.email.toLowerCase() === tutorEmail)) {
           return {
             ...t,
             is_verified: nextIsVerified,
@@ -406,6 +441,13 @@ export default function AdminDashboardPage() {
         }
         return t;
       }));
+
+      // Cache in localStorage for immediate sync across tabs on same device
+      try {
+        localStorage.setItem(`horizon_tutor_status_${tutorEmail}`, newStatus);
+        if (tutorId) localStorage.setItem(`horizon_tutor_status_${tutorId}`, newStatus);
+        if (existingId) localStorage.setItem(`horizon_tutor_status_${existingId}`, newStatus);
+      } catch (lsErr) {}
 
       setActionSuccessMsg(`Tutor ${tutor.full_name || tutorEmail} verification updated to: ${newStatus}!`);
       setTimeout(() => setActionSuccessMsg(''), 4000);
@@ -427,13 +469,28 @@ export default function AdminDashboardPage() {
       const tutorObj = tutors.find(t => (t.id && t.id === selectedTutorId) || (t.user_id && t.user_id === selectedTutorId) || (t.email && t.email === selectedTutorId));
       const tutorName = tutorObj ? tutorObj.full_name : 'Assigned Tutor';
       const tutorEmail = (tutorObj?.email || '').toLowerCase().trim();
-      const tutorId = tutorObj?.id || tutorObj?.user_id || selectedTutorId;
+      const tutorProfileId = tutorObj?.id;
+      const tutorUserId = tutorObj?.user_id || tutorObj?.id;
 
       const studentName = selectedStudentForAssign.student_name;
       const studentEmail = (selectedStudentForAssign.email || '').toLowerCase().trim();
       const studentPhone = selectedStudentForAssign.phone || '';
 
-      // 1. Insert into student_assignments
+      // 1. Update student_enquiries in Supabase
+      // Note: assigned_teacher_id is a foreign key referencing tutor_profiles(id)
+      try {
+        await supabase
+          .from('student_enquiries')
+          .update({
+            assigned_teacher_id: tutorProfileId || null,
+            test_status: 'Tutor Assigned • Active'
+          })
+          .eq('id', selectedStudentForAssign.id);
+      } catch (enqErr) {
+        console.warn('student_enquiries update:', enqErr);
+      }
+
+      // 2. Also insert into student_assignments with only valid schema columns
       const assignmentPayload: any = {
         student_name: studentName,
         parent_name: selectedStudentForAssign.parent_name || 'Parent',
@@ -441,18 +498,18 @@ export default function AdminDashboardPage() {
         class_grade: selectedStudentForAssign.class_level || selectedStudentForAssign.class_grade || 'Class 9',
         board: selectedStudentForAssign.board || 'CBSE',
         medium: selectedStudentForAssign.school_medium || 'Hindi / Bilingual',
-        subjects: selectedStudentForAssign.subjects || 'Complete Board Syllabus',
+        subjects: 'Complete Board Syllabus',
         status: 'active',
         start_date: new Date().toISOString().split('T')[0],
         schedule_days: 'Mon, Wed, Fri (5:00 PM - 6:30 PM)',
         monthly_fee: selectedStudentForAssign.fee_amount || 4500,
         attendance_percent: 100,
         academic_score: 'Diagnostic Enrolled',
-        location: selectedStudentForAssign.address || 'Purnia',
-        tutor_id: tutorId,
-        tutor_name: tutorName,
-        tutor_email: tutorEmail
+        location: selectedStudentForAssign.address || 'Purnia'
       };
+      if (tutorUserId && tutorUserId.length === 36) {
+        assignmentPayload.tutor_id = tutorUserId;
+      }
 
       try {
         await supabase.from('student_assignments').insert([assignmentPayload]);
@@ -460,33 +517,22 @@ export default function AdminDashboardPage() {
         console.warn('student_assignments insert:', assignErr);
       }
 
-      // 2. Update student_enquiries
-      try {
-        await supabase
-          .from('student_enquiries')
-          .update({
-            assigned_teacher_id: tutorId,
-            assigned_tutor_name: tutorName,
-            test_status: 'Tutor Assigned • Active'
-          })
-          .or(`id.eq.${selectedStudentForAssign.id},student_name.eq.${studentName}`);
-      } catch (enqErr) {
-        console.warn('student_enquiries update:', enqErr);
-      }
-
       // 3. Cache assignment locally in localStorage for cross-portal instant sync
       try {
         const storedKey = 'horizon_live_student_assignments';
         const existing = JSON.parse(localStorage.getItem(storedKey) || '[]');
-        const updated = [assignmentPayload, ...existing.filter((a: any) => a.student_name !== studentName || a.tutor_id !== tutorId)];
+        const updated = [{ ...assignmentPayload, tutor_name: tutorName, tutor_email: tutorEmail }, ...existing.filter((a: any) => a.student_name !== studentName || a.tutor_id !== tutorUserId)];
         localStorage.setItem(storedKey, JSON.stringify(updated));
 
         // Tutor-specific & Student-specific caches
         const tutorKey = `horizon_tutor_students_${tutorEmail}`;
         const existingForTutor = JSON.parse(localStorage.getItem(tutorKey) || '[]');
-        localStorage.setItem(tutorKey, JSON.stringify([assignmentPayload, ...existingForTutor.filter((a: any) => a.student_name !== studentName)]));
-        if (tutorId) {
-          localStorage.setItem(`horizon_tutor_students_${tutorId}`, JSON.stringify([assignmentPayload]));
+        localStorage.setItem(tutorKey, JSON.stringify([{ ...assignmentPayload, tutor_name: tutorName, tutor_email: tutorEmail }, ...existingForTutor.filter((a: any) => a.student_name !== studentName)]));
+        if (tutorUserId) {
+          localStorage.setItem(`horizon_tutor_students_${tutorUserId}`, JSON.stringify([{ ...assignmentPayload, tutor_name: tutorName, tutor_email: tutorEmail }]));
+        }
+        if (tutorProfileId) {
+          localStorage.setItem(`horizon_tutor_students_${tutorProfileId}`, JSON.stringify([{ ...assignmentPayload, tutor_name: tutorName, tutor_email: tutorEmail }]));
         }
 
         // Student-specific cache so student portal immediately knows their tutor!

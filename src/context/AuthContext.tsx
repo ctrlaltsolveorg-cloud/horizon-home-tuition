@@ -672,10 +672,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           updated_at: new Date().toISOString()
         });
 
-        // 2. If Teacher, upsert into tutor_profiles
+        // 2. If Teacher, update or insert into tutor_profiles
         if (newRole === 'teacher') {
-          await supabase.from('tutor_profiles').upsert({
-            id: userId,
+          const { data: existingTutors } = await supabase
+            .from('tutor_profiles')
+            .select('id')
+            .or(`user_id.eq.${userId},email.ilike.${user.email}`)
+            .limit(1);
+
+          const tutorPayload = {
             user_id: userId,
             full_name: newName,
             phone: newPhone,
@@ -686,9 +691,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             medium_preference: profileData.medium_preference || user.profileData?.medium_preference || 'Hindi / English',
             subjects: profileData.subjects || user.profileData?.subjects || 'All Subjects',
             bio_and_custom_notes: profileData.bio_and_custom_notes || user.profileData?.bio_and_custom_notes || '',
-            rating: 5.0,
             updated_at: new Date().toISOString()
-          });
+          };
+
+          if (existingTutors && existingTutors.length > 0) {
+            await supabase.from('tutor_profiles').update(tutorPayload).eq('id', existingTutors[0].id);
+          } else {
+            await supabase.from('tutor_profiles').insert([{ id: userId, is_verified: false, rating: 5.0, ...tutorPayload }]);
+          }
         }
 
         // 3. If Student, update student_enquiries

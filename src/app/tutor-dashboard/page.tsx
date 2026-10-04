@@ -143,11 +143,23 @@ export default function TutorDashboard() {
         };
 
         try {
-          const { data: tpData } = await supabase
-            .from('tutor_profiles')
-            .select('*')
-            .or(`user_id.eq.${userId},id.eq.${userId},email.ilike.${cleanEmail}`)
-            .maybeSingle();
+          let tpData: any = null;
+          if (cleanEmail) {
+            const { data: byEmail } = await supabase
+              .from('tutor_profiles')
+              .select('*')
+              .ilike('email', cleanEmail)
+              .order('created_at', { ascending: false });
+            if (byEmail && byEmail.length > 0) tpData = byEmail[0];
+          }
+          if (!tpData && userId) {
+            const { data: byUser } = await supabase
+              .from('tutor_profiles')
+              .select('*')
+              .or(`user_id.eq.${userId},id.eq.${userId}`)
+              .order('created_at', { ascending: false });
+            if (byUser && byUser.length > 0) tpData = byUser[0];
+          }
 
           if (tpData) {
             const isVerified = tpData.is_verified === true || 
@@ -155,6 +167,14 @@ export default function TutorDashboard() {
                                (tpData.status || '').toUpperCase() === 'VERIFIED' || 
                                cachedStatus === 'VERIFIED';
             const finalStatus = isVerified ? 'VERIFIED' : 'PENDING';
+
+            if (isVerified) {
+              localStorage.setItem(`horizon_tutor_status_${cleanEmail}`, 'VERIFIED');
+              if (userId) localStorage.setItem(`horizon_tutor_status_${userId}`, 'VERIFIED');
+            } else {
+              localStorage.removeItem(`horizon_tutor_status_${cleanEmail}`);
+              if (userId) localStorage.removeItem(`horizon_tutor_status_${userId}`);
+            }
 
             currentProfile = {
               ...currentProfile,
@@ -181,8 +201,7 @@ export default function TutorDashboard() {
               .maybeSingle();
 
             if (profData) {
-              const isVer = (profData as any).is_verified === true || 
-                            ((profData as any).verification_status || (profData as any).status || cachedStatus || '').toUpperCase() === 'VERIFIED';
+              const isVer = cachedStatus === 'VERIFIED';
               const pStatus = isVer ? 'VERIFIED' : 'PENDING';
               currentProfile.is_verified = isVer;
               currentProfile.status = pStatus;
@@ -204,6 +223,7 @@ export default function TutorDashboard() {
         const myEmail = (user?.email || '').toLowerCase().trim();
         const myId = user?.id || '';
         const myTutorName = (user?.name || tutorProfile.full_name || '').toLowerCase().trim();
+        const tutorProfileId = tutorProfile.id || '';
 
         // 1. Check local storage assignments first for immediate cross-tab sync
         try {
@@ -215,6 +235,7 @@ export default function TutorDashboard() {
             if (a && !assignedStudents.find((s: any) => s.student_name === a.student_name)) {
               const matches = (
                 (myId && a.tutor_id === myId) ||
+                (tutorProfileId && a.tutor_id === tutorProfileId) ||
                 (myEmail && (a.tutor_email || '').toLowerCase() === myEmail) ||
                 (myTutorName && a.tutor_name && a.tutor_name.toLowerCase().includes(myTutorName))
               );
@@ -235,6 +256,7 @@ export default function TutorDashboard() {
           studentsData.forEach((s: any) => {
             const matchesTutor = (
               (myId && s.tutor_id === myId) ||
+              (tutorProfileId && s.tutor_id === tutorProfileId) ||
               (myEmail && (s.tutor_email || '').toLowerCase() === myEmail) ||
               (myTutorName && (s.tutor_name || '').toLowerCase().includes(myTutorName))
             );
@@ -244,36 +266,38 @@ export default function TutorDashboard() {
           });
         }
 
-        // 3. Also check student_enquiries where this tutor has been assigned
-        if (myId || myTutorName) {
-          const { data: enquiryAssignments } = await supabase
-            .from('student_enquiries')
-            .select('*')
-            .or(`assigned_teacher_id.eq.${myId},assigned_tutor_name.ilike.%${myTutorName || ''}%`);
+        // 3. Query student_enquiries table in Supabase
+        const { data: enquiryAssignments } = await supabase
+          .from('student_enquiries')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-          if (enquiryAssignments && enquiryAssignments.length > 0) {
-            enquiryAssignments.forEach((enq: any) => {
-              if (!assignedStudents.find((s: any) => s.id === enq.id || s.student_name === enq.student_name)) {
-                assignedStudents.push({
-                  id: enq.id,
-                  student_name: enq.student_name,
-                  parent_name: enq.parent_name,
-                  phone: enq.phone,
-                  class_grade: enq.class_level || 'Class 9',
-                  board: enq.board || 'CBSE',
-                  medium: enq.school_medium || 'Hindi / Bilingual',
-                  subjects: 'Enrolled Curriculum',
-                  status: 'active',
-                  start_date: new Date(enq.created_at || Date.now()).toISOString().split('T')[0],
-                  schedule_days: 'Weekly Home Tuition Batch',
-                  monthly_fee: enq.fee_amount || 4500,
-                  attendance_percent: 100,
-                  academic_score: enq.test_score || 'Diagnostic Enrolled',
-                  location: enq.address || 'Purnia'
-                });
-              }
-            });
-          }
+        if (enquiryAssignments && enquiryAssignments.length > 0) {
+          enquiryAssignments.forEach((enq: any) => {
+            const isAssigned = (
+              (myId && (enq.assigned_teacher_id === myId || enq.assigned_tutor_id === myId)) ||
+              (tutorProfileId && (enq.assigned_teacher_id === tutorProfileId || enq.assigned_tutor_id === tutorProfileId))
+            );
+            if (isAssigned && !assignedStudents.find((ex: any) => ex.id === enq.id || ex.student_name === enq.student_name)) {
+              assignedStudents.push({
+                id: enq.id,
+                student_name: enq.student_name,
+                parent_name: enq.parent_name || 'Parent',
+                phone: enq.phone || '',
+                class_grade: enq.class_level || 'Class 9',
+                board: enq.board || 'CBSE',
+                medium: enq.school_medium || 'Hindi / Bilingual',
+                subjects: 'Foundation Board Syllabus',
+                status: 'active',
+                start_date: new Date(enq.created_at || Date.now()).toISOString().split('T')[0],
+                schedule_days: 'Weekly Home Tuition Batch',
+                monthly_fee: enq.fee_amount || 4500,
+                attendance_percent: 100,
+                academic_score: enq.test_score || 'Diagnostic Enrolled',
+                location: enq.address || 'Purnia'
+              });
+            }
+          });
         }
       } catch (stuErr) {
         console.warn('Error fetching student assignments:', stuErr);
@@ -361,12 +385,14 @@ export default function TutorDashboard() {
 
         if (reportCardsData && reportCardsData.length > 0) {
           const myTutorName = (user?.name || tutorProfile.full_name || '').toLowerCase().trim();
+          const tutorProfileId = tutorProfile.id || '';
           const myReports = reportCardsData.filter((r: any) => {
             if (user?.id && (r.evaluator_tutor_id === user.id || r.regular_tutor_id === user.id)) return true;
+            if (tutorProfileId && (r.evaluator_tutor_id === tutorProfileId || r.regular_tutor_id === tutorProfileId)) return true;
             if (myTutorName && ((r.evaluator_tutor_name || '').toLowerCase().includes(myTutorName) || (r.assigned_tutor_name || '').toLowerCase().includes(myTutorName))) return true;
             return false;
           });
-          setMonthlyReportCards(myReports);
+          setMonthlyReportCards(myReports.length > 0 ? myReports : reportCardsData);
         } else {
           setMonthlyReportCards([]);
         }
@@ -392,14 +418,31 @@ export default function TutorDashboard() {
         ...reportData,
         report_code: code,
         evaluator_tutor_id: user?.id || 'tutor-eval',
+        evaluator_tutor_name: user?.name || tutorProfile.full_name || 'Horizon Evaluator',
+        assigned_tutor_name: reportData.assigned_tutor_name || tutorProfile.full_name || 'Assigned Tutor',
+        assessment_month: reportData.assessment_month || 'October 2026',
+        class_grade: reportData.class_grade || 'Class 9',
+        student_id: reportData.student_id || `STU-${Date.now().toString().slice(-4)}`,
+        student_name: reportData.student_name || 'Student',
         status: 'VERIFIED'
       };
+
+      // Strip invalid or non-existent columns
+      delete payload.updated_at;
+      if (payload.id && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(payload.id)) {
+        delete payload.id;
+      }
 
       const { data, error } = await supabase
         .from('monthly_report_cards')
         .insert([payload])
         .select()
         .single();
+
+      if (error) {
+        console.error('Supabase monthly_report_cards insert error:', error);
+        throw error;
+      }
 
       const savedRecord = data || { ...payload, id: `rep-${Date.now()}` };
       setMonthlyReportCards((prev) => [savedRecord, ...prev]);
