@@ -429,7 +429,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             phone: metadata.phone?.trim() || '',
             email: cleanEmail,
             rating: 5.0,
-            status: 'verified',
+            is_verified: false,
             updated_at: new Date().toISOString()
           });
           if (tutorError) {

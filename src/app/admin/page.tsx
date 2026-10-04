@@ -192,8 +192,15 @@ export default function AdminDashboardPage() {
       // Merge and deduplicate by email or id
       const tutorsMap = new Map<string, any>();
       (tutorProfilesData || []).forEach((t: any) => {
+        const isVer = t.is_verified === true || (t.status || '').toUpperCase() === 'VERIFIED' || (t.verification_status || '').toUpperCase() === 'VERIFIED';
+        const normalized = {
+          ...t,
+          is_verified: isVer,
+          status: isVer ? 'VERIFIED' : 'PENDING',
+          verification_status: isVer ? 'VERIFIED' : 'PENDING'
+        };
         const key = (t.email || t.id).toLowerCase();
-        tutorsMap.set(key, t);
+        tutorsMap.set(key, normalized);
       });
       (userProfilesData || []).forEach((u: any) => {
         const key = u.email.toLowerCase();
@@ -203,6 +210,7 @@ export default function AdminDashboardPage() {
         } else {
           tutorsMap.set(key, {
             id: u.id,
+            user_id: u.id,
             full_name: u.full_name,
             email: u.email,
             phone: u.phone,
@@ -211,6 +219,7 @@ export default function AdminDashboardPage() {
             experience_years: '1+ years',
             medium_preference: 'Hindi / English',
             subjects: 'General Subjects',
+            is_verified: false,
             status: 'PENDING',
             verification_status: 'PENDING',
             rating: null
@@ -325,30 +334,31 @@ export default function AdminDashboardPage() {
   // 4. ACTION: Verify / Revoke Tutor
   const handleToggleTutorVerification = async (tutor: any) => {
     try {
-      const currentStatus = (tutor.verification_status || tutor.status || '').toUpperCase();
-      const newStatus = currentStatus === 'VERIFIED' ? 'PENDING' : 'VERIFIED';
+      const currentIsVerified = tutor.is_verified === true || 
+                                (tutor.verification_status || '').toUpperCase() === 'VERIFIED' || 
+                                (tutor.status || '').toUpperCase() === 'VERIFIED';
+      const nextIsVerified = !currentIsVerified;
+      const newStatus = nextIsVerified ? 'VERIFIED' : 'PENDING';
       
       const tutorId = tutor.user_id || tutor.id;
       const tutorEmail = (tutor.email || '').toLowerCase().trim();
 
-      // 1. Update existing row in tutor_profiles
+      // 1. Update existing row in tutor_profiles using the exact Supabase column 'is_verified'
       const { data: updatedRows, error: updateError } = await supabase
         .from('tutor_profiles')
         .update({
-          status: newStatus,
-          verification_status: newStatus,
-          rating: newStatus === 'VERIFIED' ? (tutor.rating || 5.0) : null,
+          is_verified: nextIsVerified,
+          rating: nextIsVerified ? (tutor.rating || 5.0) : null,
           updated_at: new Date().toISOString()
         })
-        .or(`id.eq.${tutorId},user_id.eq.${tutorId},email.ilike.${tutorEmail}`)
+        .or(`user_id.eq.${tutorId},id.eq.${tutorId},email.ilike.${tutorEmail}`)
         .select();
 
-      // If no row existed in tutor_profiles yet, upsert it!
-      if (!updatedRows || updatedRows.length === 0) {
-        await supabase
+      // If no row existed in tutor_profiles yet, upsert it cleanly
+      if (updateError || !updatedRows || updatedRows.length === 0) {
+        const { error: upsertError } = await supabase
           .from('tutor_profiles')
           .upsert({
-            id: tutorId,
             user_id: tutorId,
             full_name: tutor.full_name || 'Tutor',
             email: tutorEmail,
@@ -357,21 +367,23 @@ export default function AdminDashboardPage() {
             degree_status: tutor.degree_status || 'Degree / Qualification',
             experience_years: tutor.experience_years || '1+ years',
             medium_preference: tutor.medium_preference || 'Hindi / English',
-            subjects: tutor.subjects || 'General Subjects',
-            status: newStatus,
-            verification_status: newStatus,
-            rating: newStatus === 'VERIFIED' ? 5.0 : null,
+            subjects: Array.isArray(tutor.subjects) ? tutor.subjects : ['Mathematics', 'Science'],
+            is_verified: nextIsVerified,
+            rating: nextIsVerified ? 5.0 : null,
             updated_at: new Date().toISOString()
           }, { onConflict: 'email' });
+
+        if (upsertError) {
+          console.warn('Upsert fallback warning:', upsertError);
+        }
       }
 
-      // 2. Also update profiles table
+      // 2. Also try updating profiles table if status column exists
       try {
         await supabase
           .from('profiles')
           .update({
-            status: newStatus,
-            verification_status: newStatus
+            updated_at: new Date().toISOString()
           })
           .or(`id.eq.${tutorId},email.ilike.${tutorEmail}`);
       } catch (pErr) {}
@@ -386,18 +398,20 @@ export default function AdminDashboardPage() {
         if ((t.id && t.id === tutorId) || (t.user_id && t.user_id === tutorId) || (t.email && t.email.toLowerCase() === tutorEmail)) {
           return {
             ...t,
+            is_verified: nextIsVerified,
             status: newStatus,
             verification_status: newStatus,
-            rating: newStatus === 'VERIFIED' ? 5.0 : null
+            rating: nextIsVerified ? 5.0 : null
           };
         }
         return t;
       }));
 
-      setActionSuccessMsg(`Tutor ${tutor.full_name || tutorEmail} status successfully updated to: ${newStatus}!`);
+      setActionSuccessMsg(`Tutor ${tutor.full_name || tutorEmail} verification updated to: ${newStatus}!`);
       setTimeout(() => setActionSuccessMsg(''), 4000);
     } catch (e: any) {
       setActionErrorMsg(`Failed to update tutor status: ${e.message}`);
+      setTimeout(() => setActionErrorMsg(''), 4000);
     }
   };
 
@@ -831,12 +845,13 @@ export default function AdminDashboardPage() {
     const q = searchQuery.toLowerCase();
     const matchesSearch = (t.full_name || '').toLowerCase().includes(q) || (t.email || '').toLowerCase().includes(q) || (t.subjects || '').toLowerCase().includes(q);
     if (!matchesSearch) return false;
-    if (statusFilter === 'VERIFIED') return t.verification_status === 'VERIFIED' || t.status === 'VERIFIED' || t.status === 'verified';
-    if (statusFilter === 'PENDING') return !(t.verification_status === 'VERIFIED' || t.status === 'VERIFIED' || t.status === 'verified');
+    const isVer = t.is_verified === true || t.verification_status === 'VERIFIED' || t.status === 'VERIFIED' || t.status === 'verified';
+    if (statusFilter === 'VERIFIED') return isVer;
+    if (statusFilter === 'PENDING') return !isVer;
     return true;
   });
 
-  const verifiedTutorsCount = tutors.filter(t => t.verification_status === 'VERIFIED' || t.status === 'VERIFIED' || t.status === 'verified').length;
+  const verifiedTutorsCount = tutors.filter(t => t.is_verified === true || t.verification_status === 'VERIFIED' || t.status === 'VERIFIED' || t.status === 'verified').length;
   const pendingTutorsCount = tutors.length - verifiedTutorsCount;
 
   return (
@@ -1201,7 +1216,7 @@ export default function AdminDashboardPage() {
                       </tr>
                     ) : (
                       filteredTutors.map((tutor) => {
-                        const isVerified = tutor.verification_status === 'VERIFIED' || tutor.status === 'VERIFIED' || tutor.status === 'verified';
+                        const isVerified = tutor.is_verified === true || tutor.verification_status === 'VERIFIED' || tutor.status === 'VERIFIED' || tutor.status === 'verified';
                         return (
                           <tr key={tutor.id || tutor.email} style={{ borderBottom: '1px solid #334155' }}>
                             <td style={{ padding: '1rem' }}>

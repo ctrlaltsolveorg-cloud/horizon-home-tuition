@@ -150,23 +150,27 @@ export default function TutorDashboard() {
             .maybeSingle();
 
           if (tpData) {
-            const dbStatus = (tpData.verification_status || tpData.status || '').toUpperCase();
-            const finalStatus = (dbStatus === 'VERIFIED' || cachedStatus === 'VERIFIED') ? 'VERIFIED' : (dbStatus || 'PENDING');
+            const isVerified = tpData.is_verified === true || 
+                               (tpData.verification_status || '').toUpperCase() === 'VERIFIED' || 
+                               (tpData.status || '').toUpperCase() === 'VERIFIED' || 
+                               cachedStatus === 'VERIFIED';
+            const finalStatus = isVerified ? 'VERIFIED' : 'PENDING';
 
             currentProfile = {
               ...currentProfile,
               ...tpData,
+              is_verified: isVerified,
               full_name: tpData.full_name || currentProfile.full_name,
               college: tpData.college || currentProfile.college,
               degree_status: tpData.degree_status || currentProfile.degree_status,
               experience_years: tpData.experience_years || currentProfile.experience_years,
               medium_preference: tpData.medium_preference || currentProfile.medium_preference,
-              subjects: tpData.subjects || currentProfile.subjects,
+              subjects: Array.isArray(tpData.subjects) ? tpData.subjects.join(', ') : (tpData.subjects || currentProfile.subjects),
               phone: tpData.phone || currentProfile.phone,
               email: tpData.email || currentProfile.email,
               status: finalStatus,
               verification_status: finalStatus,
-              rating: tpData.rating || (finalStatus === 'VERIFIED' ? 5.0 : null)
+              rating: tpData.rating || (isVerified ? 5.0 : null)
             };
           } else {
             // Also check profiles table
@@ -177,10 +181,13 @@ export default function TutorDashboard() {
               .maybeSingle();
 
             if (profData) {
-              const pStatus = ((profData as any).verification_status || (profData as any).status || cachedStatus || 'PENDING').toUpperCase();
+              const isVer = (profData as any).is_verified === true || 
+                            ((profData as any).verification_status || (profData as any).status || cachedStatus || '').toUpperCase() === 'VERIFIED';
+              const pStatus = isVer ? 'VERIFIED' : 'PENDING';
+              currentProfile.is_verified = isVer;
               currentProfile.status = pStatus;
               currentProfile.verification_status = pStatus;
-              if (pStatus === 'VERIFIED') currentProfile.rating = 5.0;
+              if (isVer) currentProfile.rating = 5.0;
             }
           }
         } catch (tpErr) {
@@ -557,7 +564,7 @@ export default function TutorDashboard() {
                 <h1 style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.55rem)', fontWeight: 800, color: '#FFFFFF', margin: 0 }}>
                   {tutorProfile.full_name}
                 </h1>
-                {((tutorProfile.verification_status || '').toUpperCase() === 'VERIFIED' || (tutorProfile.status || '').toUpperCase() === 'VERIFIED') ? (
+                {(tutorProfile.is_verified === true || (tutorProfile.verification_status || '').toUpperCase() === 'VERIFIED' || (tutorProfile.status || '').toUpperCase() === 'VERIFIED') ? (
                   <span style={{
                     background: 'rgba(16, 185, 129, 0.15)',
                     color: '#10B981',
@@ -643,7 +650,7 @@ export default function TutorDashboard() {
         </div>
 
         {/* Pending Verification Notice Banner */}
-        {!((tutorProfile.verification_status || '').toUpperCase() === 'VERIFIED' || (tutorProfile.status || '').toUpperCase() === 'VERIFIED') && (
+        {!(tutorProfile.is_verified === true || (tutorProfile.verification_status || '').toUpperCase() === 'VERIFIED' || (tutorProfile.status || '').toUpperCase() === 'VERIFIED') && (
           <div style={{
             background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.08) 100%)',
             border: '1px solid rgba(245, 158, 11, 0.35)',
