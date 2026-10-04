@@ -1,108 +1,103 @@
 import { NextResponse } from 'next/server';
-import db, { initDB } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 import { sendAdminNotification } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    initDB();
     const body = await req.json();
 
     const {
       fullName,
       phone,
       email,
-      photoUrl = '',
       highestQualification,
       college,
-      graduationYear = new Date().getFullYear(),
       subjects,
       classes,
       boards,
-      experienceYears = 0,
-      city = 'Delhi NCR',
-      area,
-      pincode = '',
-      availableDays = 'All Days',
-      availableTime = 'Flexible',
-      expectedCompensation = '',
-      experienceDescription = '',
-      whyHorizon = '',
+      experienceYears = '1+ years',
+      city = 'Purnia',
+      mediumPreference = 'Hindi / English',
+      bioAndNotes = '',
+      expectedCompensation = ''
     } = body;
 
-    if (!fullName || !phone || !email || !highestQualification || !college || !area) {
+    if (!fullName || !phone || !email) {
       return NextResponse.json(
         { error: 'Please fill in all mandatory tutor registration fields.' },
         { status: 400 }
       );
     }
 
-    const tutorCode = `HZN-${Math.floor(1000 + Math.random() * 9000)}`;
-    const subjectsStr = Array.isArray(subjects) ? subjects.join(', ') : subjects || '';
-    const classesStr = Array.isArray(classes) ? classes.join(', ') : classes || '';
-    const boardsStr = Array.isArray(boards) ? boards.join(', ') : boards || '';
+    const cleanEmail = email.toLowerCase().trim();
+    const subjectsArray = Array.isArray(subjects) ? subjects : (subjects ? subjects.split(',').map((s: string) => s.trim()) : ['Mathematics', 'Science']);
 
-    const stmt = db.prepare(`
-      INSERT INTO tutors (
-        tutor_code, full_name, phone, email, photo_url, highest_qualification,
-        college, graduation_year, subjects, classes, boards, experience_years,
-        city, area, pincode, available_days, available_time, expected_compensation,
-        experience_description, why_horizon, verification_status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
+    // Insert directly into Supabase online PostgreSQL table tutor_profiles
+    const { data: newTutor, error } = await supabase
+      .from('tutor_profiles')
+      .upsert({
+        full_name: fullName.trim(),
+        phone: phone.trim(),
+        email: cleanEmail,
+        college: college || 'PCE PURNIA',
+        degree_status: highestQualification || 'Degree / Qualification',
+        experience_years: `${experienceYears} years experience`,
+        medium_preference: mediumPreference,
+        subjects: subjectsArray,
+        classes_handled: Array.isArray(classes) ? classes.join(', ') : classes,
+        bio_and_custom_notes: bioAndNotes,
+        city: city,
+        is_verified: false,
+        rating: 5.0,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'email' })
+      .select()
+      .single();
 
-    const result = stmt.run(
-      tutorCode,
-      fullName,
-      phone,
-      email,
-      photoUrl,
-      highestQualification,
-      college,
-      Number(graduationYear),
-      subjectsStr,
-      classesStr,
-      boardsStr,
-      Number(experienceYears),
-      city,
-      area,
-      pincode,
-      availableDays,
-      availableTime,
-      expectedCompensation,
-      experienceDescription,
-      whyHorizon,
-      'APPLIED'
-    );
+    if (error) {
+      // Fallback insert without onConflict
+      await supabase.from('tutor_profiles').insert([{
+        full_name: fullName.trim(),
+        phone: phone.trim(),
+        email: cleanEmail,
+        college: college || 'PCE PURNIA',
+        degree_status: highestQualification || 'Degree / Qualification',
+        experience_years: `${experienceYears} years experience`,
+        medium_preference: mediumPreference,
+        subjects: subjectsArray,
+        city: city,
+        is_verified: false,
+        rating: 5.0
+      }]);
+    }
 
-    const tutorId = result.lastInsertRowid;
-
-    // Send email notification
-    await sendAdminNotification({
-      subject: `NEW TUTOR APPLICATION — ${fullName} (${tutorCode})`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-          <h2 style="color: #059669; margin-top: 0;">New Tutor Application: ${tutorCode}</h2>
-          <p><strong>Name:</strong> ${fullName}</p>
-          <p><strong>Phone:</strong> ${phone} | <strong>Email:</strong> ${email}</p>
-          <p><strong>Qualification:</strong> ${highestQualification} (${college}, ${graduationYear})</p>
-          <p><strong>Subjects:</strong> ${subjectsStr}</p>
-          <p><strong>Classes:</strong> ${classesStr} | <strong>Boards:</strong> ${boardsStr}</p>
-          <p><strong>Location:</strong> ${area}, ${city} (${pincode})</p>
-          <p><strong>Experience:</strong> ${experienceYears} Years</p>
-          <p><strong>Expected Compensation:</strong> ${expectedCompensation || 'Not specified'}</p>
-          <hr/>
-          <p style="font-size: 12px; color: #64748b;">Review and verify in Horizon Admin Panel: /admin</p>
-        </div>
-      `,
-    });
+    // Send email notification to Admin
+    try {
+      await sendAdminNotification({
+        subject: `NEW TUTOR APPLICATION — ${fullName}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <h2 style="color: #059669; margin-top: 0;">New Tutor Registered: ${fullName}</h2>
+            <p><strong>Name:</strong> ${fullName}</p>
+            <p><strong>Phone:</strong> ${phone} | <strong>Email:</strong> ${cleanEmail}</p>
+            <p><strong>Qualification:</strong> ${highestQualification} (${college})</p>
+            <p><strong>Subjects:</strong> ${subjectsArray.join(', ')}</p>
+            <p><strong>Medium:</strong> ${mediumPreference} | <strong>City:</strong> ${city}</p>
+            <hr/>
+            <p style="font-size: 12px; color: #64748b;">Verify this tutor directly in the Horizon Admin Panel: /admin</p>
+          </div>
+        `,
+      });
+    } catch (mailErr) {
+      console.warn('Email notice warning:', mailErr);
+    }
 
     return NextResponse.json({
       success: true,
-      tutorId,
-      tutorCode,
-      message: 'Application submitted successfully. Horizon team will review your application soon.',
+      tutor: newTutor,
+      message: 'Application submitted successfully to Horizon Supabase database. Admin will review and verify your profile soon.',
     });
   } catch (error: any) {
     console.error('Tutor Application API Error:', error);

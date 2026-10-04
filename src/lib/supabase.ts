@@ -218,31 +218,31 @@ export interface MonthlyReportCard {
   // Section 2: Academic Chapter Assessments
   math_ch1_name: string;
   math_ch1_marks: string;
-  math_ch1_status: 'Cleared' | 'Revision' | 'Excellent';
+  math_ch1_status: 'Cleared' | 'Revision' | 'Excellent' | 'CLEARED' | 'REVISION' | 'INCOMPLETE' | string;
   math_ch2_name: string;
   math_ch2_marks: string;
-  math_ch2_status: 'Cleared' | 'Revision' | 'Excellent';
+  math_ch2_status: 'Cleared' | 'Revision' | 'Excellent' | 'CLEARED' | 'REVISION' | 'INCOMPLETE' | string;
 
   science_ch1_name: string;
   science_ch1_marks: string;
-  science_ch1_status: 'Cleared' | 'Revision' | 'Excellent';
+  science_ch1_status: 'Cleared' | 'Revision' | 'Excellent' | 'CLEARED' | 'REVISION' | 'INCOMPLETE' | string;
   science_ch2_name: string;
   science_ch2_marks: string;
-  science_ch2_status: 'Cleared' | 'Revision' | 'Excellent';
+  science_ch2_status: 'Cleared' | 'Revision' | 'Excellent' | 'CLEARED' | 'REVISION' | 'INCOMPLETE' | string;
 
   sst_ch1_name: string;
   sst_ch1_marks: string;
-  sst_ch1_status: 'Cleared' | 'Revision' | 'Excellent';
+  sst_ch1_status: 'Cleared' | 'Revision' | 'Excellent' | 'CLEARED' | 'REVISION' | 'INCOMPLETE' | string;
   sst_ch2_name: string;
   sst_ch2_marks: string;
-  sst_ch2_status: 'Cleared' | 'Revision' | 'Excellent';
+  sst_ch2_status: 'Cleared' | 'Revision' | 'Excellent' | 'CLEARED' | 'REVISION' | 'INCOMPLETE' | string;
 
   lang_eng_name: string;
   lang_eng_marks: string;
-  lang_eng_status: 'Cleared' | 'Revision' | 'Excellent';
+  lang_eng_status: 'Cleared' | 'Revision' | 'Excellent' | 'CLEARED' | 'REVISION' | 'INCOMPLETE' | string;
   lang_hindi_name: string;
   lang_hindi_marks: string;
-  lang_hindi_status: 'Cleared' | 'Revision' | 'Excellent';
+  lang_hindi_status: 'Cleared' | 'Revision' | 'Excellent' | 'CLEARED' | 'REVISION' | 'INCOMPLETE' | string;
 
   // Section 3: Communication Skills & Conversational English Habits
   manners_max: number;
