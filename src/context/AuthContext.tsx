@@ -80,6 +80,7 @@ interface AuthContextType {
     [key: string]: any;
   }) => Promise<AuthResponse>;
   loginAs: (role: UserRole, customEmail?: string) => Promise<void>;
+  magicLogin: (email: string) => Promise<{ exists: boolean; user?: AuthUser; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -597,6 +598,104 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Magic 1-Click Login: Checks if user exists in Supabase. If yes, logs them in instantly!
+  const magicLogin = async (inputEmail: string): Promise<{ exists: boolean; user?: AuthUser; error?: string }> => {
+    setLoading(true);
+    try {
+      const cleanEmail = inputEmail.trim().toLowerCase();
+      if (!cleanEmail) {
+        return { exists: false, error: 'Please enter a valid email address.' };
+      }
+
+      // 1. Check profiles table in Supabase
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .ilike('email', cleanEmail)
+        .maybeSingle();
+
+      // 2. Check tutor_profiles if not in profiles
+      let tutorProfile: any = null;
+      if (!profile) {
+        const { data: tp } = await supabase
+          .from('tutor_profiles')
+          .select('*')
+          .ilike('email', cleanEmail)
+          .limit(1);
+        if (tp && tp.length > 0) tutorProfile = tp[0];
+      }
+
+      // 3. Check student_enquiries if neither
+      let studentEnquiry: any = null;
+      if (!profile && !tutorProfile) {
+        const { data: enq } = await supabase
+          .from('student_enquiries')
+          .select('*')
+          .ilike('email', cleanEmail)
+          .limit(1);
+        if (enq && enq.length > 0) studentEnquiry = enq[0];
+      }
+
+      if (!profile && !tutorProfile && !studentEnquiry) {
+        // Account does NOT exist yet
+        return { exists: false };
+      }
+
+      // Account EXISTS! Resolve AuthUser
+      const resolvedRole: UserRole = 
+        (profile?.role as UserRole) || 
+        (tutorProfile ? 'teacher' : 'student_parent');
+
+      const resolvedName = 
+        profile?.full_name || 
+        tutorProfile?.full_name || 
+        studentEnquiry?.student_name || 
+        cleanEmail.split('@')[0];
+
+      const resolvedId = 
+        profile?.id || 
+        tutorProfile?.user_id || 
+        tutorProfile?.id || 
+        studentEnquiry?.student_id || 
+        studentEnquiry?.id;
+
+      const resolvedPhone = 
+        profile?.phone || 
+        tutorProfile?.phone || 
+        studentEnquiry?.phone || 
+        '';
+
+      const authUser: AuthUser = {
+        id: resolvedId,
+        email: cleanEmail,
+        name: resolvedName,
+        role: resolvedRole,
+        phone: resolvedPhone,
+        avatar_url: profile?.avatar_url || '',
+        isDemo: false
+      };
+
+      setUser(authUser);
+      localStorage.setItem('horizon_auth_user', JSON.stringify(authUser));
+
+      // Redirect directly to the appropriate dashboard
+      if (resolvedRole === 'teacher') {
+        router.push('/tutor-dashboard');
+      } else if (resolvedRole === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/student-dashboard');
+      }
+
+      return { exists: true, user: authUser };
+    } catch (err: any) {
+      console.error('Magic login error:', err);
+      return { exists: false, error: err.message || 'Magic login encountered an error.' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Google OAuth Sign In
   const signInWithGoogle = async (preferredRole?: UserRole): Promise<AuthResponse> => {
     setLoading(true);
@@ -812,6 +911,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsRecoveryMode,
         updateProfile,
         loginAs,
+        magicLogin,
         logout,
         refreshUser
       }}

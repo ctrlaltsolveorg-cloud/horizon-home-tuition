@@ -46,6 +46,7 @@ export default function LoginPage() {
     isRecoveryMode,
     setIsRecoveryMode,
     loginAs, 
+    magicLogin,
     loading: authLoading, 
     user 
   } = useAuth();
@@ -139,6 +140,99 @@ export default function LoginPage() {
   const [successMsg, setSuccessMsg] = useState('');
   const [emailConfirmationRequired, setEmailConfirmationRequired] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+
+  // Quick Setup Modal States (triggered when Magic Login finds no existing account)
+  const [showQuickSetupModal, setShowQuickSetupModal] = useState(false);
+  const [quickSetupEmail, setQuickSetupEmail] = useState('');
+  const [quickSetupName, setQuickSetupName] = useState('');
+  const [quickSetupPhone, setQuickSetupPhone] = useState('');
+  const [quickSetupRole, setQuickSetupRole] = useState<UserRole>('teacher');
+  const [quickSetupPassword, setQuickSetupPassword] = useState('');
+  const [showQuickPassword, setShowQuickPassword] = useState(false);
+  const [quickSetupCollege, setQuickSetupCollege] = useState('PCE Purnia');
+  const [quickSetupClass, setQuickSetupClass] = useState('Class 9');
+  const [quickSetupBoard, setQuickSetupBoard] = useState('CBSE');
+  const [quickSetupError, setQuickSetupError] = useState('');
+  const [isQuickSubmitting, setIsQuickSubmitting] = useState(false);
+
+  // ⚡ Magic 1-Click Login Handler
+  const handleMagicLogin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
+      setErrorMsg('Please enter your email address above to use Magic Login.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMsg('');
+    setSuccessMsg('⚡ Checking account in Supabase database...');
+
+    try {
+      const res = await magicLogin(cleanEmail);
+      if (res.exists) {
+        setSuccessMsg(`🎉 Welcome back, ${res.user?.name || 'User'}! Magic Login successful. Entering your portal...`);
+      } else {
+        // User does not exist! Open Quick Registration Modal
+        setSuccessMsg('');
+        setQuickSetupEmail(cleanEmail);
+        setQuickSetupName(fullName || cleanEmail.split('@')[0]);
+        setQuickSetupPhone(phoneNumber || '');
+        setQuickSetupRole(selectedRole || 'teacher');
+        setQuickSetupPassword('');
+        setQuickSetupError('');
+        setShowQuickSetupModal(true);
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Magic login encountered an error.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ⚡ Quick Setup Form Submit (for unregistered users)
+  const handleQuickSetupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickSetupPassword || quickSetupPassword.length < 6) {
+      setQuickSetupError('Password must be at least 6 characters.');
+      return;
+    }
+    if (!quickSetupName.trim()) {
+      setQuickSetupError('Please enter your full name.');
+      return;
+    }
+
+    setIsQuickSubmitting(true);
+    setQuickSetupError('');
+
+    try {
+      const meta = {
+        fullName: quickSetupName.trim(),
+        phone: quickSetupPhone.trim(),
+        role: quickSetupRole,
+        college: quickSetupRole === 'teacher' ? (quickSetupCollege.trim() || 'PCE Purnia') : undefined,
+        degreeStatus: quickSetupRole === 'teacher' ? 'B.Tech/BS' : undefined,
+        mediumPreference: quickSetupRole === 'teacher' ? 'Hindi medium only' : undefined,
+        subjects: quickSetupRole === 'teacher' ? 'Mathematics, Science' : undefined,
+        classLevel: quickSetupRole === 'student_parent' ? quickSetupClass : undefined,
+        board: quickSetupRole === 'student_parent' ? quickSetupBoard : undefined
+      };
+
+      const res = await signUp(quickSetupEmail, quickSetupPassword, meta);
+      if (!res.success) {
+        setQuickSetupError(res.error || 'Failed to create account.');
+        setIsQuickSubmitting(false);
+        return;
+      }
+
+      setShowQuickSetupModal(false);
+      setSuccessMsg(`🎉 Account created! Welcome, ${quickSetupName}! Redirecting to portal...`);
+    } catch (err: any) {
+      setQuickSetupError(err?.message || 'An error occurred during account creation.');
+    } finally {
+      setIsQuickSubmitting(false);
+    }
+  };
 
   // Handle Sign In (Email + Password)
   const handleSignIn = async (e: React.FormEvent) => {
@@ -583,8 +677,8 @@ export default function LoginPage() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  <Zap size={15} />
-                  <span>Magic Link</span>
+                  <Sparkles size={15} />
+                  <span>⚡ Magic Login</span>
                 </button>
               </div>
               )}
@@ -934,6 +1028,46 @@ export default function LoginPage() {
                     <LogIn size={17} />
                     <span>{isSubmitting ? 'Signing in...' : 'Sign In to Portal'}</span>
                   </button>
+
+                  {/* ⚡ OR Instant 1-Click Magic Login */}
+                  <div style={{ marginTop: '0.9rem', textAlign: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                      <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800 }}>
+                        Or Instant Access
+                      </span>
+                      <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleMagicLogin()}
+                      disabled={isSubmitting || authLoading}
+                      style={{
+                        width: '100%',
+                        padding: '11px 18px',
+                        borderRadius: '12px',
+                        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.22) 100%)',
+                        color: '#F59E0B',
+                        border: '1.5px solid rgba(245, 158, 11, 0.45)',
+                        fontWeight: 800,
+                        fontSize: '0.92rem',
+                        cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                        boxShadow: '0 4px 14px rgba(245, 158, 11, 0.15)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        transition: 'all 0.25s ease'
+                      }}
+                    >
+                      <Sparkles size={16} color="#F59E0B" />
+                      <span>{isSubmitting ? 'Verifying Account...' : '⚡ 1-Click Magic Login'}</span>
+                    </button>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', marginTop: '0.45rem', lineHeight: 1.4 }}>
+                      Already created account? Instant login without password. New user? Quick 10-sec setup!
+                    </div>
+                  </div>
                 </form>
                 </div>
               )}
@@ -1516,16 +1650,31 @@ export default function LoginPage() {
                 </form>
               )}
 
-              {/* ==================== TAB 3: MAGIC LINK ==================== */}
+              {/* ==================== TAB 3: ⚡ MAGIC LOGIN ==================== */}
               {activeTab === 'magiclink' && (
-                <form onSubmit={handleMagicLink} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                  <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                    Sign in without entering a password. We will send a secure one-click link to your email address.
+                <form onSubmit={handleMagicLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                  <div style={{
+                    background: 'rgba(245, 158, 11, 0.08)',
+                    border: '1px solid rgba(245, 158, 11, 0.25)',
+                    borderRadius: '12px',
+                    padding: '1rem',
+                    display: 'flex',
+                    gap: '0.75rem',
+                    alignItems: 'flex-start'
+                  }}>
+                    <Sparkles size={20} color="#F59E0B" style={{ flexShrink: 0, marginTop: '2px' }} />
+                    <div style={{ fontSize: '0.84rem', color: '#E2E8F0', lineHeight: 1.5 }}>
+                      <strong style={{ color: '#F59E0B' }}>How 1-Click Magic Login Works:</strong>
+                      <ul style={{ margin: '0.35rem 0 0 1rem', padding: 0, color: '#94A3B8' }}>
+                        <li>If your email is <strong>already registered</strong>, you will be <strong>logged in instantly</strong> without typing a password.</li>
+                        <li>If you are a <strong>new user</strong>, a quick 10-second setup will open to save your details &amp; password.</li>
+                      </ul>
+                    </div>
                   </div>
 
                   <div>
                     <label style={{ display: 'block', fontSize: '0.86rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
-                      Email Address
+                      Your Email Address
                     </label>
                     <div style={{ position: 'relative' }}>
                       <Mail size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
@@ -1562,7 +1711,7 @@ export default function LoginPage() {
                       fontWeight: 800,
                       fontSize: '0.96rem',
                       cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                      marginTop: '0.5rem',
+                      marginTop: '0.25rem',
                       boxShadow: '0 6px 22px rgba(245, 158, 11, 0.35)',
                       display: 'flex',
                       alignItems: 'center',
@@ -1571,9 +1720,27 @@ export default function LoginPage() {
                       transition: 'all 0.25s ease'
                     }}
                   >
-                    <Send size={16} />
-                    <span>{isSubmitting ? 'Sending link...' : 'Send Magic Link to Email'}</span>
+                    <Sparkles size={17} color="#0B0C0E" />
+                    <span>{isSubmitting ? 'Verifying Account...' : '⚡ 1-Click Magic Login'}</span>
                   </button>
+
+                  <div style={{ textAlign: 'center', marginTop: '0.25rem' }}>
+                    <button
+                      type="button"
+                      onClick={handleMagicLink}
+                      disabled={isSubmitting}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-secondary)',
+                        fontSize: '0.80rem',
+                        cursor: 'pointer',
+                        textDecoration: 'underline'
+                      }}
+                    >
+                      Or send a traditional magic login link to email
+                    </button>
+                  </div>
                 </form>
               )}
               </>
@@ -1748,6 +1915,354 @@ export default function LoginPage() {
             </div>
 
           </div>
+
+      {/* ⚡ Quick Setup Modal (Triggered by Magic Login if account does not exist) */}
+      {showQuickSetupModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: '#0F172A',
+            border: '1.5px solid rgba(245, 158, 11, 0.45)',
+            borderRadius: '24px',
+            maxWidth: '520px',
+            width: '100%',
+            padding: '2.25rem 2rem',
+            boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(245, 158, 11, 0.12)',
+            position: 'relative',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+          }}>
+            {/* Modal Header */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+              <div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(245, 158, 11, 0.15)', color: '#F59E0B', border: '1px solid rgba(245, 158, 11, 0.35)', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.74rem', fontWeight: 800, marginBottom: '0.5rem' }}>
+                  <Sparkles size={13} /> New Account Registration
+                </div>
+                <h3 style={{ fontSize: '1.28rem', fontWeight: 800, color: '#FFFFFF', margin: '0 0 0.35rem 0' }}>
+                  Complete Your Magic Setup
+                </h3>
+                <p style={{ fontSize: '0.84rem', color: '#94A3B8', margin: 0, lineHeight: 1.45 }}>
+                  No existing account was found for <strong style={{ color: '#F59E0B' }}>{quickSetupEmail}</strong>. Fill these details once to save your profile &amp; create your password!
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowQuickSetupModal(false)}
+                style={{
+                  background: '#1E293B',
+                  border: '1px solid #334155',
+                  color: '#94A3B8',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {quickSetupError && (
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.12)',
+                border: '1px solid rgba(239, 68, 68, 0.35)',
+                color: '#F87171',
+                padding: '0.75rem 1rem',
+                borderRadius: '10px',
+                fontSize: '0.84rem',
+                marginBottom: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <AlertCircle size={16} />
+                <span>{quickSetupError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleQuickSetupSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {/* Role Selector */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: '#CBD5E1', marginBottom: '6px' }}>
+                  I Am Joining As:
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setQuickSetupRole('teacher')}
+                    style={{
+                      padding: '10px',
+                      borderRadius: '10px',
+                      fontSize: '0.85rem',
+                      fontWeight: 800,
+                      background: quickSetupRole === 'teacher' ? 'linear-gradient(135deg, #10B981, #059669)' : '#1E293B',
+                      color: '#FFF',
+                      border: `1.5px solid ${quickSetupRole === 'teacher' ? '#34D399' : '#334155'}`,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <BookOpen size={16} />
+                    <span>Home Tutor</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setQuickSetupRole('student_parent')}
+                    style={{
+                      padding: '10px',
+                      borderRadius: '10px',
+                      fontSize: '0.85rem',
+                      fontWeight: 800,
+                      background: quickSetupRole === 'student_parent' ? 'linear-gradient(135deg, #3B82F6, #2563EB)' : '#1E293B',
+                      color: '#FFF',
+                      border: `1.5px solid ${quickSetupRole === 'student_parent' ? '#60A5FA' : '#334155'}`,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <GraduationCap size={16} />
+                    <span>Student / Parent</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Full Name */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#CBD5E1', marginBottom: '5px' }}>
+                  Full Name *
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <User size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748B' }} />
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Rohit Kumar"
+                    value={quickSetupName}
+                    onChange={(e) => setQuickSetupName(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px 10px 36px',
+                      borderRadius: '10px',
+                      border: '1px solid #334155',
+                      background: '#1E293B',
+                      color: '#FFF',
+                      fontSize: '0.90rem'
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Phone Number */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#CBD5E1', marginBottom: '5px' }}>
+                  Phone Number *
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Phone size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748B' }} />
+                  <input
+                    type="tel"
+                    required
+                    placeholder="e.g. +91 98765 43210"
+                    value={quickSetupPhone}
+                    onChange={(e) => setQuickSetupPhone(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px 10px 36px',
+                      borderRadius: '10px',
+                      border: '1px solid #334155',
+                      background: '#1E293B',
+                      color: '#FFF',
+                      fontSize: '0.90rem'
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Create Password */}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#CBD5E1', marginBottom: '5px' }}>
+                  Create Password (Min 6 chars) *
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Lock size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748B' }} />
+                  <input
+                    type={showQuickPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Create a secure password"
+                    value={quickSetupPassword}
+                    onChange={(e) => setQuickSetupPassword(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 38px 10px 36px',
+                      borderRadius: '10px',
+                      border: '1px solid #334155',
+                      background: '#1E293B',
+                      color: '#FFF',
+                      fontSize: '0.90rem'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowQuickPassword(!showQuickPassword)}
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      color: '#94A3B8',
+                      cursor: 'pointer',
+                      padding: 0
+                    }}
+                  >
+                    {showQuickPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Conditional Quick Details */}
+              {quickSetupRole === 'teacher' ? (
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#CBD5E1', marginBottom: '5px' }}>
+                    College / Institution
+                  </label>
+                  <input
+                    type="text"
+                    value={quickSetupCollege}
+                    onChange={(e) => setQuickSetupCollege(e.target.value)}
+                    placeholder="e.g. PCE Purnia / Purnea College"
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      border: '1px solid #334155',
+                      background: '#1E293B',
+                      color: '#FFF',
+                      fontSize: '0.90rem'
+                    }}
+                  />
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#CBD5E1', marginBottom: '5px' }}>
+                      Class / Grade
+                    </label>
+                    <select
+                      value={quickSetupClass}
+                      onChange={(e) => setQuickSetupClass(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        border: '1px solid #334155',
+                        background: '#1E293B',
+                        color: '#FFF',
+                        fontSize: '0.88rem'
+                      }}
+                    >
+                      <option value="Class 6">Class 6</option>
+                      <option value="Class 7">Class 7</option>
+                      <option value="Class 8">Class 8</option>
+                      <option value="Class 9">Class 9</option>
+                      <option value="Class 10">Class 10</option>
+                      <option value="Class 11">Class 11</option>
+                      <option value="Class 12">Class 12</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#CBD5E1', marginBottom: '5px' }}>
+                      Board
+                    </label>
+                    <select
+                      value={quickSetupBoard}
+                      onChange={(e) => setQuickSetupBoard(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        border: '1px solid #334155',
+                        background: '#1E293B',
+                        color: '#FFF',
+                        fontSize: '0.88rem'
+                      }}
+                    >
+                      <option value="CBSE">CBSE</option>
+                      <option value="ICSE">ICSE</option>
+                      <option value="State Board">Bihar State Board</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* Submit Buttons */}
+              <div style={{ display: 'flex', gap: '10px', marginTop: '0.5rem' }}>
+                <button
+                  type="submit"
+                  disabled={isQuickSubmitting}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    borderRadius: '10px',
+                    background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                    color: '#0B0C0E',
+                    border: 'none',
+                    fontWeight: 800,
+                    fontSize: '0.94rem',
+                    cursor: isQuickSubmitting ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 18px rgba(245, 158, 11, 0.35)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  <Sparkles size={16} />
+                  <span>{isQuickSubmitting ? 'Creating Account...' : '✨ Create Account & Magic Login'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowQuickSetupModal(false)}
+                  style={{
+                    background: '#1E293B',
+                    border: '1px solid #334155',
+                    color: '#94A3B8',
+                    padding: '12px 18px',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    fontWeight: 600
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
         </div>
       </main>
