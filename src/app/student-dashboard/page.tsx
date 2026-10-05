@@ -90,11 +90,20 @@ export default function StudentDashboard() {
       try {
         // Fetch student enquiry matching logged-in user
         let enquiryData = null;
-        if (user?.id) {
+        if (user?.id && isUUID(user.id)) {
           const { data } = await supabase
             .from('student_enquiries')
             .select('*')
             .or(`student_id.eq.${user.id},email.eq.${user.email}`)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          enquiryData = data;
+        } else if (user?.email) {
+          const { data } = await supabase
+            .from('student_enquiries')
+            .select('*')
+            .ilike('email', user.email)
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();

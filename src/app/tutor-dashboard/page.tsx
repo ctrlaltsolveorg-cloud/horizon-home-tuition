@@ -119,6 +119,9 @@ export default function TutorDashboard() {
       setLoading(true);
 
       // 1. Tutor Profile - Load dynamically for THIS specific user
+      let activeTutorProfileId = '';
+      let currentProfile: any = null;
+
       if (user) {
         const cleanEmail = (user.email || '').toLowerCase().trim();
         const userId = user.id;
@@ -128,7 +131,7 @@ export default function TutorDashboard() {
           localStorage.getItem(`horizon_tutor_status_${cleanEmail}`) ||
           (userId ? localStorage.getItem(`horizon_tutor_status_${userId}`) : null);
 
-        let currentProfile: any = {
+        currentProfile = {
           full_name: user.name || 'Tutor',
           college: 'Institution / College',
           degree_status: 'Degree / Qualification',
@@ -163,6 +166,7 @@ export default function TutorDashboard() {
           }
 
           if (tpData) {
+            activeTutorProfileId = tpData.id;
             const isVerified = tpData.is_verified === true || 
                                (tpData.verification_status || '').toUpperCase() === 'VERIFIED' || 
                                (tpData.status || '').toUpperCase() === 'VERIFIED' || 
@@ -223,8 +227,8 @@ export default function TutorDashboard() {
       try {
         const myEmail = (user?.email || '').toLowerCase().trim();
         const myId = user?.id || '';
-        const myTutorName = (user?.name || tutorProfile.full_name || '').toLowerCase().trim();
-        const tutorProfileId = tutorProfile.id || '';
+        const myTutorName = (user?.name || currentProfile?.full_name || tutorProfile.full_name || '').toLowerCase().trim();
+        const tutorProfileId = activeTutorProfileId || currentProfile?.id || tutorProfile.id || '';
 
         // 1. Check local storage assignments first for immediate cross-tab sync
         try {

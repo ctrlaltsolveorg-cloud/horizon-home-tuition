@@ -263,7 +263,26 @@ export default function AdminDashboardPage() {
         .from('student_enquiries')
         .select('*')
         .order('created_at', { ascending: false });
-      setStudents(enquiriesData || []);
+
+      // Build tutor lookup map for instant bidirectional mapping
+      const tutorLookup = new Map<string, any>();
+      uniqueTutors.forEach(t => {
+        if (t.id) tutorLookup.set(t.id.toLowerCase().trim(), t);
+        if (t.user_id) tutorLookup.set(t.user_id.toLowerCase().trim(), t);
+        if (t.email) tutorLookup.set(t.email.toLowerCase().trim(), t);
+      });
+
+      const enrichedStudents = (enquiriesData || []).map((stu: any) => {
+        const teacherId = (stu.assigned_teacher_id || stu.assigned_tutor_id || '').toLowerCase().trim();
+        const matchedTutor = teacherId ? tutorLookup.get(teacherId) : null;
+        return {
+          ...stu,
+          assigned_tutor_name: matchedTutor ? matchedTutor.full_name : stu.assigned_tutor_name,
+          assigned_tutor_email: matchedTutor ? matchedTutor.email : null
+        };
+      });
+
+      setStudents(enrichedStudents);
 
       // 3. Fetch Assignments
       const { data: assignmentsData } = await supabase
@@ -485,76 +504,107 @@ export default function AdminDashboardPage() {
     }
 
     try {
-      const tutorObj = tutors.find(t => (t.id && t.id === selectedTutorId) || (t.user_id && t.user_id === selectedTutorId) || (t.email && t.email === selectedTutorId));
+      const tutorObj = tutors.find(t => 
+        (t.id && t.id === selectedTutorId) || 
+        (t.user_id && t.user_id === selectedTutorId) || 
+        (t.email && t.email.toLowerCase() === selectedTutorId.toLowerCase())
+      );
       const tutorName = tutorObj ? tutorObj.full_name : 'Assigned Tutor';
       const tutorEmail = (tutorObj?.email || '').toLowerCase().trim();
-      const tutorProfileId = tutorObj?.id;
-      const tutorUserId = tutorObj?.user_id || tutorObj?.id;
+      const tutorUserId = tutorObj?.user_id;
+
+      // Ensure we have the actual tutor_profiles id for the foreign key
+      let verifiedTutorProfileId = tutorObj?.id;
+      if (tutorEmail) {
+        const { data: tp } = await supabase
+          .from('tutor_profiles')
+          .select('id, user_id')
+          .ilike('email', tutorEmail)
+          .limit(1);
+        if (tp && tp.length > 0) {
+          verifiedTutorProfileId = tp[0].id;
+        }
+      }
 
       const studentName = selectedStudentForAssign.student_name;
       const studentEmail = (selectedStudentForAssign.email || '').toLowerCase().trim();
       const studentPhone = selectedStudentForAssign.phone || '';
 
-      // 1. Update student_enquiries in Supabase
-      // Note: assigned_teacher_id is a foreign key referencing tutor_profiles(id)
-      try {
-        await supabase
-          .from('student_enquiries')
-          .update({
-            assigned_teacher_id: tutorProfileId || null,
-            test_status: 'Tutor Assigned • Active'
-          })
-          .eq('id', selectedStudentForAssign.id);
-      } catch (enqErr) {
-        console.warn('student_enquiries update:', enqErr);
+      // 1. Update student_enquiries in online Supabase
+      const { data: updatedEnq, error: enqErr } = await supabase
+        .from('student_enquiries')
+        .update({
+          assigned_teacher_id: verifiedTutorProfileId,
+          test_status: 'Tutor Assigned • Active',
+          status: 'ACTIVE'
+        })
+        .eq('id', selectedStudentForAssign.id)
+        .select();
+
+      if (enqErr) {
+        console.error('Failed to assign tutor in Supabase:', enqErr);
+        alert('Failed to assign tutor in database: ' + enqErr.message);
+        return;
       }
 
-      // 2. Also insert into student_assignments with only valid schema columns
-      const assignmentPayload: any = {
-        student_name: studentName,
-        parent_name: selectedStudentForAssign.parent_name || 'Parent',
-        phone: studentPhone,
-        class_grade: selectedStudentForAssign.class_level || selectedStudentForAssign.class_grade || 'Class 9',
-        board: selectedStudentForAssign.board || 'CBSE',
-        medium: selectedStudentForAssign.school_medium || 'Hindi / Bilingual',
-        subjects: 'Complete Board Syllabus',
-        status: 'active',
-        start_date: new Date().toISOString().split('T')[0],
-        schedule_days: 'Mon, Wed, Fri (5:00 PM - 6:30 PM)',
-        monthly_fee: selectedStudentForAssign.fee_amount || 4500,
-        attendance_percent: 100,
-        academic_score: 'Diagnostic Enrolled',
-        location: selectedStudentForAssign.address || 'Purnia'
-      };
-      if (tutorUserId && tutorUserId.length === 36) {
-        assignmentPayload.tutor_id = tutorUserId;
-      }
+      // Update state in Admin Panel immediately
+      setStudents(prev => prev.map(s => {
+        if (s.id === selectedStudentForAssign.id) {
+          return {
+            ...s,
+            assigned_teacher_id: verifiedTutorProfileId,
+            assigned_tutor_name: tutorName,
+            assigned_tutor_email: tutorEmail,
+            test_status: 'Tutor Assigned • Active',
+            status: 'ACTIVE'
+          };
+        }
+        return s;
+      }));
 
+      // 2. Cache assignment locally in localStorage for cross-portal instant sync
       try {
-        await supabase.from('student_assignments').insert([assignmentPayload]);
-      } catch (assignErr) {
-        console.warn('student_assignments insert:', assignErr);
-      }
+        const assignmentPayload: any = {
+          id: selectedStudentForAssign.id,
+          student_name: studentName,
+          parent_name: selectedStudentForAssign.parent_name || 'Parent',
+          phone: studentPhone,
+          class_grade: selectedStudentForAssign.class_level || selectedStudentForAssign.class_grade || 'Class 9',
+          board: selectedStudentForAssign.board || 'CBSE',
+          medium: selectedStudentForAssign.school_medium || 'Hindi / Bilingual',
+          subjects: 'Complete Board Syllabus',
+          status: 'active',
+          start_date: new Date().toISOString().split('T')[0],
+          schedule_days: 'Mon, Wed, Fri (5:00 PM - 6:30 PM)',
+          monthly_fee: selectedStudentForAssign.fee_amount || 4500,
+          attendance_percent: 100,
+          academic_score: selectedStudentForAssign.test_score || 'Diagnostic Enrolled',
+          location: selectedStudentForAssign.address || 'Purnia',
+          tutor_id: verifiedTutorProfileId,
+          tutor_user_id: tutorUserId,
+          tutor_name: tutorName,
+          tutor_email: tutorEmail
+        };
 
-      // 3. Cache assignment locally in localStorage for cross-portal instant sync
-      try {
         const storedKey = 'horizon_live_student_assignments';
         const existing = JSON.parse(localStorage.getItem(storedKey) || '[]');
-        const updated = [{ ...assignmentPayload, tutor_name: tutorName, tutor_email: tutorEmail }, ...existing.filter((a: any) => a.student_name !== studentName || a.tutor_id !== tutorUserId)];
+        const updated = [assignmentPayload, ...existing.filter((a: any) => a.student_name !== studentName || a.tutor_id !== verifiedTutorProfileId)];
         localStorage.setItem(storedKey, JSON.stringify(updated));
 
-        // Tutor-specific & Student-specific caches
-        const tutorKey = `horizon_tutor_students_${tutorEmail}`;
-        const existingForTutor = JSON.parse(localStorage.getItem(tutorKey) || '[]');
-        localStorage.setItem(tutorKey, JSON.stringify([{ ...assignmentPayload, tutor_name: tutorName, tutor_email: tutorEmail }, ...existingForTutor.filter((a: any) => a.student_name !== studentName)]));
-        if (tutorUserId) {
-          localStorage.setItem(`horizon_tutor_students_${tutorUserId}`, JSON.stringify([{ ...assignmentPayload, tutor_name: tutorName, tutor_email: tutorEmail }]));
+        // Tutor-specific caches
+        if (tutorEmail) {
+          const tutorKey = `horizon_tutor_students_${tutorEmail}`;
+          const existingForTutor = JSON.parse(localStorage.getItem(tutorKey) || '[]');
+          localStorage.setItem(tutorKey, JSON.stringify([assignmentPayload, ...existingForTutor.filter((a: any) => a.student_name !== studentName)]));
         }
-        if (tutorProfileId) {
-          localStorage.setItem(`horizon_tutor_students_${tutorProfileId}`, JSON.stringify([{ ...assignmentPayload, tutor_name: tutorName, tutor_email: tutorEmail }]));
+        if (tutorUserId) {
+          localStorage.setItem(`horizon_tutor_students_${tutorUserId}`, JSON.stringify([assignmentPayload]));
+        }
+        if (verifiedTutorProfileId) {
+          localStorage.setItem(`horizon_tutor_students_${verifiedTutorProfileId}`, JSON.stringify([assignmentPayload]));
         }
 
-        // Student-specific cache so student portal immediately knows their tutor!
+        // Student-specific cache
         const cleanNameKey = studentName.toLowerCase().replace(/\s+/g, '_');
         localStorage.setItem(`horizon_assigned_tutor_for_${cleanNameKey}`, JSON.stringify(tutorObj || { full_name: tutorName, email: tutorEmail }));
         if (studentEmail) {
