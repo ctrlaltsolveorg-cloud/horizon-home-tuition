@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth, UserRole } from '@/context/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { supabase, isUUID } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import {
@@ -172,11 +172,15 @@ function ProfilePageContent() {
         try {
           if (!user.isDemo) {
             if (user.role === 'teacher') {
-              const { data: tutor } = await supabase
-                .from('tutor_profiles')
-                .select('*')
-                .or(`id.eq.${user.id},user_id.eq.${user.id},email.eq.${user.email}`)
-                .maybeSingle();
+              let tutor: any = null;
+              if (user.id && isUUID(user.id)) {
+                const { data } = await supabase.from('tutor_profiles').select('*').or(`id.eq.${user.id},user_id.eq.${user.id}`).limit(1);
+                if (data && data.length > 0) tutor = data[0];
+              }
+              if (!tutor && user.email) {
+                const { data } = await supabase.from('tutor_profiles').select('*').ilike('email', user.email).limit(1);
+                if (data && data.length > 0) tutor = data[0];
+              }
 
               if (tutor) {
                 setCollege(tutor.college || 'PCE PURNIA');
@@ -188,11 +192,15 @@ function ProfilePageContent() {
                 setRating(tutor.rating || 5.0);
               }
             } else {
-              const { data: student } = await supabase
-                .from('student_enquiries')
-                .select('*')
-                .or(`student_id.eq.${user.id},email.eq.${user.email}`)
-                .maybeSingle();
+              let student: any = null;
+              if (user.id && isUUID(user.id)) {
+                const { data } = await supabase.from('student_enquiries').select('*').eq('student_id', user.id).limit(1);
+                if (data && data.length > 0) student = data[0];
+              }
+              if (!student && user.email) {
+                const { data } = await supabase.from('student_enquiries').select('*').ilike('email', user.email).limit(1);
+                if (data && data.length > 0) student = data[0];
+              }
 
               if (student) {
                 setParentName(student.parent_name || '');

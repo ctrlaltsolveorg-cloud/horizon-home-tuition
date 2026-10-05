@@ -1,7 +1,7 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { supabase } from '@/lib/supabase';
+import { supabase, isUUID } from '@/lib/supabase';
 import { ShieldCheck, Clock, CheckCircle2, Award, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 
@@ -11,11 +11,15 @@ export default async function TutorVerifyPage({ params }: { params: { id: string
   const tutorParam = params.id;
 
   // Query Supabase directly
-  const { data: tutor } = await supabase
-    .from('tutor_profiles')
-    .select('*')
-    .or(`id.eq.${tutorParam},user_id.eq.${tutorParam},email.ilike.${tutorParam}`)
-    .maybeSingle();
+  let tutor: any = null;
+  if (tutorParam && isUUID(tutorParam)) {
+    const { data } = await supabase.from('tutor_profiles').select('*').or(`id.eq.${tutorParam},user_id.eq.${tutorParam}`).limit(1);
+    if (data && data.length > 0) tutor = data[0];
+  }
+  if (!tutor && tutorParam) {
+    const { data } = await supabase.from('tutor_profiles').select('*').ilike('email', tutorParam).limit(1);
+    if (data && data.length > 0) tutor = data[0];
+  }
 
   const isVerified = tutor?.is_verified === true || (tutor?.verification_status || '').toUpperCase() === 'VERIFIED';
 

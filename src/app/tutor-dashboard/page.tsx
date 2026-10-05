@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import {
   supabase,
+  isUUID,
   StudentAssignment,
   MonthlyReportCard,
   EvaluationDuty
@@ -152,7 +153,7 @@ export default function TutorDashboard() {
               .order('created_at', { ascending: false });
             if (byEmail && byEmail.length > 0) tpData = byEmail[0];
           }
-          if (!tpData && userId) {
+          if (!tpData && userId && isUUID(userId)) {
             const { data: byUser } = await supabase
               .from('tutor_profiles')
               .select('*')

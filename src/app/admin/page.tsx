@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import {
   supabase,
+  isUUID,
   TestCenter,
   EvaluationDuty,
   MonthlyReportCard,
@@ -189,7 +190,7 @@ export default function AdminDashboardPage() {
         .eq('role', 'teacher')
         .order('created_at', { ascending: false });
 
-      // Merge and deduplicate by email or id
+      // Merge and deduplicate: tutor_profiles is the primary source of verification truth
       const tutorsMap = new Map<string, any>();
       (tutorProfilesData || []).forEach((t: any) => {
         const isVer = t.is_verified === true || (t.status || '').toUpperCase() === 'VERIFIED' || (t.verification_status || '').toUpperCase() === 'VERIFIED';
@@ -197,53 +198,64 @@ export default function AdminDashboardPage() {
           ...t,
           is_verified: isVer,
           status: isVer ? 'VERIFIED' : 'PENDING',
-          verification_status: isVer ? 'VERIFIED' : 'PENDING'
+          verification_status: isVer ? 'VERIFIED' : 'PENDING',
+          rating: isVer ? (t.rating || 5.0) : null
         };
-        const key = (t.email || t.id).toLowerCase();
-        tutorsMap.set(key, normalized);
-        if (t.user_id) {
-          tutorsMap.set(t.user_id.toLowerCase(), normalized);
-        }
+        if (t.email) tutorsMap.set(t.email.toLowerCase().trim(), normalized);
+        if (t.user_id) tutorsMap.set(t.user_id.toLowerCase().trim(), normalized);
+        if (t.id) tutorsMap.set(t.id.toLowerCase().trim(), normalized);
       });
-      (userProfilesData || []).forEach((u: any) => {
-        const key = u.email.toLowerCase();
-        if (tutorsMap.has(key)) {
-          const existing = tutorsMap.get(key);
-          tutorsMap.set(key, {
-            ...u,
-            ...existing,
-            id: existing.id || u.id,
-            user_id: u.id,
-            is_verified: existing.is_verified
-          });
-        } else {
-          tutorsMap.set(key, {
-            id: u.id,
-            user_id: u.id,
-            full_name: u.full_name,
-            email: u.email,
-            phone: u.phone,
-            college: 'Institution / College',
-            degree_status: 'Degree / Qualification',
-            experience_years: '1+ years',
-            medium_preference: 'Hindi / English',
-            subjects: 'General Subjects',
-            is_verified: false,
-            status: 'PENDING',
-            verification_status: 'PENDING',
-            rating: null
-          });
-        }
-      });
+
       const uniqueTutors: any[] = [];
-      const seenTutorEmails = new Set<string>();
-      for (const t of tutorsMap.values()) {
-        const emailKey = (t.email || t.id).toLowerCase();
-        if (!seenTutorEmails.has(emailKey)) {
-          seenTutorEmails.add(emailKey);
-          uniqueTutors.push(t);
+      const seenTutorKeys = new Set<string>();
+
+      (userProfilesData || []).forEach((u: any) => {
+        const emailKey = (u.email || '').toLowerCase().trim();
+        const userKey = (u.id || '').toLowerCase().trim();
+        const existing = (emailKey && tutorsMap.get(emailKey)) || (userKey && tutorsMap.get(userKey));
+
+        const isVer = existing ? (existing.is_verified === true) : false;
+        const merged = {
+          ...(existing || {}),
+          ...u,
+          id: existing?.id || u.id,
+          user_id: u.id,
+          email: u.email || existing?.email,
+          full_name: u.full_name || existing?.full_name,
+          phone: u.phone || existing?.phone,
+          college: existing?.college || 'Institution / College',
+          degree_status: existing?.degree_status || 'Degree / Qualification',
+          experience_years: existing?.experience_years || '1+ years',
+          medium_preference: existing?.medium_preference || 'Hindi / English',
+          subjects: existing?.subjects ? (Array.isArray(existing.subjects) ? existing.subjects.join(', ') : existing.subjects) : 'General Subjects',
+          is_verified: isVer,
+          status: isVer ? 'VERIFIED' : 'PENDING',
+          verification_status: isVer ? 'VERIFIED' : 'PENDING',
+          rating: isVer ? (existing?.rating || 5.0) : null
+        };
+
+        const uKey = (merged.email || merged.user_id || merged.id).toLowerCase();
+        if (!seenTutorKeys.has(uKey)) {
+          seenTutorKeys.add(uKey);
+          uniqueTutors.push(merged);
         }
-      }
+      });
+
+      (tutorProfilesData || []).forEach((t: any) => {
+        const uKey = (t.email || t.user_id || t.id || '').toLowerCase();
+        if (uKey && !seenTutorKeys.has(uKey)) {
+          seenTutorKeys.add(uKey);
+          const isVer = t.is_verified === true || (t.status || '').toUpperCase() === 'VERIFIED';
+          uniqueTutors.push({
+            ...t,
+            is_verified: isVer,
+            status: isVer ? 'VERIFIED' : 'PENDING',
+            verification_status: isVer ? 'VERIFIED' : 'PENDING',
+            rating: isVer ? (t.rating || 5.0) : null
+          });
+        }
+      });
+
       setTutors(uniqueTutors);
 
       // 2. Fetch Students from student_enquiries
@@ -363,7 +375,7 @@ export default function AdminDashboardPage() {
 
       // 1. Locate existing row in tutor_profiles
       let existingId: string | null = null;
-      if (tutor.id && !tutor.id.startsWith('demo-')) {
+      if (tutor.id && isUUID(tutor.id)) {
         const { data: byId } = await supabase
           .from('tutor_profiles')
           .select('id')
@@ -371,7 +383,7 @@ export default function AdminDashboardPage() {
           .limit(1);
         if (byId && byId.length > 0) existingId = byId[0].id;
       }
-      if (!existingId && tutorId) {
+      if (!existingId && tutorId && isUUID(tutorId)) {
         const { data: byUser } = await supabase
           .from('tutor_profiles')
           .select('id')
@@ -401,16 +413,17 @@ export default function AdminDashboardPage() {
 
         if (updErr) {
           console.error('Error updating tutor_profiles:', updErr);
+          alert('Failed to update verification status in Supabase: ' + updErr.message);
+          return;
         }
       } else {
-        // Direct insert new row without onConflict
-        const { error: insErr } = await supabase
+        // Direct insert new row
+        const { data: insData, error: insErr } = await supabase
           .from('tutor_profiles')
           .insert([{
-            id: tutorId && tutorId.length === 36 ? tutorId : undefined,
-            user_id: tutorId,
+            user_id: tutorId && isUUID(tutorId) ? tutorId : undefined,
             full_name: tutor.full_name || 'Tutor',
-            email: tutorEmail,
+            email: tutorEmail || undefined,
             phone: tutor.phone || '',
             college: tutor.college || 'Institution / College',
             degree_status: tutor.degree_status || 'Degree / Qualification',
@@ -419,10 +432,16 @@ export default function AdminDashboardPage() {
             subjects: Array.isArray(tutor.subjects) ? tutor.subjects : ['Mathematics', 'Science'],
             is_verified: nextIsVerified,
             rating: nextIsVerified ? 5.0 : null
-          }]);
+          }])
+          .select();
 
         if (insErr) {
           console.error('Error inserting tutor_profiles:', insErr);
+          alert('Failed to create tutor profile in Supabase: ' + insErr.message);
+          return;
+        }
+        if (insData && insData[0]) {
+          existingId = insData[0].id;
         }
       }
 

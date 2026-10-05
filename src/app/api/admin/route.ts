@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, isUUID } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,15 +71,21 @@ export async function POST(req: Request) {
       const { id, verification_status } = body;
       const isVerified = (verification_status || '').toUpperCase() === 'VERIFIED';
 
-      const { data, error } = await supabase
+      let updateQuery = supabase
         .from('tutor_profiles')
         .update({
           is_verified: isVerified,
           rating: isVerified ? 5.0 : null,
           updated_at: new Date().toISOString()
-        })
-        .or(`id.eq.${id},user_id.eq.${id},email.ilike.${id}`)
-        .select();
+        });
+
+      if (isUUID(id)) {
+        updateQuery = updateQuery.or(`id.eq.${id},user_id.eq.${id}`);
+      } else {
+        updateQuery = updateQuery.ilike('email', id);
+      }
+
+      const { data, error } = await updateQuery.select();
 
       if (error) throw error;
       return NextResponse.json({

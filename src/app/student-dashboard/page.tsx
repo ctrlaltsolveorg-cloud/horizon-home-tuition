@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { supabase, StudentEnquiry, MonthlyReport, TutorProfile } from '@/lib/supabase';
+import { supabase, isUUID, StudentEnquiry, MonthlyReport, TutorProfile } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import {
@@ -157,11 +157,19 @@ export default function StudentDashboard() {
               const tutorName = assign.tutor_name;
 
               // Fetch this specific tutor's live profile
-              const { data: specificTutor } = await supabase
-                .from('tutor_profiles')
-                .select('*')
-                .or(`id.eq.${tutorId},user_id.eq.${tutorId},email.ilike.${tutorEmail},full_name.ilike.%${tutorName || ''}%`)
-                .maybeSingle();
+              let specificTutor: any = null;
+              if (tutorId && isUUID(tutorId)) {
+                const { data } = await supabase.from('tutor_profiles').select('*').or(`id.eq.${tutorId},user_id.eq.${tutorId}`).limit(1);
+                if (data && data.length > 0) specificTutor = data[0];
+              }
+              if (!specificTutor && tutorEmail) {
+                const { data } = await supabase.from('tutor_profiles').select('*').ilike('email', tutorEmail).limit(1);
+                if (data && data.length > 0) specificTutor = data[0];
+              }
+              if (!specificTutor && tutorName) {
+                const { data } = await supabase.from('tutor_profiles').select('*').ilike('full_name', tutorName).limit(1);
+                if (data && data.length > 0) specificTutor = data[0];
+              }
 
               if (specificTutor) {
                 assignedTutorObj = specificTutor;
@@ -189,11 +197,15 @@ export default function StudentDashboard() {
           const teacherName = enquiryData.assigned_tutor_name;
           if (teacherId || teacherName) {
             try {
-              const { data: specificTutor } = await supabase
-                .from('tutor_profiles')
-                .select('*')
-                .or(`id.eq.${teacherId},user_id.eq.${teacherId},full_name.ilike.%${teacherName || ''}%`)
-                .maybeSingle();
+              let specificTutor: any = null;
+              if (teacherId && isUUID(teacherId)) {
+                const { data } = await supabase.from('tutor_profiles').select('*').or(`id.eq.${teacherId},user_id.eq.${teacherId}`).limit(1);
+                if (data && data.length > 0) specificTutor = data[0];
+              }
+              if (!specificTutor && teacherName) {
+                const { data } = await supabase.from('tutor_profiles').select('*').ilike('full_name', teacherName).limit(1);
+                if (data && data.length > 0) specificTutor = data[0];
+              }
               if (specificTutor) {
                 assignedTutorObj = specificTutor;
               } else if (teacherName) {
